@@ -1,6 +1,6 @@
 # gvueter
 
-This template should help get you started developing with Vue 3 in Vite.
+This project runs on Vue 3 with Vite+.
 
 ## Recommended IDE Setup
 
@@ -21,47 +21,53 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 
 ## Customize configuration
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+See the [Vite Configuration Reference](https://vite.dev/config/) and Vite+ docs for the unified toolchain workflow.
 
 ## Project Setup
 
 ```sh
-pnpm install
+vp install
 ```
 
 ### Compile and Hot-Reload for Development
 
 ```sh
-pnpm dev
+vp dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Run Formatting, Linting, and Type Checks
 
 ```sh
-pnpm build
+vp check
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Build for Production
 
 ```sh
-pnpm test:unit
+vp build
+```
+
+### Run Unit Tests
+
+```sh
+vp test
 ```
 
 ### Run End-to-End Tests with [Playwright](https://playwright.dev)
 
 ```sh
 # Install browsers for the first run
-npx playwright install
+vp exec playwright install
 
 # When testing on CI, must build the project first
-pnpm build
+vp build
 
 # Runs the end-to-end tests
-pnpm test:e2e
+vp exec playwright test
 # Runs the tests only on Chromium
-pnpm test:e2e --project=chromium
+vp exec playwright test --project=chromium
 # Runs the tests of a specific file
-pnpm test:e2e tests/example.spec.ts
+vp exec playwright test tests/example.spec.ts
 # Runs the tests in debug mode
-pnpm test:e2e --debug
+vp exec playwright test --debug
 ```
