@@ -1,0 +1,122 @@
+export default {
+  app: {
+    name: "GVueter 全量后台",
+    description: "面向多租户、权限治理与系统运营的一体化控制中台。",
+  },
+  common: {
+    search: "搜索路由、用户、租户...",
+    open: "打开",
+    save: "保存更改",
+    cancel: "取消",
+    dashboard: "仪表盘",
+    status: "状态",
+    active: "启用",
+    workspace: "工作区",
+    locale: "语言",
+    tenant: "租户",
+    profile: "个人中心",
+    signOut: "退出登录",
+  },
+  auth: {
+    welcome: "把企业后台需要的能力，一次性放进同一个系统。",
+    title: "登录完整工作台",
+    subtitle: "在一个界面中切换租户、治理权限、审阅审计轨迹，并保持整体体验足够现代。",
+    email: "工作邮箱",
+    password: "密码",
+    signIn: "进入管理台",
+    quickStart: "快速体验",
+    demoHint: "直接使用内置角色预览完整版本能力。",
+  },
+  nav: {
+    workspace: "工作台",
+    governance: "治理中心",
+    platform: "平台能力",
+    dashboard: "总览仪表盘",
+    users: "用户管理",
+    roles: "角色管理",
+    tenants: "租户管理",
+    workspaces: "工作区管理",
+    featureMatrix: "功能矩阵",
+    settings: "系统设置",
+    permissions: "权限管理",
+    menus: "菜单注册表",
+    logs: "审计中心",
+    profile: "个人中心",
+  },
+  dashboard: {
+    title: "总览仪表盘",
+    description: "把租户增长、审计强度与平台可靠性放到同一个视角里。",
+    highlight: "Full 全量版本",
+    trendTitle: "租户增长与审计活跃度",
+    trendDescription: "过去 12 个月的工作区扩张与治理流量信号。",
+    activityTitle: "运营脉搏",
+    tenantTitle: "租户能力矩阵",
+    metrics: {
+      tenants: "托管租户数",
+      users: "身份规模",
+      approvals: "审批事件",
+      uptime: "平台可用率",
+    },
+  },
+  pages: {
+    users: {
+      title: "用户管理",
+      description: "管理身份、角色范围和工作区成员归属。",
+    },
+    roles: {
+      title: "角色管理",
+      description: "用清晰的权限边界和作用域组织你的授权模型。",
+    },
+    tenants: {
+      title: "租户管理",
+      description: "围绕多租户平台能力进行配置、配额和品牌化管理。",
+    },
+    workspaces: {
+      title: "工作区管理",
+      description: "在租户内维护不同环境、不同团队归属的工作区。",
+    },
+    featureMatrix: {
+      title: "功能矩阵",
+      description: "控制租户能力包的启用、试点和规划状态。",
+    },
+    settings: {
+      title: "系统设置",
+      description: "统一控制主题、默认项与 Full 版本治理参数。",
+    },
+    permissions: {
+      title: "权限管理",
+      description: "查看能力覆盖、风险等级和角色绑定，形成完整治理视图。",
+    },
+    menus: {
+      title: "菜单注册表",
+      description: "追踪路由与菜单的绑定关系，并识别角色或功能开关限制。",
+    },
+    logs: {
+      title: "审计中心",
+      description: "围绕敏感操作提供可追踪、可筛选、可导出的审计视图。",
+    },
+    profile: {
+      title: "个人中心",
+      description: "个人资料、偏好设置与运营习惯集中管理。",
+    },
+    forbidden: {
+      title: "禁止访问",
+      description: "当前角色尚未拥有该能力。",
+    },
+    notFound: {
+      title: "页面不存在",
+      description: "该路由可能尚未启用，或当前版本未开放。",
+    },
+  },
+  topbar: {
+    theme: "主题工作室",
+    notifications: "通知中心",
+    switchTenant: "切换租户",
+    switchWorkspace: "切换工作区",
+  },
+  permissions: {
+    allowed: "已开放",
+    restricted: "受限",
+    noRouteAccess: "当前角色在此租户上下文下无法访问该路由。",
+  },
+};

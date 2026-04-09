@@ -1,5 +1,6 @@
 import { fileURLToPath, URL } from "node:url";
 
+import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { configDefaults, defineConfig } from "vite-plus";
 import vueDevTools from "vite-plugin-vue-devtools";
@@ -16,7 +17,7 @@ export default defineConfig({
   staged: {
     "*": "vp check --fix",
   },
-  plugins: [vue(), vueDevTools()],
+  plugins: [vue(), tailwindcss(), vueDevTools()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
