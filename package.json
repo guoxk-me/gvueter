@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.3",
+    "@tanstack/vue-query": "^5.99.2",
     "@tanstack/vue-table": "^8.21.3",
     "@unovis/ts": "^1.6.4",
     "@unovis/vue": "^1.6.4",
@@ -30,7 +31,9 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.20",
     "lucide-vue-next": "^1.0.0",
+    "nprogress": "^0.2.0",
     "pinia": "^3.0.4",
+    "pinia-plugin-persistedstate": "^4.7.1",
     "reka-ui": "^2.9.6",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.3",
