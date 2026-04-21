@@ -1,9 +1,5 @@
 {
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
+  "files": [],
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -15,5 +11,9 @@
       "path": "./tsconfig.vitest.json"
     }
   ],
-  "files": []
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }

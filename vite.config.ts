@@ -1,31 +1,37 @@
-import { fileURLToPath, URL } from "node:url";
+import { fileURLToPath, URL } from 'node:url'
 
-import tailwindcss from "@tailwindcss/vite";
-import vue from "@vitejs/plugin-vue";
-import { configDefaults, defineConfig } from "vite-plus";
-import vueDevTools from "vite-plugin-vue-devtools";
+import { defineConfig } from 'vite-plus'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
+import vueDevTools from 'vite-plugin-vue-devtools'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  fmt: {},
+  staged: {
+    '*': 'vp check --fix',
+  },
+  fmt: {
+    semi: false,
+    singleQuote: true,
+  },
   lint: {
+    plugins: ['eslint', 'typescript', 'unicorn', 'oxc', 'vue', 'vitest'],
+    env: {
+      browser: true,
+    },
+    categories: {
+      correctness: 'error',
+    },
     options: {
       typeAware: true,
       typeCheck: true,
     },
   },
-  staged: {
-    "*": "vp check --fix",
-  },
-  plugins: [vue(), tailwindcss(), vueDevTools()],
+  plugins: [tailwindcss(), vue(), vueJsx(), vueDevTools()],
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  test: {
-    environment: "jsdom",
-    exclude: [...configDefaults.exclude, "e2e/**"],
-    root: fileURLToPath(new URL("./", import.meta.url)),
-  },
-});
+})

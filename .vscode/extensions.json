@@ -1,3 +1,11 @@
 {
-  "recommendations": ["Vue.volar", "vitest.explorer", "ms-playwright.playwright"]
+  "recommendations": [
+    "Vue.volar",
+    "vitest.explorer",
+    "ms-playwright.playwright",
+    "dbaeumer.vscode-eslint",
+    "EditorConfig.EditorConfig",
+    "oxc.oxc-vscode",
+    "VoidZero.vite-plus-extension-pack"
+  ]
 }
