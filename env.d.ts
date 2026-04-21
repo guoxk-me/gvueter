@@ -1,8 +1,8 @@
 /// <reference types="vite-plus/client" />
 
-declare module "*.vue" {
-  import type { DefineComponent } from "vue";
-
-  const component: DefineComponent<{}, {}, any>;
-  export default component;
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue'
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  const component: DefineComponent<{}, {}, unknown>
+  export default component
 }

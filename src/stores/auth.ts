@@ -1,97 +1,59 @@
-import { defineStore } from "pinia";
-import { useStorage } from "@vueuse/core";
-import { computed } from "vue";
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
-import { getRoleAbilities, hasAbility, hasAllAbilities, type Ability } from "@/lib/access";
+export interface User {
+  id: number
+  name: string
+  email: string
+  avatar?: string
+  role: 'admin' | 'editor' | 'viewer'
+}
 
-export type UserRole = "platform-admin" | "workspace-admin" | "security-analyst";
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref<string | null>(localStorage.getItem('auth_token'))
+  const user = ref<User | null>(null)
 
-export type AuthUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  title: string;
-};
+  const isAuthenticated = computed(() => !!token.value)
 
-type AuthState = {
-  token: string | null;
-  user: AuthUser | null;
-};
+  function setToken(newToken: string) {
+    token.value = newToken
+    localStorage.setItem('auth_token', newToken)
+  }
 
-const demoProfiles: Record<UserRole, AuthUser> = {
-  "platform-admin": {
-    id: "usr-platform-admin",
-    name: "Maya Chen",
-    email: "maya@gvueter.app",
-    role: "platform-admin",
-    title: "Platform Admin",
-  },
-  "workspace-admin": {
-    id: "usr-workspace-admin",
-    name: "Ava Reed",
-    email: "ava@gvueter.app",
-    role: "workspace-admin",
-    title: "Workspace Admin",
-  },
-  "security-analyst": {
-    id: "usr-security-analyst",
-    name: "Luca Park",
-    email: "luca@gvueter.app",
-    role: "security-analyst",
-    title: "Security Analyst",
-  },
-};
+  function setUser(newUser: User) {
+    user.value = newUser
+  }
 
-export const useAuthStore = defineStore("auth", () => {
-  const state = useStorage<AuthState>("gvueter-auth", {
-    token: null,
-    user: null,
-  });
+  async function login(email: string, password: string) {
+    // TODO: replace with actual API call
+    if (email && password) {
+      const fakeToken = 'fake-jwt-token-' + Date.now()
+      const fakeUser: User = {
+        id: 1,
+        name: 'Admin User',
+        email,
+        role: 'admin',
+      }
+      setToken(fakeToken)
+      setUser(fakeUser)
+      return true
+    }
+    return false
+  }
 
-  const isAuthenticated = computed(() => Boolean(state.value.token));
-  const user = computed(() => state.value.user);
-  const abilities = computed(() => getRoleAbilities(state.value.user?.role));
-
-  const login = async (payload: { email: string; password: string; role?: UserRole }) => {
-    const role = payload.role ?? "platform-admin";
-    const profile = demoProfiles[role];
-
-    state.value = {
-      token: `demo-token-${role}`,
-      user: {
-        ...profile,
-        email: payload.email || profile.email,
-      },
-    };
-  };
-
-  const loginAsDemo = async (role: UserRole) => {
-    await login({
-      email: demoProfiles[role].email,
-      password: "demo",
-      role,
-    });
-  };
-
-  const logout = () => {
-    state.value = {
-      token: null,
-      user: null,
-    };
-  };
-
-  const can = (ability: Ability) => hasAbility(state.value.user, ability);
-  const canAll = (required: Ability[]) => hasAllAbilities(state.value.user, required);
+  function logout() {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('auth_token')
+  }
 
   return {
-    abilities,
-    can,
-    canAll,
+    token,
+    user,
     isAuthenticated,
     login,
-    loginAsDemo,
     logout,
-    user,
-  };
-});
+    setToken,
+    setUser,
+  }
+})
