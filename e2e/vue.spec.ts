@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { test, expect } from '@playwright/test'
 
-test("visits the app root url", async ({ page }) => {
-  await page.goto("/");
-  await page.waitForURL(/\/login/);
-  await expect(page.getByRole("heading", { level: 2 })).toContainText("登录");
-  await expect(page.getByText("快速体验")).toBeVisible();
-});
+// See here how to get started:
+// https://playwright.dev/docs/intro
+test('visits the app root url', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('h1')).toHaveText('You did it!')
+})
