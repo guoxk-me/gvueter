@@ -1,22 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
 import { z } from 'zod'
 import { toast } from 'vue-sonner'
 import { Eye, EyeOff, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form'
+import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 
 const router = useRouter()
 const route = useRoute()
@@ -32,23 +25,20 @@ const formSchema = toTypedSchema(
   }),
 )
 
-const { handleSubmit } = useForm({
-  validationSchema: formSchema,
-})
+const { handleSubmit } = useForm({ validationSchema: formSchema })
+
+const { value: email, errorMessage: emailError } = useField<string>('email')
+const { value: password, errorMessage: passwordError } = useField<string>('password')
 
 const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true
   try {
-    const success = await authStore.login(values.email, values.password)
-    if (success) {
-      toast.success('登录成功', { description: `欢迎回来，${authStore.user?.name}` })
-      const redirect = (route.query.redirect as string) || '/dashboard'
-      router.push(redirect)
-    } else {
-      toast.error('登录失败', { description: '邮箱或密码错误，请重试' })
-    }
+    await authStore.login(values.email, values.password)
+    toast.success('登录成功', { description: `欢迎回来，${authStore.user?.name}` })
+    const redirect = (route.query.redirect as string) || '/dashboard'
+    router.push(redirect)
   } catch {
-    toast.error('登录失败', { description: '网络错误，请稍后重试' })
+    toast.error('登录失败', { description: '邮箱或密码错误，请重试' })
   } finally {
     isLoading.value = false
   }
@@ -83,57 +73,53 @@ const onSubmit = handleSubmit(async (values) => {
 
       <!-- Card -->
       <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <Form @submit="onSubmit" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="onSubmit">
           <!-- Email -->
-          <FormField name="email" v-slot="{ componentField }">
-            <FormItem>
-              <FormLabel>邮箱</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="admin@example.com"
-                  autocomplete="email"
-                  v-bind="componentField"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+          <FormItem>
+            <FormLabel>邮箱</FormLabel>
+            <FormControl>
+              <Input
+                v-model="email"
+                type="email"
+                placeholder="admin@example.com"
+                autocomplete="email"
+              />
+            </FormControl>
+            <FormMessage v-if="emailError">{{ emailError }}</FormMessage>
+          </FormItem>
 
           <!-- Password -->
-          <FormField name="password" v-slot="{ componentField }">
-            <FormItem>
-              <FormLabel>密码</FormLabel>
-              <FormControl>
-                <div class="relative">
-                  <Input
-                    :type="showPassword ? 'text' : 'password'"
-                    placeholder="请输入密码"
-                    autocomplete="current-password"
-                    class="pr-10"
-                    v-bind="componentField"
-                  />
-                  <button
-                    type="button"
-                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
-                    @click="showPassword = !showPassword"
-                    tabindex="-1"
-                  >
-                    <EyeOff v-if="showPassword" class="size-4" />
-                    <Eye v-else class="size-4" />
-                  </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+          <FormItem>
+            <FormLabel>密码</FormLabel>
+            <FormControl>
+              <div class="relative">
+                <Input
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="请输入密码"
+                  autocomplete="current-password"
+                  class="pr-10"
+                />
+                <button
+                  type="button"
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                  @click="showPassword = !showPassword"
+                  tabindex="-1"
+                >
+                  <EyeOff v-if="showPassword" class="size-4" />
+                  <Eye v-else class="size-4" />
+                </button>
+              </div>
+            </FormControl>
+            <FormMessage v-if="passwordError">{{ passwordError }}</FormMessage>
+          </FormItem>
 
           <!-- Submit -->
           <Button type="submit" class="w-full" :disabled="isLoading">
             <Loader2 v-if="isLoading" class="mr-2 size-4 animate-spin" />
             {{ isLoading ? '登录中...' : '登录' }}
           </Button>
-        </Form>
+        </form>
       </div>
 
       <p class="text-center text-xs text-muted-foreground">

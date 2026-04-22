@@ -16,23 +16,19 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
   const requiresAuth = to.matched.some((r) => r.meta.requiresAuth)
   const requiresGuest = to.matched.some((r) => r.meta.requiresGuest)
 
   if (requiresAuth && !auth.isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
-    return
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
 
   if (requiresGuest && auth.isAuthenticated) {
-    next({ path: '/dashboard' })
-    return
+    return { path: '/dashboard' }
   }
-
-  next()
 })
 
 export default router

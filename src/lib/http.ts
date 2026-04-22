@@ -12,7 +12,7 @@ export const http = axios.create({
 // ── Request interceptor ──────────────────────────────────────────────────────
 
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('auth_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -28,7 +28,7 @@ http.interceptors.response.use(
 
     if (status === 401) {
       // Clear stale token and redirect to login
-      localStorage.removeItem('token')
+      localStorage.removeItem('auth_token')
       // Avoid circular dependency with router by using location directly
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login'

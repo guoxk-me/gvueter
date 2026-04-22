@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { post } from '@/lib/http'
 
 export interface User {
   id: number
@@ -7,6 +8,11 @@ export interface User {
   email: string
   avatar?: string
   role: 'admin' | 'editor' | 'viewer'
+}
+
+interface LoginResponse {
+  token: string
+  user: User
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -24,27 +30,21 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = newUser
   }
 
-  async function login(email: string, password: string) {
-    // TODO: replace with actual API call
-    if (email && password) {
-      const fakeToken = 'fake-jwt-token-' + Date.now()
-      const fakeUser: User = {
-        id: 1,
-        name: 'Admin User',
-        email,
-        role: 'admin',
-      }
-      setToken(fakeToken)
-      setUser(fakeUser)
-      return true
-    }
-    return false
+  async function login(email: string, password: string): Promise<boolean> {
+    const data = await post<LoginResponse>('/auth/login', { email, password })
+    setToken(data.token)
+    setUser(data.user)
+    return true
   }
 
-  function logout() {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('auth_token')
+  async function logout(): Promise<void> {
+    try {
+      await post('/auth/logout')
+    } finally {
+      token.value = null
+      user.value = null
+      localStorage.removeItem('auth_token')
+    }
   }
 
   return {
