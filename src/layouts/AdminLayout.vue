@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
   Users,
@@ -10,9 +10,10 @@ import {
   LogOut,
   ChevronUp,
   Bell,
-  Search,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import { appAbility } from '@/lib/ability'
+import type { AppAction, AppSubject } from '@/lib/ability'
 import {
   Sidebar,
   SidebarContent,
@@ -38,18 +39,31 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import AppBreadcrumb from '@/components/layout/AppBreadcrumb.vue'
+import GlobalSearch from '@/components/layout/GlobalSearch.vue'
 
 const authStore = useAuthStore()
-const route = useRoute()
 const router = useRouter()
 
-const navItems = [
-  { title: '仪表盘', to: '/dashboard', icon: LayoutDashboard },
-  { title: '用户管理', to: '/users', icon: Users },
-  { title: '内容管理', to: '/content', icon: FileText },
-  { title: '数据分析', to: '/analytics', icon: BarChart3 },
-  { title: '系统设置', to: '/settings', icon: Settings },
+interface NavItem {
+  title: string
+  to: string
+  icon: unknown
+  ability: [AppAction, AppSubject]
+}
+
+const allNavItems: NavItem[] = [
+  { title: '仪表盘', to: '/dashboard', icon: LayoutDashboard, ability: ['read', 'Dashboard'] },
+  { title: '用户管理', to: '/users', icon: Users, ability: ['read', 'User'] },
+  { title: '内容管理', to: '/content', icon: FileText, ability: ['read', 'Content'] },
+  { title: '数据分析', to: '/analytics', icon: BarChart3, ability: ['read', 'Analytics'] },
+  { title: '系统设置', to: '/settings', icon: Settings, ability: ['read', 'Settings'] },
 ]
+
+// Filter nav items based on the current user's CASL abilities
+const navItems = computed(() =>
+  allNavItems.filter((item) => appAbility.can(item.ability[0], item.ability[1])),
+)
 
 const userInitials = computed(() => {
   const name = authStore.user?.name ?? ''
@@ -103,14 +117,14 @@ function handleLogout() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <!-- Sidebar Content: Navigation -->
+      <!-- Sidebar Content: Permission-filtered navigation -->
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>导航</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem v-for="item in navItems" :key="item.to">
-                <SidebarMenuButton as-child :is-active="route.path.startsWith(item.to)">
+                <SidebarMenuButton as-child :is-active="$route.path.startsWith(item.to)">
                   <RouterLink :to="item.to">
                     <component :is="item.icon" />
                     <span>{{ item.title }}</span>
@@ -180,13 +194,16 @@ function handleLogout() {
         <SidebarTrigger class="-ml-1" />
         <Separator orientation="vertical" class="mx-1 h-4" />
 
-        <!-- Breadcrumb / Page Title -->
-        <div class="flex-1">
-          <span class="text-sm font-medium text-foreground">{{ route.meta.title ?? '' }}</span>
+        <!-- Breadcrumb -->
+        <div class="flex-1 min-w-0">
+          <AppBreadcrumb />
         </div>
 
         <!-- Right side actions -->
         <div class="flex items-center gap-2">
+          <!-- Global search -->
+          <GlobalSearch />
+
           <!-- Notifications -->
           <button
             class="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"

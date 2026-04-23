@@ -1,9 +1,11 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { abilitiesPlugin } from '@casl/vue'
 
 import App from './App.vue'
 import router from './router'
 import { i18n } from './i18n'
+import { appAbility } from './lib/ability'
 import './assets/css/main.css'
 
 async function bootstrap() {
@@ -22,6 +24,7 @@ async function bootstrap() {
   app.use(createPinia())
   app.use(router)
   app.use(i18n)
+  app.use(abilitiesPlugin, appAbility)
 
   app.mount('#app')
 }
