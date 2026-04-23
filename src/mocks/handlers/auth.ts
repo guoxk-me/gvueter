@@ -25,11 +25,21 @@ export const loginHandler = http.post<never, LoginRequestBody>(
   async ({ request }) => {
     const { email, password } = await request.json()
 
+    // 先判断账号是否存在，再判断密码是否正确，给出不同错误码
+    const userExists = mockUsers.find((u) => u.email === email)
+
+    if (!userExists) {
+      return HttpResponse.json<ApiResponse<null>>(
+        { code: 'USER_NOT_FOUND', message: '该邮箱未注册，请检查后重试', data: null },
+        { status: 401 },
+      )
+    }
+
     const found = mockUsers.find((u) => u.email === email && u.password === password)
 
     if (!found) {
       return HttpResponse.json<ApiResponse<null>>(
-        { code: 401, message: '邮箱或密码错误', data: null },
+        { code: 'WRONG_PASSWORD', message: '密码错误，请重试', data: null },
         { status: 401 },
       )
     }
