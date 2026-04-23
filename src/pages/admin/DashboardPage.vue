@@ -20,8 +20,8 @@ const stats = [
     trend: 'up',
     desc: '相比上月',
     icon: Users,
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
+    color: 'text-info',
+    bg: 'bg-info/10',
   },
   {
     title: '本月收入',
@@ -30,8 +30,8 @@ const stats = [
     trend: 'up',
     desc: '相比上月',
     icon: DollarSign,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500/10',
+    color: 'text-success',
+    bg: 'bg-success/10',
   },
   {
     title: '订单总量',
@@ -40,8 +40,8 @@ const stats = [
     trend: 'down',
     desc: '相比上月',
     icon: ShoppingCart,
-    color: 'text-orange-500',
-    bg: 'bg-orange-500/10',
+    color: 'text-warning',
+    bg: 'bg-warning/10',
   },
   {
     title: '活跃率',
@@ -50,8 +50,8 @@ const stats = [
     trend: 'up',
     desc: '相比上月',
     icon: TrendingUp,
-    color: 'text-violet-500',
-    bg: 'bg-violet-500/10',
+    color: 'text-brand',
+    bg: 'bg-brand/10',
   },
 ]
 
@@ -89,7 +89,7 @@ const recentActivities = [
             <span
               :class="[
                 'flex items-center gap-0.5 font-medium',
-                stat.trend === 'up' ? 'text-emerald-600' : 'text-destructive',
+                stat.trend === 'up' ? 'text-success' : 'text-destructive',
               ]"
             >
               <ArrowUpRight v-if="stat.trend === 'up'" class="size-3" />
@@ -139,10 +139,10 @@ const recentActivities = [
         <CardContent class="space-y-4">
           <div
             v-for="item in [
-              { label: 'CPU 使用率', value: 34, color: 'bg-blue-500' },
-              { label: '内存占用', value: 62, color: 'bg-violet-500' },
-              { label: '磁盘使用', value: 48, color: 'bg-emerald-500' },
-              { label: '网络带宽', value: 21, color: 'bg-orange-500' },
+              { label: 'CPU 使用率', value: 34, color: 'bg-info' },
+              { label: '内存占用', value: 62, color: 'bg-brand' },
+              { label: '磁盘使用', value: 48, color: 'bg-success' },
+              { label: '网络带宽', value: 21, color: 'bg-warning' },
             ]"
             :key="item.label"
             class="space-y-1.5"
