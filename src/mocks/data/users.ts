@@ -4,13 +4,24 @@ export interface MockUser extends User {
   password: string
 }
 
+function createAvatarDataUri(label: string, background: string, foreground = '#ffffff'): string {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <rect width="96" height="96" rx="24" fill="${background}" />
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${foreground}" font-family="Arial, sans-serif" font-size="32" font-weight="700">${label}</text>
+    </svg>
+  `.trim()
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
+}
+
 export const mockUsers: MockUser[] = [
   {
     id: 1,
     name: '超级管理员',
     email: 'admin@example.com',
     password: 'admin123',
-    avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=admin',
+    avatar: createAvatarDataUri('A', '#2563eb'),
     role: 'admin',
   },
   {
@@ -18,7 +29,7 @@ export const mockUsers: MockUser[] = [
     name: '内容编辑',
     email: 'editor@example.com',
     password: 'editor123',
-    avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=editor',
+    avatar: createAvatarDataUri('E', '#059669'),
     role: 'editor',
   },
   {
@@ -26,7 +37,7 @@ export const mockUsers: MockUser[] = [
     name: '只读访客',
     email: 'viewer@example.com',
     password: 'viewer123',
-    avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=viewer',
+    avatar: createAvatarDataUri('V', '#7c3aed'),
     role: 'viewer',
   },
 ]
