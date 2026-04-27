@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, LayoutDashboard, Users, FileText, BarChart3, Settings } from 'lucide-vue-next'
+import { Search, LayoutDashboard } from 'lucide-vue-next'
 import {
   Dialog,
   DialogContent,
@@ -30,28 +30,6 @@ const allItems: SearchItem[] = [
     icon: LayoutDashboard,
     group: '页面',
     ability: ['read', 'Dashboard'],
-  },
-  { title: '用户管理', to: '/users', icon: Users, group: '页面', ability: ['read', 'User'] },
-  {
-    title: '内容管理',
-    to: '/content',
-    icon: FileText,
-    group: '页面',
-    ability: ['read', 'Content'],
-  },
-  {
-    title: '数据分析',
-    to: '/analytics',
-    icon: BarChart3,
-    group: '页面',
-    ability: ['read', 'Analytics'],
-  },
-  {
-    title: '系统设置',
-    to: '/settings',
-    icon: Settings,
-    group: '页面',
-    ability: ['read', 'Settings'],
   },
 ]
 

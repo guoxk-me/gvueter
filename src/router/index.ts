@@ -45,4 +45,9 @@ router.beforeEach((to, _from) => {
   }
 })
 
+router.afterEach((to) => {
+  const appTitle = 'Admin Panel'
+  document.title = to.meta.title ? `${to.meta.title} - ${appTitle}` : appTitle
+})
+
 export default router

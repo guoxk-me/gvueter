@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { LogOut, ChevronUp, Bell, Settings } from 'lucide-vue-next'
+import { LogOut, ChevronUp, Bell } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import {
   Sidebar,
@@ -121,13 +121,6 @@ function handleLogout() {
                     <p class="text-xs text-muted-foreground">{{ authStore.user?.email }}</p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem as-child>
-                  <RouterLink to="/settings">
-                    <Settings class="mr-2 size-4" />
-                    账号设置
-                  </RouterLink>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem class="text-destructive" @click="handleLogout">
                   <LogOut class="mr-2 size-4" />
