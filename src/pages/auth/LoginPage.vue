@@ -1,22 +1,41 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
 import { toast } from 'vue-sonner'
-import { Eye, EyeOff, Loader2 } from 'lucide-vue-next'
+import { Eye, EyeOff, Loader2, Sun, Moon } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ApiError } from '@/lib/http'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
+import { useTheme } from '@/composables/useTheme'
+import { setLocale, type SupportedLocale } from '@/i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const { isDark, toggleTheme } = useTheme()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+
+// ── 语言切换 ──────────────────────────────────────────────────────────────────
+// localeLabel: 显示"切换到"的目标语言缩写，而非当前语言
+const localeLabel = computed(() => (locale.value === 'zh-CN' ? 'EN' : '中'))
+// aria-label: 明确说明切换目标，避免"切换语言"这种模糊描述
+const localeSwitchAriaLabel = computed(() =>
+  locale.value === 'zh-CN' ? t('common.switchToEn') : t('common.switchToZh'),
+)
+
+function toggleLocale() {
+  const next: SupportedLocale = locale.value === 'zh-CN' ? 'en-US' : 'zh-CN'
+  setLocale(next)
+}
+
+// ── 主题切换 aria-label ───────────────────────────────────────────────────────
+const themeAriaLabel = computed(() => (isDark.value ? t('common.lightMode') : t('common.darkMode')))
 
 const showPassword = ref(false)
 const isLoading = ref(false)
@@ -49,25 +68,26 @@ onUnmounted(() => {
   if (lockTimer) clearInterval(lockTimer)
 })
 
-// ── 表单 schema ───────────────────────────────────────────────────────────────
-// Fix 1: required_error 处理字段为 undefined 的情况，避免出现 vee-validate 默认 "Required"
-// 用普通常量而非 computed，避免 vee-validate watch 动态 schema 时引发 render 阶段副作用
+// ── 表单 schema（computed 以响应语言切换）────────────────────────────────────
+// 改为 computed：当 locale 变化时，t() 重新求值，vee-validate 检测到 schema ref
+// 变化后会重新校验，确保报错信息始终与当前语言一致。
 const PASSWORD_MIN = 6
 
-const formSchema = toTypedSchema(
-  z.object({
-    email: z
-      .string({ required_error: t('auth.emailRequired') })
-      .min(1, t('auth.emailRequired'))
-      .email(t('auth.emailInvalid')),
-    password: z
-      .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
-      .min(PASSWORD_MIN, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
-  }),
+const formSchema = computed(() =>
+  toTypedSchema(
+    z.object({
+      email: z
+        .string({ required_error: t('auth.emailRequired') })
+        .min(1, t('auth.emailRequired'))
+        .email(t('auth.emailInvalid')),
+      password: z
+        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
+        .min(PASSWORD_MIN, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
+    }),
+  ),
 )
 
-// Fix 3: 解构 setFieldError，将服务端错误注入 vee-validate 字段上下文
-//        这样 <FormMessage> 能正确读取并渲染错误文字
+// Fix: 解构 setFieldError，将服务端错误注入 vee-validate 字段上下文
 const { handleSubmit, setFieldError } = useForm({ validationSchema: formSchema })
 
 // ── 提交 ──────────────────────────────────────────────────────────────────────
@@ -121,10 +141,14 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
-    <div class="w-full max-w-sm space-y-8">
+    <div class="w-full max-w-sm space-y-6">
       <!-- Logo & Title -->
       <div class="text-center">
+        <!--
+          aria-hidden: 纯装饰性 SVG，屏幕阅读器跳过，避免播报无意义路径字符串
+        -->
         <div
+          aria-hidden="true"
           class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"
         >
           <svg
@@ -133,6 +157,8 @@ const onSubmit = handleSubmit(async (values) => {
             stroke="currentColor"
             stroke-width="2"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
           >
             <path
               stroke-linecap="round"
@@ -148,11 +174,19 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <!-- Card -->
-      <!-- novalidate: Fix 2 — 禁用浏览器原生 HTML5 校验，让 vee-validate+zod 接管 -->
+      <!-- novalidate: 禁用浏览器原生 HTML5 校验，让 vee-validate+zod 接管 -->
       <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <form class="space-y-4" novalidate @submit.prevent="onSubmit">
+        <!--
+          aria-label: 为表单添加语义标签，辅助技术（如屏幕阅读器）能宣告表单用途
+          novalidate: 禁用浏览器原生校验，由 vee-validate + zod 接管
+        -->
+        <form
+          class="space-y-4"
+          novalidate
+          :aria-label="t('auth.loginFormLabel')"
+          @submit.prevent="onSubmit"
+        >
           <!-- Email -->
-          <!-- Fix: 使用 <FormField> 包裹，提供 FieldContextKey 给子组件 useFormField() -->
           <FormField name="email" v-slot="{ componentField }">
             <FormItem>
               <FormLabel>{{ t('auth.email') }}</FormLabel>
@@ -178,18 +212,18 @@ const onSubmit = handleSubmit(async (values) => {
                   href="#"
                   class="text-xs text-muted-foreground hover:text-foreground hover:underline"
                   tabindex="-1"
-                  @click.prevent="
-                    toast.info(t('auth.forgotPasswordTitle'), {
-                      description: t('auth.forgotPasswordDesc'),
-                    })
-                  "
+                  @click.prevent="router.push({ name: 'forgot-password' })"
                 >
                   {{ t('auth.forgotPassword') }}
                 </a>
               </div>
               <FormControl>
                 <div class="relative">
+                  <!--
+                    id="password-input": 供密码显示切换按钮的 aria-controls 引用
+                  -->
                   <Input
+                    id="password-input"
                     v-bind="componentField"
                     :type="showPassword ? 'text' : 'password'"
                     :placeholder="t('auth.passwordPlaceholder')"
@@ -197,14 +231,21 @@ const onSubmit = handleSubmit(async (values) => {
                     class="pr-10"
                     :disabled="isLoading || isLocked()"
                   />
+                  <!--
+                    aria-label: 根据当前状态动态描述操作意图，避免仅用图标而无文字说明
+                    aria-controls: 指向被控制的密码输入框，建立控件关联
+                    aria-pressed: 表达当前"密码可见"状态，供开关类控件使用
+                  -->
                   <button
                     type="button"
-                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
-                    tabindex="-1"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                    :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
+                    aria-controls="password-input"
+                    :aria-pressed="showPassword"
                     @click="showPassword = !showPassword"
                   >
-                    <EyeOff v-if="showPassword" class="size-4" />
-                    <Eye v-else class="size-4" />
+                    <EyeOff v-if="showPassword" class="size-4" aria-hidden="true" />
+                    <Eye v-else class="size-4" aria-hidden="true" />
                   </button>
                 </div>
               </FormControl>
@@ -212,25 +253,72 @@ const onSubmit = handleSubmit(async (values) => {
             </FormItem>
           </FormField>
 
-          <!-- 失败次数提示 -->
-          <p v-if="failCount > 0 && !isLocked()" class="text-xs text-muted-foreground">
+          <!--
+            失败次数提示
+            role="status" + aria-live="polite": 动态内容变化时，屏幕阅读器会在
+            当前朗读结束后礼貌地宣告新内容，不打断用户操作
+          -->
+          <p
+            v-if="failCount > 0 && !isLocked()"
+            role="status"
+            aria-live="polite"
+            class="text-xs text-muted-foreground"
+          >
             {{ t('auth.failCountHint', { count: failCount, remaining: MAX_FAIL - failCount }) }}
           </p>
 
           <!-- Submit -->
           <Button type="submit" class="w-full" :disabled="isLoading || isLocked()">
-            <Loader2 v-if="isLoading" class="mr-2 size-4 animate-spin" />
-            <span v-if="isLocked()">{{
-              t('auth.lockoutCountdown', { seconds: lockCountdown })
-            }}</span>
+            <Loader2 v-if="isLoading" class="mr-2 size-4 animate-spin" aria-hidden="true" />
+            <!--
+              锁定倒计时：aria-live="assertive" 立即宣告，因为这是阻断性状态，
+              用户需要立刻得知需要等待。
+            -->
+            <span v-if="isLocked()" role="status" aria-live="assertive">
+              {{ t('auth.lockoutCountdown', { seconds: lockCountdown }) }}
+            </span>
             <span v-else-if="isLoading">{{ t('auth.loggingIn') }}</span>
             <span v-else>{{ t('auth.loginButton') }}</span>
           </Button>
         </form>
       </div>
 
+      <!-- 工具栏：主题切换 + 语言切换，移至卡片下方，操作更就近 -->
+      <div class="flex items-center justify-center gap-1">
+        <!--
+          aria-label: 使用 computed 以响应语言切换，始终以当前语言描述操作
+          aria-pressed: 语义上是一个双态切换按钮，true = 当前为暗色模式
+          @click="toggleTheme($event)": 传入 MouseEvent 以实现从点击位置扩散的动画
+        -->
+        <Button
+          variant="ghost"
+          size="icon"
+          :aria-label="themeAriaLabel"
+          :aria-pressed="isDark"
+          @click="toggleTheme($event)"
+        >
+          <Sun v-if="isDark" class="size-4" aria-hidden="true" />
+          <Moon v-else class="size-4" aria-hidden="true" />
+        </Button>
+
+        <!--
+          aria-label: 描述切换目标语言，比"切换语言"更具体，辅助技术用户能预判结果
+          lang: 标注按钮内文字所用语言，避免屏幕阅读器以当前页面语言发音
+        -->
+        <Button
+          variant="ghost"
+          class="w-10 text-sm font-medium"
+          :aria-label="localeSwitchAriaLabel"
+          :lang="locale === 'zh-CN' ? 'en' : 'zh-CN'"
+          @click="toggleLocale"
+        >
+          {{ localeLabel }}
+        </Button>
+      </div>
+
+      <!-- 版权 -->
       <p class="text-center text-xs text-muted-foreground">
-        &copy; {{ new Date().getFullYear() }} Admin Panel. All rights reserved.
+        {{ t('common.copyright', { year: new Date().getFullYear() }) }}
       </p>
     </div>
   </div>

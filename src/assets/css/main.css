@@ -21,7 +21,7 @@
     --popover-foreground: oklch(0.141 0.005 285.823);
 
     /* Primary - violet */
-    --primary: oklch(0.646 0.222 293.541);
+    --primary: oklch(0.21 0.006 285.885);
     --primary-foreground: oklch(0.985 0 0);
 
     /* Secondary */
@@ -142,6 +142,12 @@
     @apply border-border outline-ring/50;
   }
 
+  button,
+  [role='button'],
+  a {
+    cursor: pointer;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -200,4 +206,37 @@
   --font-heading: var(--font-sans);
 
   --breakpoint-xs: 25rem;
+}
+
+/* ── 主题切换 View Transition 圆形扩散动画 ─────────────────────────────────── */
+/* --theme-x / --theme-y 由 useTheme.toggleTheme() 根据点击位置动态写入          */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+  animation: theme-circle-expand 1s ease-out forwards;
+}
+
+@keyframes theme-circle-expand {
+  from {
+    clip-path: circle(0% at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+}
+
+/* 尊重用户的减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) {
+    animation-duration: 0s;
+  }
 }
