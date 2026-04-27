@@ -34,40 +34,53 @@ function toggleLocale() {
 
 const themeAriaLabel = computed(() => (isDark.value ? t('common.lightMode') : t('common.darkMode')))
 
+// ── URL 中携带的 token（邮件链接跳转时有值，登录页直接进入时为空）────────────
+const urlToken = (route.params.token as string) || ''
+// 若 URL 已有 token，无需用户手动输入
+const hasUrlToken = urlToken.length > 0
+
 // ── 状态 ──────────────────────────────────────────────────────────────────────
 const isLoading = ref(false)
 const isSuccess = ref(false)
 const showPassword = ref(false)
 const showConfirm = ref(false)
 
-const token = route.params.token as string
-
 // ── 表单 schema ───────────────────────────────────────────────────────────────
 const PASSWORD_MIN = 6
 
-const formSchema = computed(() =>
-  toTypedSchema(
-    z
-      .object({
-        newPassword: z
-          .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
-          .min(PASSWORD_MIN, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
-        confirmPassword: z
-          .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
-          .min(1, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
-      })
-      .refine((data) => data.newPassword === data.confirmPassword, {
-        message: t('auth.passwordMismatch'),
-        path: ['confirmPassword'],
-      }),
-  ),
-)
+const formSchema = computed(() => {
+  const base = z
+    .object({
+      // 只有无 URL token 时才要求用户填写 token 字段
+      ...(hasUrlToken
+        ? {}
+        : {
+            token: z
+              .string({ required_error: t('auth.resetTokenRequired') })
+              .min(1, t('auth.resetTokenRequired')),
+          }),
+      newPassword: z
+        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
+        .min(PASSWORD_MIN, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
+      confirmPassword: z
+        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
+        .min(1, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t('auth.passwordMismatch'),
+      path: ['confirmPassword'],
+    })
+
+  return toTypedSchema(base)
+})
 
 const { handleSubmit } = useForm({ validationSchema: formSchema })
 
 // ── 提交 ──────────────────────────────────────────────────────────────────────
 const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true
+  // 优先使用 URL token，其次使用表单中用户手动输入的 token
+  const token = hasUrlToken ? urlToken : ((values as Record<string, string>).token ?? '')
   try {
     await authStore.resetPassword(token, values.newPassword)
     isSuccess.value = true
@@ -85,7 +98,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
-    <div class="w-full max-w-sm space-y-6">
+    <div class="w-full max-w-md space-y-6">
       <!-- Logo & Title -->
       <div class="text-center">
         <div
@@ -117,7 +130,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <!-- Card -->
-      <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div class="rounded-xl border border-border bg-card p-8 shadow-sm">
         <!-- ── 成功状态 ─────────────────────────────────────────────────────── -->
         <div v-if="isSuccess" class="flex flex-col items-center gap-4 py-2 text-center">
           <div
@@ -144,6 +157,26 @@ const onSubmit = handleSubmit(async (values) => {
           :aria-label="t('auth.resetPasswordFormLabel')"
           @submit.prevent="onSubmit"
         >
+          <!--
+            重置码输入框：仅在从登录页直接进入（URL 无 token）时显示
+            通过邮件链接进入时 token 已在 URL 中，无需用户手动输入
+          -->
+          <FormField v-if="!hasUrlToken" name="token" v-slot="{ componentField }">
+            <FormItem>
+              <FormLabel>{{ t('auth.resetToken') }}</FormLabel>
+              <FormControl>
+                <Input
+                  v-bind="componentField"
+                  type="text"
+                  :placeholder="t('auth.resetTokenPlaceholder')"
+                  autocomplete="off"
+                  :disabled="isLoading"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
           <!-- 新密码 -->
           <FormField name="newPassword" v-slot="{ componentField }">
             <FormItem>
@@ -214,6 +247,20 @@ const onSubmit = handleSubmit(async (values) => {
             <span v-if="isLoading">{{ t('auth.resetPasswording') }}</span>
             <span v-else>{{ t('auth.resetPasswordButton') }}</span>
           </Button>
+
+          <!-- 返回登录 -->
+          <div class="pt-1">
+            <div class="mb-3 border-t border-border" />
+            <div class="flex justify-center">
+              <a
+                href="#"
+                class="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                @click.prevent="router.push({ name: 'login' })"
+              >
+                {{ t('auth.forgotPasswordBackLink') }}
+              </a>
+            </div>
+          </div>
         </form>
       </div>
 

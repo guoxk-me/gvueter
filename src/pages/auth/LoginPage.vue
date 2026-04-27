@@ -22,9 +22,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 // ── 语言切换 ──────────────────────────────────────────────────────────────────
-// localeLabel: 显示"切换到"的目标语言缩写，而非当前语言
 const localeLabel = computed(() => (locale.value === 'zh-CN' ? 'EN' : '中'))
-// aria-label: 明确说明切换目标，避免"切换语言"这种模糊描述
 const localeSwitchAriaLabel = computed(() =>
   locale.value === 'zh-CN' ? t('common.switchToEn') : t('common.switchToZh'),
 )
@@ -69,8 +67,6 @@ onUnmounted(() => {
 })
 
 // ── 表单 schema（computed 以响应语言切换）────────────────────────────────────
-// 改为 computed：当 locale 变化时，t() 重新求值，vee-validate 检测到 schema ref
-// 变化后会重新校验，确保报错信息始终与当前语言一致。
 const PASSWORD_MIN = 6
 
 const formSchema = computed(() =>
@@ -141,41 +137,40 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
-    <div class="w-full max-w-sm space-y-6">
-      <!-- Logo & Title -->
-      <div class="text-center">
-        <!--
-          aria-hidden: 纯装饰性 SVG，屏幕阅读器跳过，避免播报无意义路径字符串
-        -->
-        <div
-          aria-hidden="true"
-          class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"
-        >
-          <svg
-            class="size-6"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-            />
-          </svg>
-        </div>
-        <h1 class="text-2xl font-semibold tracking-tight text-foreground">
-          {{ t('auth.welcomeBack') }}
-        </h1>
-        <p class="mt-1 text-sm text-muted-foreground">{{ t('auth.loginSubtitle') }}</p>
-      </div>
-
+    <div class="w-full max-w-md">
       <!-- Card -->
-      <!-- novalidate: 禁用浏览器原生 HTML5 校验，让 vee-validate+zod 接管 -->
-      <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div class="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
+        <!-- Logo & Title -->
+        <div class="text-center">
+          <!--
+            aria-hidden: 纯装饰性 SVG，屏幕阅读器跳过，避免播报无意义路径字符串
+          -->
+          <div
+            aria-hidden="true"
+            class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+          >
+            <svg
+              class="size-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+              />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-semibold tracking-tight text-foreground">
+            {{ t('auth.welcomeBack') }}
+          </h1>
+          <p class="mt-1 text-sm text-muted-foreground">{{ t('auth.loginSubtitle') }}</p>
+        </div>
+
         <!--
           aria-label: 为表单添加语义标签，辅助技术（如屏幕阅读器）能宣告表单用途
           novalidate: 禁用浏览器原生校验，由 vee-validate + zod 接管
@@ -206,17 +201,7 @@ const onSubmit = handleSubmit(async (values) => {
           <!-- Password -->
           <FormField name="password" v-slot="{ componentField }">
             <FormItem>
-              <div class="flex items-center justify-between">
-                <FormLabel>{{ t('auth.password') }}</FormLabel>
-                <a
-                  href="#"
-                  class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-                  tabindex="-1"
-                  @click.prevent="router.push({ name: 'forgot-password' })"
-                >
-                  {{ t('auth.forgotPassword') }}
-                </a>
-              </div>
+              <FormLabel>{{ t('auth.password') }}</FormLabel>
               <FormControl>
                 <div class="relative">
                   <!--
@@ -280,46 +265,67 @@ const onSubmit = handleSubmit(async (values) => {
             <span v-else-if="isLoading">{{ t('auth.loggingIn') }}</span>
             <span v-else>{{ t('auth.loginButton') }}</span>
           </Button>
+
+          <!-- 分割线 + 密码相关入口 -->
+          <div class="pt-1">
+            <div class="mb-3 border-t border-border" />
+            <div class="flex items-center justify-between">
+              <a
+                href="#"
+                class="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                @click.prevent="router.push({ name: 'forgot-password' })"
+              >
+                {{ t('auth.forgotPassword') }}
+              </a>
+              <a
+                href="#"
+                class="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                @click.prevent="router.push({ name: 'reset-password', params: { token: '' } })"
+              >
+                {{ t('auth.resetPasswordTitle') }}
+              </a>
+            </div>
+          </div>
         </form>
+
+        <!-- 工具栏：主题切换 + 语言切换 -->
+        <div class="flex items-center justify-center gap-1">
+          <!--
+            aria-label: 使用 computed 以响应语言切换，始终以当前语言描述操作
+            aria-pressed: 语义上是一个双态切换按钮，true = 当前为暗色模式
+            @click="toggleTheme($event)": 传入 MouseEvent 以实现从点击位置扩散的动画
+          -->
+          <Button
+            variant="ghost"
+            size="icon"
+            :aria-label="themeAriaLabel"
+            :aria-pressed="isDark"
+            @click="toggleTheme($event)"
+          >
+            <Sun v-if="isDark" class="size-4" aria-hidden="true" />
+            <Moon v-else class="size-4" aria-hidden="true" />
+          </Button>
+
+          <!--
+            aria-label: 描述切换目标语言，比"切换语言"更具体，辅助技术用户能预判结果
+            lang: 标注按钮内文字所用语言，避免屏幕阅读器以当前页面语言发音
+          -->
+          <Button
+            variant="ghost"
+            class="w-10 text-sm font-medium"
+            :aria-label="localeSwitchAriaLabel"
+            :lang="locale === 'zh-CN' ? 'en' : 'zh-CN'"
+            @click="toggleLocale"
+          >
+            {{ localeLabel }}
+          </Button>
+        </div>
+
+        <!-- 版权 -->
+        <p class="text-center text-xs text-muted-foreground">
+          {{ t('common.copyright', { year: new Date().getFullYear() }) }}
+        </p>
       </div>
-
-      <!-- 工具栏：主题切换 + 语言切换，移至卡片下方，操作更就近 -->
-      <div class="flex items-center justify-center gap-1">
-        <!--
-          aria-label: 使用 computed 以响应语言切换，始终以当前语言描述操作
-          aria-pressed: 语义上是一个双态切换按钮，true = 当前为暗色模式
-          @click="toggleTheme($event)": 传入 MouseEvent 以实现从点击位置扩散的动画
-        -->
-        <Button
-          variant="ghost"
-          size="icon"
-          :aria-label="themeAriaLabel"
-          :aria-pressed="isDark"
-          @click="toggleTheme($event)"
-        >
-          <Sun v-if="isDark" class="size-4" aria-hidden="true" />
-          <Moon v-else class="size-4" aria-hidden="true" />
-        </Button>
-
-        <!--
-          aria-label: 描述切换目标语言，比"切换语言"更具体，辅助技术用户能预判结果
-          lang: 标注按钮内文字所用语言，避免屏幕阅读器以当前页面语言发音
-        -->
-        <Button
-          variant="ghost"
-          class="w-10 text-sm font-medium"
-          :aria-label="localeSwitchAriaLabel"
-          :lang="locale === 'zh-CN' ? 'en' : 'zh-CN'"
-          @click="toggleLocale"
-        >
-          {{ localeLabel }}
-        </Button>
-      </div>
-
-      <!-- 版权 -->
-      <p class="text-center text-xs text-muted-foreground">
-        {{ t('common.copyright', { year: new Date().getFullYear() }) }}
-      </p>
     </div>
   </div>
 </template>

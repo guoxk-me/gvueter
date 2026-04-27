@@ -80,7 +80,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
-    <div class="w-full max-w-sm space-y-6">
+    <div class="w-full max-w-md space-y-6">
       <!-- Logo & Title -->
       <div class="text-center">
         <div
@@ -112,7 +112,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <!-- Card -->
-      <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div class="rounded-xl border border-border bg-card p-8 shadow-sm">
         <!-- ── 成功状态 ─────────────────────────────────────────────────────── -->
         <div v-if="isSuccess" class="flex flex-col items-center gap-4 py-2 text-center">
           <div
