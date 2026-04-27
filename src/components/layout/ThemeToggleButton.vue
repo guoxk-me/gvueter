@@ -57,6 +57,7 @@ function handleClick(event: MouseEvent) {
   <Tooltip>
     <TooltipTrigger as-child>
       <Button
+        type="button"
         :variant="variant"
         :size="size"
         :class="props.class"
