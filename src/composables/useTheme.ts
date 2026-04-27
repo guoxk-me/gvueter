@@ -72,18 +72,6 @@ function initializeTheme() {
   isInitialized = true
 }
 
-function setTransitionOrigin(event?: MouseEvent) {
-  if (typeof document === 'undefined') {
-    return
-  }
-
-  const x = event ? `${event.clientX}px` : '50%'
-  const y = event ? `${event.clientY}px` : '50%'
-
-  document.documentElement.style.setProperty('--theme-x', x)
-  document.documentElement.style.setProperty('--theme-y', y)
-}
-
 export function useTheme() {
   initializeTheme()
 
@@ -91,7 +79,7 @@ export function useTheme() {
   const isDark = computed(() => resolvedTheme.value === 'dark')
 
   function setTheme(mode: ThemeMode, event?: MouseEvent) {
-    setTransitionOrigin(event)
+    void event // crossfade 不需要点击坐标
 
     const apply = () => {
       themeMode.value = mode

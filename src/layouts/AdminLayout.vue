@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { LogOut, ChevronUp, Bell } from 'lucide-vue-next'
+import { LogOut, ChevronUp, Bell, Palette } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import { useAppearanceStore } from '@/stores/appearance'
 import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
-import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
+import AppearancePanel from '@/components/layout/AppearancePanel.vue'
 import {
   Sidebar,
   SidebarContent,
@@ -32,7 +33,16 @@ import GlobalSearch from '@/components/layout/GlobalSearch.vue'
 import AppSidebarNav from '@/components/layout/AppSidebarNav.vue'
 
 const authStore = useAuthStore()
+const appearance = useAppearanceStore()
 const router = useRouter()
+
+const appearancePanelOpen = ref(false)
+
+const contentClass = computed(() =>
+  appearance.contentWidth === 'boxed' ? 'max-w-screen-xl mx-auto' : '',
+)
+
+const headerClass = computed(() => (appearance.stickyHeader ? 'sticky top-0 z-30' : ''))
 
 const userInitials = computed(() => {
   const name = authStore.user?.name ?? ''
@@ -51,7 +61,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <SidebarProvider>
+  <SidebarProvider :default-open="appearance.sidebarDefault === 'expanded'">
     <Sidebar collapsible="icon">
       <!-- Sidebar Header: Logo -->
       <SidebarHeader>
@@ -139,7 +149,10 @@ function handleLogout() {
     <SidebarInset>
       <!-- Top header bar -->
       <header
-        class="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4"
+        :class="[
+          'flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4',
+          headerClass,
+        ]"
       >
         <SidebarTrigger class="-ml-1" />
         <Separator orientation="vertical" class="mx-1 h-4" />
@@ -156,7 +169,14 @@ function handleLogout() {
 
           <LanguageToggleButton />
 
-          <ThemeToggleButton />
+          <!-- Appearance settings -->
+          <button
+            class="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            :title="$t('appearance.title')"
+            @click="appearancePanelOpen = true"
+          >
+            <Palette class="size-4" />
+          </button>
 
           <!-- Notifications -->
           <button
@@ -169,8 +189,13 @@ function handleLogout() {
 
       <!-- Page content -->
       <main class="flex-1 overflow-auto p-6">
-        <RouterView />
+        <div :class="contentClass">
+          <RouterView />
+        </div>
       </main>
     </SidebarInset>
   </SidebarProvider>
+
+  <!-- Appearance panel -->
+  <AppearancePanel v-model:open="appearancePanelOpen" />
 </template>

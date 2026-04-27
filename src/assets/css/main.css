@@ -208,34 +208,36 @@
   --breakpoint-xs: 25rem;
 }
 
-/* ── 主题切换 View Transition 圆形扩散动画 ─────────────────────────────────── */
-/* --theme-x / --theme-y 由 useTheme.toggleTheme() 根据点击位置动态写入          */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
+/* ── 主题切换 View Transition 颜色渐变动画 ─────────────────────────────────── */
 ::view-transition-old(root) {
-  z-index: 1;
+  animation: theme-fade-out 0.45s ease forwards;
 }
 
 ::view-transition-new(root) {
-  z-index: 9999;
-  animation: theme-circle-expand 1s ease-out forwards;
+  animation: theme-fade-in 0.45s ease forwards;
 }
 
-@keyframes theme-circle-expand {
+@keyframes theme-fade-out {
   from {
-    clip-path: circle(0% at var(--theme-x, 50%) var(--theme-y, 50%));
+    opacity: 1;
   }
   to {
-    clip-path: circle(150% at var(--theme-x, 50%) var(--theme-y, 50%));
+    opacity: 0;
+  }
+}
+
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
 /* 尊重用户的减少动效偏好 */
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0s;
   }

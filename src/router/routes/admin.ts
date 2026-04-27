@@ -4,7 +4,7 @@ import '@/router/types'
 const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('@/layouts/AdminLayout.vue'),
+    component: () => import('@/layouts/AppLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
