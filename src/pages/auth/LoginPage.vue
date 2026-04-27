@@ -5,32 +5,20 @@ import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
 import { toast } from 'vue-sonner'
-import { Eye, EyeOff, Loader2, Moon, Sun } from 'lucide-vue-next'
+import { Eye, EyeOff, Loader2 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ApiError } from '@/lib/http'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
-import { useTheme } from '@/composables/useTheme'
-import { setLocale, type SupportedLocale } from '@/i18n'
+import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
+import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
 
-const { t, locale } = useI18n()
-const { isDark, toggleTheme } = useTheme()
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-
-const localeLabel = computed(() => (locale.value === 'zh-CN' ? 'EN' : '中'))
-const localeSwitchAriaLabel = computed(() =>
-  locale.value === 'zh-CN' ? t('common.switchToEn') : t('common.switchToZh'),
-)
-const themeAriaLabel = computed(() => (isDark.value ? t('common.lightMode') : t('common.darkMode')))
-
-function toggleLocale() {
-  const next: SupportedLocale = locale.value === 'zh-CN' ? 'en-US' : 'zh-CN'
-  setLocale(next)
-}
 
 const showPassword = ref(false)
 const isLoading = ref(false)
@@ -249,26 +237,8 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="flex items-center justify-center gap-1 pt-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          :aria-label="themeAriaLabel"
-          :aria-pressed="isDark"
-          @click="toggleTheme($event)"
-        >
-          <Sun v-if="isDark" class="size-4" aria-hidden="true" />
-          <Moon v-else class="size-4" aria-hidden="true" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          class="w-10 text-sm font-medium"
-          :aria-label="localeSwitchAriaLabel"
-          :lang="locale === 'zh-CN' ? 'en' : 'zh-CN'"
-          @click="toggleLocale"
-        >
-          {{ localeLabel }}
-        </Button>
+        <ThemeToggleButton size="icon" side="top" />
+        <LanguageToggleButton size="icon" side="top" />
       </div>
     </form>
   </div>

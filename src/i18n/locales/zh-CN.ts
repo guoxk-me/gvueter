@@ -15,6 +15,8 @@ export default {
     switchLanguage: '切换语言',
     switchToEn: '切换为英文',
     switchToZh: '切换为中文',
+    languageChinese: '简体中文',
+    languageEnglish: 'English',
     copyright: '© {year} Admin Panel. 保留所有权利。',
   },
   auth: {

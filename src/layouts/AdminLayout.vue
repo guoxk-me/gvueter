@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { LogOut, ChevronUp, Bell } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
+import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
 import {
   Sidebar,
   SidebarContent,
@@ -152,9 +154,13 @@ function handleLogout() {
           <!-- Global search -->
           <GlobalSearch />
 
+          <LanguageToggleButton />
+
+          <ThemeToggleButton />
+
           <!-- Notifications -->
           <button
-            class="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            class="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <Bell class="size-4" />
           </button>

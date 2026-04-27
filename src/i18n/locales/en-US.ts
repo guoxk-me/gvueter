@@ -15,6 +15,8 @@ export default {
     switchLanguage: 'Switch language',
     switchToEn: 'Switch to English',
     switchToZh: 'Switch to Chinese',
+    languageChinese: 'Simplified Chinese',
+    languageEnglish: 'English',
     copyright: '© {year} Admin Panel. All rights reserved.',
   },
   auth: {
