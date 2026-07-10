@@ -13,7 +13,7 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<
-    DialogContentProps & { class?: HTMLAttributes['class']; showCloseButton?: boolean }
+    DialogContentProps & { class?: HTMLAttributes['class'], showCloseButton?: boolean }
   >(),
   {
     showCloseButton: true,

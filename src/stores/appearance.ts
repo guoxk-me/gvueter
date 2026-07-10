@@ -1,6 +1,7 @@
+import type { ThemeColorId } from '@/lib/theme-presets'
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { type ThemeColorId, THEME_COLOR_IDS } from '@/lib/theme-presets'
+import { THEME_COLOR_IDS } from '@/lib/theme-presets'
 
 export type LayoutMode = 'sidebar' | 'top' | 'mixed'
 export type ContentWidth = 'fluid' | 'boxed'
@@ -20,9 +21,11 @@ export interface AppearanceState {
 function loadFromStorage(): Partial<AppearanceState> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return {}
+    if (!raw)
+      return {}
     return JSON.parse(raw) as Partial<AppearanceState>
-  } catch {
+  }
+  catch {
     return {}
   }
 }

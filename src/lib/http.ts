@@ -1,4 +1,5 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 const TIMEOUT = 15_000
@@ -38,7 +39,7 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 // ── Response interceptor ─────────────────────────────────────────────────────
 
 http.interceptors.response.use(
-  (response) => response,
+  response => response,
   (error: AxiosError) => {
     const status = error.response?.status
     const url = error.config?.url ?? ''
@@ -85,7 +86,8 @@ export async function get<T>(url: string, params?: Record<string, unknown>): Pro
   try {
     const res = await http.get<ApiResponse<T>>(url, { params })
     return res.data.data
-  } catch (e) {
+  }
+  catch (e) {
     extractApiError(e)
   }
 }
@@ -94,7 +96,8 @@ export async function post<T>(url: string, data?: unknown): Promise<T> {
   try {
     const res = await http.post<ApiResponse<T>>(url, data)
     return res.data.data
-  } catch (e) {
+  }
+  catch (e) {
     extractApiError(e)
   }
 }
@@ -103,7 +106,8 @@ export async function put<T>(url: string, data?: unknown): Promise<T> {
   try {
     const res = await http.put<ApiResponse<T>>(url, data)
     return res.data.data
-  } catch (e) {
+  }
+  catch (e) {
     extractApiError(e)
   }
 }
@@ -112,7 +116,8 @@ export async function del<T>(url: string): Promise<T> {
   try {
     const res = await http.delete<ApiResponse<T>>(url)
     return res.data.data
-  } catch (e) {
+  }
+  catch (e) {
     extractApiError(e)
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { BreadcrumbItem as BreadcrumbItemType } from '@/router/types'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
@@ -9,7 +10,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import type { BreadcrumbItem as BreadcrumbItemType } from '@/router/types'
 
 const route = useRoute()
 
@@ -38,7 +38,9 @@ const crumbs = computed<BreadcrumbItemType[]>(() => {
             {{ crumb.label }}
           </BreadcrumbPage>
           <BreadcrumbLink v-else-if="crumb.to" as-child>
-            <RouterLink :to="crumb.to">{{ crumb.label }}</RouterLink>
+            <RouterLink :to="crumb.to">
+              {{ crumb.label }}
+            </RouterLink>
           </BreadcrumbLink>
           <span v-else class="text-muted-foreground">{{ crumb.label }}</span>
         </BreadcrumbItem>

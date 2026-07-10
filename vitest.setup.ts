@@ -1,5 +1,5 @@
-import { server } from './src/mocks/node'
 import { afterAll, afterEach, beforeAll } from 'vite-plus/test'
+import { server } from './src/mocks/node'
 
 // 所有测试开始前启动 MSW server
 beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }))

@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { setActivePinia, createPinia } from 'pinia'
-import { server } from '@/mocks/node'
-import { http, HttpResponse } from 'msw'
-import { useAuthStore } from '@/stores/auth'
 import type { ApiResponse } from '@/lib/http'
+import { http, HttpResponse } from 'msw'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import { server } from '@/mocks/node'
+import { useAuthStore } from '@/stores/auth'
 
 describe('useAuthStore', () => {
   beforeEach(() => {
@@ -49,8 +49,9 @@ describe('useAuthStore', () => {
     it('密码错误时抛出 401 错误', async () => {
       const store = useAuthStore()
 
+      // AI modified: assert ApiError business message instead of axios default status text.
       await expect(store.login('admin@example.com', 'wrongpassword')).rejects.toThrow(
-        /Request failed with status code 401/,
+        /密码错误，请重试/,
       )
 
       expect(store.isAuthenticated).toBe(false)
@@ -60,8 +61,9 @@ describe('useAuthStore', () => {
     it('不存在的账号登录失败', async () => {
       const store = useAuthStore()
 
+      // AI modified: assert ApiError business message instead of axios default status text.
       await expect(store.login('unknown@example.com', 'somepassword')).rejects.toThrow(
-        /Request failed with status code 401/,
+        /该邮箱未注册，请检查后重试/,
       )
 
       expect(store.isAuthenticated).toBe(false)
@@ -79,9 +81,8 @@ describe('useAuthStore', () => {
       )
 
       const store = useAuthStore()
-      await expect(store.login('admin@example.com', 'admin123')).rejects.toThrow(
-        /Request failed with status code 500/,
-      )
+      // AI modified: assert ApiError business message instead of axios default status text.
+      await expect(store.login('admin@example.com', 'admin123')).rejects.toThrow(/服务器内部错误/)
     })
   })
 

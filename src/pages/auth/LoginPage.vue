@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
-import { toast } from 'vue-sonner'
 import { Eye, EyeOff, Loader2 } from 'lucide-vue-next'
+import { useForm } from 'vee-validate'
+import { computed, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { ApiError } from '@/lib/http'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
+import { useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
+import { z } from 'zod'
 import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
 import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
+import { Button } from '@/components/ui/button'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { ApiError } from '@/lib/http'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -47,7 +47,8 @@ function startLockCountdown() {
 }
 
 onUnmounted(() => {
-  if (lockTimer) clearInterval(lockTimer)
+  if (lockTimer)
+    clearInterval(lockTimer)
 })
 
 const PASSWORD_MIN = 6
@@ -69,7 +70,8 @@ const formSchema = computed(() =>
 const { handleSubmit, setFieldError } = useForm({ validationSchema: formSchema })
 
 const onSubmit = handleSubmit(async (values) => {
-  if (isLocked()) return
+  if (isLocked())
+    return
 
   isLoading.value = true
 
@@ -81,7 +83,8 @@ const onSubmit = handleSubmit(async (values) => {
     })
     const redirect = (route.query.redirect as string) || '/dashboard'
     router.push(redirect)
-  } catch (err) {
+  }
+  catch (err) {
     failCount.value++
 
     if (failCount.value >= MAX_FAIL) {
@@ -105,12 +108,14 @@ const onSubmit = handleSubmit(async (values) => {
         default:
           toast.error(t('auth.loginFailed'), { description: err.message })
       }
-    } else {
+    }
+    else {
       toast.error(t('errors.networkError'), {
         description: t('errors.serverError'),
       })
     }
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 })
@@ -142,7 +147,9 @@ const onSubmit = handleSubmit(async (values) => {
       <h1 class="text-2xl font-semibold tracking-tight text-foreground">
         {{ t('auth.welcomeBack') }}
       </h1>
-      <p class="mt-1 text-sm text-muted-foreground">{{ t('auth.loginSubtitle') }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        {{ t('auth.loginSubtitle') }}
+      </p>
     </div>
 
     <form
@@ -151,7 +158,7 @@ const onSubmit = handleSubmit(async (values) => {
       :aria-label="t('auth.loginFormLabel')"
       @submit.prevent="onSubmit"
     >
-      <FormField name="email" v-slot="{ componentField }">
+      <FormField v-slot="{ componentField }" name="email">
         <FormItem>
           <FormLabel>{{ t('auth.email') }}</FormLabel>
           <FormControl>
@@ -167,7 +174,7 @@ const onSubmit = handleSubmit(async (values) => {
         </FormItem>
       </FormField>
 
-      <FormField name="password" v-slot="{ componentField }">
+      <FormField v-slot="{ componentField }" name="password">
         <FormItem>
           <FormLabel>{{ t('auth.password') }}</FormLabel>
           <FormControl>

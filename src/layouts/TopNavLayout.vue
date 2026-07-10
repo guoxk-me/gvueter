@@ -1,16 +1,12 @@
 <script setup lang="ts">
+import { Bell, LayoutDashboard, LogOut, Palette } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { LogOut, Bell, LayoutDashboard, Palette } from 'lucide-vue-next'
-import { useAuthStore } from '@/stores/auth'
-import { useAppearanceStore } from '@/stores/appearance'
-import { appAbility } from '@/lib/ability'
-import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
 import AppBreadcrumb from '@/components/layout/AppBreadcrumb.vue'
-import GlobalSearch from '@/components/layout/GlobalSearch.vue'
 import AppearancePanel from '@/components/layout/AppearancePanel.vue'
+import GlobalSearch from '@/components/layout/GlobalSearch.vue'
+import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +15,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { appAbility } from '@/lib/ability'
+import { useAppearanceStore } from '@/stores/appearance'
+import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const appearance = useAppearanceStore()
@@ -31,7 +31,7 @@ const userInitials = computed(() => {
   const name = authStore.user?.name ?? ''
   return name
     .split(' ')
-    .map((n) => n[0])
+    .map(n => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
@@ -51,11 +51,11 @@ const navItems = computed(() =>
       icon: LayoutDashboard,
       ability: ['read', 'Dashboard'] as const,
     },
-  ].filter((item) => appAbility.can(item.ability[0], item.ability[1])),
+  ].filter(item => appAbility.can(item.ability[0], item.ability[1])),
 )
 
 function isActive(to: string) {
-  return route.path === to || route.path.startsWith(to + '/')
+  return route.path === to || route.path.startsWith(`${to}/`)
 }
 
 function handleLogout() {
@@ -68,8 +68,7 @@ function handleLogout() {
   <div class="flex min-h-screen flex-col">
     <!-- Top navigation bar -->
     <header
-      :class="[
-        'flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:px-6',
+      class="flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:px-6" :class="[
         headerClass,
       ]"
     >
@@ -103,8 +102,7 @@ function handleLogout() {
           v-for="item in navItems"
           :key="item.to"
           :to="item.to"
-          :class="[
-            'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+          class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors" :class="[
             isActive(item.to)
               ? 'bg-accent text-accent-foreground'
               : 'text-muted-foreground hover:bg-accent hover:text-foreground',
@@ -139,7 +137,9 @@ function handleLogout() {
             >
               <Avatar class="size-7 rounded-md">
                 <AvatarImage :src="authStore.user?.avatar ?? ''" />
-                <AvatarFallback class="rounded-md text-xs">{{ userInitials }}</AvatarFallback>
+                <AvatarFallback class="rounded-md text-xs">
+                  {{ userInitials }}
+                </AvatarFallback>
               </Avatar>
               <span class="hidden sm:block text-sm font-medium">{{ authStore.user?.name }}</span>
             </button>
@@ -147,8 +147,12 @@ function handleLogout() {
           <DropdownMenuContent align="end" class="w-52">
             <DropdownMenuLabel class="font-normal">
               <div class="flex flex-col space-y-1">
-                <p class="text-sm font-medium">{{ authStore.user?.name }}</p>
-                <p class="text-xs text-muted-foreground">{{ authStore.user?.email }}</p>
+                <p class="text-sm font-medium">
+                  {{ authStore.user?.name }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ authStore.user?.email }}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

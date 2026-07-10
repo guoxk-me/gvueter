@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { defineAbilityFor, updateAbility, appAbility } from '@/lib/ability'
 import type { User } from '@/stores/auth'
+import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import { appAbility, defineAbilityFor, updateAbility } from '@/lib/ability'
 
 const adminUser: User = {
   id: 1,

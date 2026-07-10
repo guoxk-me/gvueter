@@ -231,5 +231,5 @@ export const THEME_PRESETS: ThemePreset[] = [
 
 /** 根据 id 获取预设（不含 custom） */
 export function getPreset(id: ThemeColorId): ThemePreset | undefined {
-  return THEME_PRESETS.find((p) => p.id === id)
+  return THEME_PRESETS.find(p => p.id === id)
 }

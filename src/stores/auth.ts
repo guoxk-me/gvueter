@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-import { post } from '@/lib/http'
+import { computed, ref, watch } from 'vue'
 import { updateAbility } from '@/lib/ability'
+import { post } from '@/lib/http'
 
 export interface User {
   id: number
@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value)
 
   // Keep the singleton appAbility in sync whenever the user changes
-  watch(user, (newUser) => updateAbility(newUser), { immediate: true })
+  watch(user, newUser => updateAbility(newUser), { immediate: true })
 
   function setToken(newToken: string) {
     token.value = newToken
@@ -52,7 +52,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout(): Promise<void> {
     try {
       await post('/auth/logout')
-    } finally {
+    }
+    finally {
       token.value = null
       user.value = null
       localStorage.removeItem('auth_token')

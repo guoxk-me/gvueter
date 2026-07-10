@@ -44,8 +44,9 @@ export const mockUsers: MockUser[] = [
 
 /** 根据 email 查找用户（不含 password） */
 export function findUserByEmail(email: string): User | undefined {
-  const found = mockUsers.find((u) => u.email === email)
-  if (!found) return undefined
+  const found = mockUsers.find(u => u.email === email)
+  if (!found)
+    return undefined
   const { password: _password, ...user } = found
   return user
 }
@@ -67,10 +68,12 @@ export function generateMockToken(userId: number): string {
 export function parseUserIdFromToken(token: string): number | null {
   try {
     const parts = token.split('.')
-    if (parts.length !== 3) return null
+    if (parts.length !== 3)
+      return null
     const payload = JSON.parse(atob(parts[1]!))
     return Number(payload.sub) || null
-  } catch {
+  }
+  catch {
     return null
   }
 }

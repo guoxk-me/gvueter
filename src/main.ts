@@ -1,12 +1,12 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import { abilitiesPlugin } from '@casl/vue'
+import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 
 import App from './App.vue'
-import router from './router'
+import { hydrateThemeColorEarly } from './composables/useThemeColor'
 import { i18n } from './i18n'
 import { appAbility } from './lib/ability'
-import { hydrateThemeColorEarly } from './composables/useThemeColor'
+import router from './router'
 import './assets/css/main.css'
 
 // 早期应用主题色，避免首屏色彩闪烁

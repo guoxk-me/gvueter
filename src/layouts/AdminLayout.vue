@@ -1,11 +1,22 @@
 <script setup lang="ts">
+import { Bell, ChevronUp, LogOut, Palette } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { LogOut, ChevronUp, Bell, Palette } from 'lucide-vue-next'
-import { useAuthStore } from '@/stores/auth'
-import { useAppearanceStore } from '@/stores/appearance'
-import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
+import AppBreadcrumb from '@/components/layout/AppBreadcrumb.vue'
 import AppearancePanel from '@/components/layout/AppearancePanel.vue'
+import AppSidebarNav from '@/components/layout/AppSidebarNav.vue'
+import GlobalSearch from '@/components/layout/GlobalSearch.vue'
+import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
 import {
   Sidebar,
   SidebarContent,
@@ -18,19 +29,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import AppBreadcrumb from '@/components/layout/AppBreadcrumb.vue'
-import GlobalSearch from '@/components/layout/GlobalSearch.vue'
-import AppSidebarNav from '@/components/layout/AppSidebarNav.vue'
+import { useAppearanceStore } from '@/stores/appearance'
+import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const appearance = useAppearanceStore()
@@ -48,7 +48,7 @@ const userInitials = computed(() => {
   const name = authStore.user?.name ?? ''
   return name
     .split(' ')
-    .map((n) => n[0])
+    .map(n => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
@@ -113,7 +113,9 @@ function handleLogout() {
                 >
                   <Avatar class="size-8 rounded-lg">
                     <AvatarImage :src="authStore.user?.avatar ?? ''" />
-                    <AvatarFallback class="rounded-lg text-xs">{{ userInitials }}</AvatarFallback>
+                    <AvatarFallback class="rounded-lg text-xs">
+                      {{ userInitials }}
+                    </AvatarFallback>
                   </Avatar>
                   <div
                     class="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden"
@@ -129,8 +131,12 @@ function handleLogout() {
               <DropdownMenuContent side="top" align="end" class="w-56">
                 <DropdownMenuLabel class="font-normal">
                   <div class="flex flex-col space-y-1">
-                    <p class="text-sm font-medium">{{ authStore.user?.name }}</p>
-                    <p class="text-xs text-muted-foreground">{{ authStore.user?.email }}</p>
+                    <p class="text-sm font-medium">
+                      {{ authStore.user?.name }}
+                    </p>
+                    <p class="text-xs text-muted-foreground">
+                      {{ authStore.user?.email }}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -149,8 +155,7 @@ function handleLogout() {
     <SidebarInset>
       <!-- Top header bar -->
       <header
-        :class="[
-          'flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4',
+        class="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4" :class="[
           headerClass,
         ]"
       >

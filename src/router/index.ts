@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import { appAbility } from '@/lib/ability'
-import authRoutes from './routes/auth'
+import { useAuthStore } from '@/stores/auth'
 import adminRoutes from './routes/admin'
+import authRoutes from './routes/auth'
 import './types'
 
 const router = createRouter({
@@ -21,8 +21,8 @@ const router = createRouter({
 router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
-  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth)
-  const requiresGuest = to.matched.some((r) => r.meta.requiresGuest)
+  const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
+  const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
 
   if (requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
@@ -33,7 +33,7 @@ router.beforeEach((to, _from) => {
   }
 
   // Check CASL ability for the most-specific matched route that declares one
-  const routeWithAbility = [...to.matched].reverse().find((r) => r.meta.requiredAbility)
+  const routeWithAbility = [...to.matched].reverse().find(r => r.meta.requiredAbility)
   if (routeWithAbility) {
     const [action, subject] = routeWithAbility.meta.requiredAbility!
     if (!appAbility.can(action, subject)) {

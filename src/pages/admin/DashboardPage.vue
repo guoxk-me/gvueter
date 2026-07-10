@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import {
-  Users,
+  ArrowDownRight,
+  ArrowUpRight,
   DollarSign,
   ShoppingCart,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
+  Users,
 } from 'lucide-vue-next'
-import { useAuthStore } from '@/stores/auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
@@ -68,7 +68,9 @@ const recentActivities = [
   <div class="space-y-6">
     <!-- Page Header -->
     <div>
-      <h1 class="text-2xl font-semibold tracking-tight text-foreground">仪表盘</h1>
+      <h1 class="text-2xl font-semibold tracking-tight text-foreground">
+        仪表盘
+      </h1>
       <p class="mt-1 text-sm text-muted-foreground">
         你好，{{ authStore.user?.name }}，欢迎回到管理后台。
       </p>
@@ -78,17 +80,20 @@ const recentActivities = [
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <Card v-for="stat in stats" :key="stat.title">
         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium text-muted-foreground">{{ stat.title }}</CardTitle>
-          <div :class="['flex size-9 items-center justify-center rounded-lg', stat.bg]">
-            <component :is="stat.icon" :class="['size-5', stat.color]" />
+          <CardTitle class="text-sm font-medium text-muted-foreground">
+            {{ stat.title }}
+          </CardTitle>
+          <div class="flex size-9 items-center justify-center rounded-lg" :class="[stat.bg]">
+            <component :is="stat.icon" class="size-5" :class="[stat.color]" />
           </div>
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold text-foreground">{{ stat.value }}</div>
+          <div class="text-2xl font-bold text-foreground">
+            {{ stat.value }}
+          </div>
           <div class="mt-1 flex items-center gap-1 text-xs">
             <span
-              :class="[
-                'flex items-center gap-0.5 font-medium',
+              class="flex items-center gap-0.5 font-medium" :class="[
                 stat.trend === 'up' ? 'text-success' : 'text-destructive',
               ]"
             >
@@ -107,7 +112,9 @@ const recentActivities = [
       <!-- Recent Activities -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">最近动态</CardTitle>
+          <CardTitle class="text-base">
+            最近动态
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
           <div
@@ -125,7 +132,9 @@ const recentActivities = [
                 <span class="font-medium text-foreground">{{ activity.user }}</span>
                 <span class="text-muted-foreground"> {{ activity.action }}</span>
               </p>
-              <p class="mt-0.5 text-xs text-muted-foreground">{{ activity.time }}</p>
+              <p class="mt-0.5 text-xs text-muted-foreground">
+                {{ activity.time }}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -134,7 +143,9 @@ const recentActivities = [
       <!-- Quick Stats / Summary -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">系统状态</CardTitle>
+          <CardTitle class="text-base">
+            系统状态
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
           <div
@@ -153,7 +164,7 @@ const recentActivities = [
             </div>
             <div class="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
-                :class="['h-full rounded-full transition-all', item.color]"
+                class="h-full rounded-full transition-all" :class="[item.color]"
                 :style="{ width: `${item.value}%` }"
               />
             </div>

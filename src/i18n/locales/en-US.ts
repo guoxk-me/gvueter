@@ -30,7 +30,7 @@ export default {
     loginFailed: 'Invalid username or password',
     logoutConfirm: 'Are you sure you want to logout?',
     usernamePlaceholder: 'Enter your username',
-    emailPlaceholder: "admin{'@'}example.com",
+    emailPlaceholder: 'admin{\'@\'}example.com',
     passwordPlaceholder: 'Enter your password',
     welcomeBack: 'Welcome back',
     loginSubtitle: 'Sign in to your admin account',

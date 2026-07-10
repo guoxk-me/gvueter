@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { ButtonVariants } from '@/components/ui/button'
 import { Languages } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import type { ButtonVariants } from '@/components/ui/button'
-import { useLocaleToggle } from '@/composables/useLocaleToggle'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useLocaleToggle } from '@/composables/useLocaleToggle'
 
 const props = withDefaults(
   defineProps<{

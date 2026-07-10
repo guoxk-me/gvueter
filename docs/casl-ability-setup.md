@@ -140,9 +140,13 @@ const { can } = useAbility()
 
 <template>
   <!-- 只有 editor 和 admin 能看到"新建"按钮 -->
-  <button v-if="can('create', 'Content')">新建文章</button>
+  <button v-if="can('create', 'Content')">
+    新建文章
+  </button>
 
   <!-- 只有 admin 能看到设置入口 -->
-  <nav-item v-if="can('read', 'Settings')" to="/settings">系统设置</nav-item>
+  <nav-item v-if="can('read', 'Settings')" to="/settings">
+    系统设置
+  </nav-item>
 </template>
 ```

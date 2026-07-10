@@ -1,6 +1,6 @@
-import { AbilityBuilder, createMongoAbility } from '@casl/ability'
 import type { MongoAbility } from '@casl/ability'
 import type { User } from '@/stores/auth'
+import { AbilityBuilder, createMongoAbility } from '@casl/ability'
 
 // ---------------------------------------------------------------------------
 // Subjects — the "objects" that can be acted upon

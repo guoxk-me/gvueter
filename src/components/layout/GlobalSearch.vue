@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { LayoutDashboard, Search } from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, LayoutDashboard } from 'lucide-vue-next'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog'
 import { appAbility } from '@/lib/ability'
 
@@ -36,8 +36,10 @@ const allItems: SearchItem[] = [
 const filteredItems = computed(() => {
   const q = query.value.trim().toLowerCase()
   return allItems.filter((item) => {
-    if (!appAbility.can(item.ability[0] as never, item.ability[1] as never)) return false
-    if (!q) return true
+    if (!appAbility.can(item.ability[0] as never, item.ability[1] as never))
+      return false
+    if (!q)
+      return true
     return item.title.toLowerCase().includes(q)
   })
 })
@@ -90,7 +92,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
           class="flex h-11 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
           placeholder="搜索页面..."
           autofocus
-        />
+        >
       </div>
 
       <!-- Results -->

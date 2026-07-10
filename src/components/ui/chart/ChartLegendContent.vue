@@ -20,7 +20,8 @@ const props = withDefaults(
 const { id, config } = useChart()
 
 const payload = computed(() =>
-  Object.entries(config.value).map(([key, value]) => {
+  // AI modified: drop unused map value to satisfy ESLint unused-vars.
+  Object.entries(config.value).map(([key]) => {
     return {
       key: props.nameKey || key,
       itemConfig: config.value[key],

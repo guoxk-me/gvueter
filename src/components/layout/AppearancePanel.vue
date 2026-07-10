@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import type { ThemeColorId } from '@/lib/theme-presets'
+import { Monitor, Moon, RotateCcw, Sun } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Monitor, Moon, Sun, RotateCcw } from 'lucide-vue-next'
-import { useAppearanceStore } from '@/stores/appearance'
-import { useTheme } from '@/composables/useTheme'
-import { THEME_PRESETS, type ThemeColorId } from '@/lib/theme-presets'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Switch } from '@/components/ui/switch'
+import { useTheme } from '@/composables/useTheme'
+import { THEME_PRESETS } from '@/lib/theme-presets'
+import { useAppearanceStore } from '@/stores/appearance'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
@@ -20,7 +21,7 @@ const { themeMode, setTheme } = useTheme()
 
 const isOpen = computed({
   get: () => props.open,
-  set: (v) => emit('update:open', v),
+  set: v => emit('update:open', v),
 })
 
 // ── Theme Mode ──────────────────────────────────────────────────────────────
@@ -42,12 +43,6 @@ const colorLabelKey: Record<ThemeColorId, string> = {
   rose: 'appearance.colorRose',
   slate: 'appearance.colorSlate',
   custom: 'appearance.colorCustom',
-}
-
-const customColorInput = ref(appearance.customColor)
-
-function applyCustomColor() {
-  appearance.setCustomColor(customColorInput.value)
 }
 
 // ── Layout ──────────────────────────────────────────────────────────────────
@@ -130,14 +125,17 @@ const layouts = [
       <div class="flex flex-col gap-6 px-6 py-5">
         <!-- ── Theme Mode ──────────────────────────────────────────── -->
         <section>
-          <h3 class="text-sm font-semibold mb-1">{{ t('appearance.themeMode') }}</h3>
-          <p class="text-xs text-muted-foreground mb-3">{{ t('appearance.themeModeDesc') }}</p>
+          <h3 class="text-sm font-semibold mb-1">
+            {{ t('appearance.themeMode') }}
+          </h3>
+          <p class="text-xs text-muted-foreground mb-3">
+            {{ t('appearance.themeModeDesc') }}
+          </p>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="mode in themeModes"
               :key="mode.id"
-              :class="[
-                'flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-2.5 transition-all text-sm',
+              class="flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-2.5 transition-all text-sm" :class="[
                 themeMode === mode.id
                   ? 'border-primary bg-primary/5 text-primary'
                   : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground',
@@ -154,16 +152,19 @@ const layouts = [
 
         <!-- ── Theme Color ─────────────────────────────────────────── -->
         <section>
-          <h3 class="text-sm font-semibold mb-1">{{ t('appearance.themeColor') }}</h3>
-          <p class="text-xs text-muted-foreground mb-3">{{ t('appearance.themeColorDesc') }}</p>
+          <h3 class="text-sm font-semibold mb-1">
+            {{ t('appearance.themeColor') }}
+          </h3>
+          <p class="text-xs text-muted-foreground mb-3">
+            {{ t('appearance.themeColorDesc') }}
+          </p>
 
           <div class="grid grid-cols-4 gap-2">
             <button
               v-for="preset in THEME_PRESETS.filter((p) => p.id !== 'custom')"
               :key="preset.id"
               :title="t(colorLabelKey[preset.id])"
-              :class="[
-                'flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all',
+              class="flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all" :class="[
                 appearance.themeColor === preset.id
                   ? 'border-primary'
                   : 'border-border hover:border-primary/50',
@@ -173,9 +174,11 @@ const layouts = [
               <!-- Swatch circle -->
               <span
                 class="size-6 rounded-full ring-2 ring-offset-1 ring-offset-background transition-all"
+                :class="appearance.themeColor === preset.id ? 'ring-current' : 'ring-transparent'"
                 :style="{
                   background: preset.swatch,
-                  ringColor: appearance.themeColor === preset.id ? preset.swatch : 'transparent',
+                  // AI modified: use CSS custom property instead of invalid ringColor style key.
+                  color: appearance.themeColor === preset.id ? preset.swatch : 'transparent',
                 }"
               />
               <span class="text-xs text-muted-foreground leading-none">
@@ -185,8 +188,7 @@ const layouts = [
 
             <!-- Custom color slot -->
             <div
-              :class="[
-                'flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all cursor-pointer relative',
+              class="flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all cursor-pointer relative" :class="[
                 appearance.themeColor === 'custom'
                   ? 'border-primary'
                   : 'border-border hover:border-primary/50',
@@ -209,7 +211,7 @@ const layouts = [
                       appearance.setCustomColor((e.target as HTMLInputElement).value)
                     }
                   "
-                />
+                >
               </label>
             </div>
           </div>
@@ -219,15 +221,18 @@ const layouts = [
 
         <!-- ── Layout ──────────────────────────────────────────────── -->
         <section>
-          <h3 class="text-sm font-semibold mb-1">{{ t('appearance.layout') }}</h3>
-          <p class="text-xs text-muted-foreground mb-3">{{ t('appearance.layoutDesc') }}</p>
+          <h3 class="text-sm font-semibold mb-1">
+            {{ t('appearance.layout') }}
+          </h3>
+          <p class="text-xs text-muted-foreground mb-3">
+            {{ t('appearance.layoutDesc') }}
+          </p>
 
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="layout in layouts"
               :key="layout.id"
-              :class="[
-                'flex flex-col gap-2 rounded-lg border-2 p-2 transition-all text-left',
+              class="flex flex-col gap-2 rounded-lg border-2 p-2 transition-all text-left" :class="[
                 appearance.layout === layout.id
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50',
@@ -240,7 +245,9 @@ const layouts = [
                 v-html="layout.preview"
               />
               <div>
-                <p class="text-xs font-medium leading-none mb-0.5">{{ t(layout.labelKey) }}</p>
+                <p class="text-xs font-medium leading-none mb-0.5">
+                  {{ t(layout.labelKey) }}
+                </p>
                 <p class="text-[10px] text-muted-foreground leading-tight">
                   {{ t(layout.descKey) }}
                 </p>
@@ -253,7 +260,9 @@ const layouts = [
 
         <!-- ── Options ─────────────────────────────────────────────── -->
         <section>
-          <h3 class="text-sm font-semibold mb-3">{{ t('appearance.options') }}</h3>
+          <h3 class="text-sm font-semibold mb-3">
+            {{ t('appearance.options') }}
+          </h3>
 
           <div class="flex flex-col gap-4">
             <!-- Content Width -->
@@ -265,8 +274,7 @@ const layouts = [
                 <button
                   v-for="w in ['fluid', 'boxed'] as const"
                   :key="w"
-                  :class="[
-                    'rounded-md border-2 px-3 py-1.5 text-xs font-medium transition-all',
+                  class="rounded-md border-2 px-3 py-1.5 text-xs font-medium transition-all" :class="[
                     appearance.contentWidth === w
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50',
@@ -291,8 +299,7 @@ const layouts = [
                 <button
                   v-for="s in ['expanded', 'collapsed'] as const"
                   :key="s"
-                  :class="[
-                    'rounded-md border-2 px-3 py-1.5 text-xs font-medium transition-all',
+                  class="rounded-md border-2 px-3 py-1.5 text-xs font-medium transition-all" :class="[
                     appearance.sidebarDefault === s
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50',
@@ -311,7 +318,9 @@ const layouts = [
             <!-- Sticky Header -->
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs font-medium">{{ t('appearance.stickyHeader') }}</p>
+                <p class="text-xs font-medium">
+                  {{ t('appearance.stickyHeader') }}
+                </p>
                 <p class="text-[10px] text-muted-foreground">
                   {{ t('appearance.stickyHeaderDesc') }}
                 </p>

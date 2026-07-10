@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
-import { toast } from 'vue-sonner'
-import { ShieldCheck, Eye, EyeOff, Loader2 } from 'lucide-vue-next'
+import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-vue-next'
+import { useForm } from 'vee-validate'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { ApiError } from '@/lib/http'
+import { useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
+import { ApiError } from '@/lib/http'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -45,7 +45,7 @@ const formSchema = computed(() => {
         .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
         .min(1, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
     })
-    .refine((data) => data.newPassword === data.confirmPassword, {
+    .refine(data => data.newPassword === data.confirmPassword, {
       message: t('auth.passwordMismatch'),
       path: ['confirmPassword'],
     })
@@ -61,13 +61,16 @@ const onSubmit = handleSubmit(async (values) => {
   try {
     await authStore.resetPassword(token, values.newPassword)
     isSuccess.value = true
-  } catch (err) {
+  }
+  catch (err) {
     if (err instanceof ApiError && err.code === 'INVALID_TOKEN') {
       toast.error(t('auth.invalidToken'))
-    } else {
+    }
+    else {
       toast.error(t('errors.serverError'))
     }
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 })
@@ -112,7 +115,9 @@ const onSubmit = handleSubmit(async (values) => {
           <ShieldCheck class="size-7" aria-hidden="true" />
         </div>
         <div>
-          <p class="font-semibold text-foreground">{{ t('auth.resetPasswordSuccessTitle') }}</p>
+          <p class="font-semibold text-foreground">
+            {{ t('auth.resetPasswordSuccessTitle') }}
+          </p>
           <p class="mt-1 text-sm text-muted-foreground">
             {{ t('auth.resetPasswordSuccessDesc') }}
           </p>
@@ -129,7 +134,7 @@ const onSubmit = handleSubmit(async (values) => {
         :aria-label="t('auth.resetPasswordFormLabel')"
         @submit.prevent="onSubmit"
       >
-        <FormField v-if="!hasUrlToken" name="token" v-slot="{ componentField }">
+        <FormField v-if="!hasUrlToken" v-slot="{ componentField }" name="token">
           <FormItem>
             <FormLabel>{{ t('auth.resetToken') }}</FormLabel>
             <FormControl>
@@ -145,7 +150,7 @@ const onSubmit = handleSubmit(async (values) => {
           </FormItem>
         </FormField>
 
-        <FormField name="newPassword" v-slot="{ componentField }">
+        <FormField v-slot="{ componentField }" name="newPassword">
           <FormItem>
             <FormLabel>{{ t('auth.newPassword') }}</FormLabel>
             <FormControl>
@@ -176,7 +181,7 @@ const onSubmit = handleSubmit(async (values) => {
           </FormItem>
         </FormField>
 
-        <FormField name="confirmPassword" v-slot="{ componentField }">
+        <FormField v-slot="{ componentField }" name="confirmPassword">
           <FormItem>
             <FormLabel>{{ t('auth.confirmPassword') }}</FormLabel>
             <FormControl>

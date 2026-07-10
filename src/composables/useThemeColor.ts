@@ -1,7 +1,8 @@
+import type { ThemeColorId } from '@/lib/theme-presets'
 import { watch } from 'vue'
-import { useAppearanceStore } from '@/stores/appearance'
-import { type ThemeColorId, getPreset } from '@/lib/theme-presets'
 import { useTheme } from '@/composables/useTheme'
+import { getPreset } from '@/lib/theme-presets'
+import { useAppearanceStore } from '@/stores/appearance'
 
 /**
  * 将主题色应用为 inline CSS 变量（覆盖 main.css 默认值）
@@ -67,7 +68,8 @@ function buildCustomVars(hex: string, isDark: boolean): Record<string, string> {
 }
 
 function applyThemeColor(colorId: ThemeColorId, customColor: string, isDark: boolean) {
-  if (typeof document === 'undefined') return
+  if (typeof document === 'undefined')
+    return
 
   if (colorId === 'violet') {
     // 默认色：移除 inline 覆盖，让 CSS 文件生效
@@ -81,7 +83,8 @@ function applyThemeColor(colorId: ThemeColorId, customColor: string, isDark: boo
   }
 
   const preset = getPreset(colorId)
-  if (!preset) return
+  if (!preset)
+    return
 
   const vars = isDark ? preset.dark : preset.light
   applyVars({
@@ -124,19 +127,22 @@ export function useThemeColor() {
  * 避免首屏闪烁（FOUC）
  */
 export function hydrateThemeColorEarly() {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined')
+    return
   try {
     const raw = localStorage.getItem('appearance')
-    if (!raw) return
-    const stored = JSON.parse(raw) as { themeColor?: string; customColor?: string }
+    if (!raw)
+      return
+    const stored = JSON.parse(raw) as { themeColor?: string, customColor?: string }
     const colorId = stored.themeColor as ThemeColorId | undefined
     const customColor = stored.customColor ?? '#8b5cf6'
-    if (!colorId || colorId === 'violet') return
+    if (!colorId || colorId === 'violet')
+      return
 
-    const isDark =
-      document.documentElement.classList.contains('dark') ||
-      (localStorage.getItem('theme') === 'system' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
+    const isDark
+      = document.documentElement.classList.contains('dark')
+        || (localStorage.getItem('theme') === 'system'
+          && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
     if (colorId === 'custom') {
       applyVars(buildCustomVars(customColor, isDark))
@@ -145,8 +151,9 @@ export function hydrateThemeColorEarly() {
 
     // 动态导入（同步 ESM 静态 import 的方式在 early 阶段不可用，直接内联逻辑）
     void import('@/lib/theme-presets').then(({ THEME_PRESETS }) => {
-      const preset = THEME_PRESETS.find((p) => p.id === colorId)
-      if (!preset) return
+      const preset = THEME_PRESETS.find(p => p.id === colorId)
+      if (!preset)
+        return
       const vars = isDark ? preset.dark : preset.light
       applyVars({
         '--primary': vars.primary,
@@ -159,7 +166,8 @@ export function hydrateThemeColorEarly() {
         '--chart-1': vars.chart1,
       })
     })
-  } catch {
+  }
+  catch {
     // ignore
   }
 }

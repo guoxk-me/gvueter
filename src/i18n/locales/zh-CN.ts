@@ -30,7 +30,7 @@ export default {
     loginFailed: '用户名或密码错误',
     logoutConfirm: '确认退出登录？',
     usernamePlaceholder: '请输入用户名',
-    emailPlaceholder: "admin{'@'}example.com",
+    emailPlaceholder: 'admin{\'@\'}example.com',
     passwordPlaceholder: '请输入密码',
     welcomeBack: '欢迎回来',
     loginSubtitle: '请登录您的管理员账号',

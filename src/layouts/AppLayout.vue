@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { useAppearanceStore } from '@/stores/appearance'
 import { useThemeColor } from '@/composables/useThemeColor'
+import { useAppearanceStore } from '@/stores/appearance'
 
 // 初始化主题色（保证在 layout 挂载时已激活监听）
 useThemeColor()

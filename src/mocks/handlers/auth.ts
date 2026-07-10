@@ -1,10 +1,10 @@
-import { http, HttpResponse } from 'msw'
-import type { User } from '@/stores/auth'
 import type { ApiResponse } from '@/lib/http'
+import type { User } from '@/stores/auth'
+import { http, HttpResponse } from 'msw'
 import {
-  mockUsers,
   findUserByEmail,
   generateMockToken,
+  mockUsers,
   parseUserIdFromToken,
 } from '@/mocks/data/users'
 
@@ -26,7 +26,7 @@ export const loginHandler = http.post<never, LoginRequestBody>(
     const { email, password } = await request.json()
 
     // 先判断账号是否存在，再判断密码是否正确，给出不同错误码
-    const userExists = mockUsers.find((u) => u.email === email)
+    const userExists = mockUsers.find(u => u.email === email)
 
     if (!userExists) {
       return HttpResponse.json<ApiResponse<null>>(
@@ -35,7 +35,7 @@ export const loginHandler = http.post<never, LoginRequestBody>(
       )
     }
 
-    const found = mockUsers.find((u) => u.email === email && u.password === password)
+    const found = mockUsers.find(u => u.email === email && u.password === password)
 
     if (!found) {
       return HttpResponse.json<ApiResponse<null>>(
@@ -88,7 +88,7 @@ export const meHandler = http.get<never, never, ApiResponse<User | null>>(
       )
     }
 
-    const user = findUserByEmail(mockUsers.find((u) => u.id === userId)?.email ?? '')
+    const user = findUserByEmail(mockUsers.find(u => u.id === userId)?.email ?? '')
     if (!user) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 404, message: '用户不存在', data: null },
@@ -105,14 +105,14 @@ export const meHandler = http.get<never, never, ApiResponse<User | null>>(
 )
 
 // ── 内存存储：email → { token, expiry } ──────────────────────────────────────
-const resetTokenStore = new Map<string, { token: string; expiry: number }>()
+const resetTokenStore = new Map<string, { token: string, expiry: number }>()
 
 /** 生成随机重置 token */
 function generateResetToken(): string {
   const arr = new Uint8Array(24)
   crypto.getRandomValues(arr)
   return Array.from(arr)
-    .map((b) => b.toString(16).padStart(2, '0'))
+    .map(b => b.toString(16).padStart(2, '0'))
     .join('')
 }
 
@@ -127,7 +127,7 @@ export const forgotPasswordHandler = http.post<never, ForgotPasswordRequestBody>
   async ({ request }) => {
     const { email } = await request.json()
 
-    const userExists = mockUsers.find((u) => u.email === email)
+    const userExists = mockUsers.find(u => u.email === email)
     if (!userExists) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'USER_NOT_FOUND', message: '该邮箱未注册，请检查后重试', data: null },
@@ -183,7 +183,7 @@ export const resetPasswordHandler = http.post<never, ResetPasswordRequestBody>(
     }
 
     // 更新 mockUsers 中的密码
-    const user = mockUsers.find((u) => u.email === matchedEmail)
+    const user = mockUsers.find(u => u.email === matchedEmail)
     if (user) {
       user.password = newPassword
     }

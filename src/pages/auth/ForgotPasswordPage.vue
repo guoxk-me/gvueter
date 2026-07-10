@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
-import { MailCheck, Loader2 } from 'lucide-vue-next'
+import { Loader2, MailCheck } from 'lucide-vue-next'
+import { useForm } from 'vee-validate'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { ApiError } from '@/lib/http'
+import { useRouter } from 'vue-router'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
+import { ApiError } from '@/lib/http'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -23,8 +23,9 @@ const sentEmail = ref('')
 const maskedEmail = computed(() => {
   const email = sentEmail.value
   const atIdx = email.indexOf('@')
-  if (atIdx <= 1) return email
-  return email[0] + '***' + email.slice(atIdx)
+  if (atIdx <= 1)
+    return email
+  return `${email[0]}***${email.slice(atIdx)}`
 })
 
 const formSchema = computed(() =>
@@ -46,13 +47,16 @@ const onSubmit = handleSubmit(async (values) => {
     await authStore.forgotPassword(values.email)
     sentEmail.value = values.email
     isSuccess.value = true
-  } catch (err) {
+  }
+  catch (err) {
     if (err instanceof ApiError && err.code === 'USER_NOT_FOUND') {
       setFieldError('email', t('auth.userNotFound'))
-    } else {
+    }
+    else {
       setFieldError('email', t('errors.serverError'))
     }
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 })
@@ -97,7 +101,9 @@ const onSubmit = handleSubmit(async (values) => {
           <MailCheck class="size-7" aria-hidden="true" />
         </div>
         <div>
-          <p class="font-semibold text-foreground">{{ t('auth.forgotPasswordSuccessTitle') }}</p>
+          <p class="font-semibold text-foreground">
+            {{ t('auth.forgotPasswordSuccessTitle') }}
+          </p>
           <p class="mt-1 text-sm text-muted-foreground">
             {{ t('auth.forgotPasswordSuccessDesc', { email: maskedEmail }) }}
           </p>
@@ -114,7 +120,7 @@ const onSubmit = handleSubmit(async (values) => {
         :aria-label="t('auth.forgotPasswordFormLabel')"
         @submit.prevent="onSubmit"
       >
-        <FormField name="email" v-slot="{ componentField }">
+        <FormField v-slot="{ componentField }" name="email">
           <FormItem>
             <FormLabel>{{ t('auth.email') }}</FormLabel>
             <FormControl>

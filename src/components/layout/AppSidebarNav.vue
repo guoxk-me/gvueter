@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import type { AppAction, AppSubject } from '@/lib/ability'
+import { LayoutDashboard } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { LayoutDashboard } from 'lucide-vue-next'
-import { appAbility } from '@/lib/ability'
-import type { AppAction, AppSubject } from '@/lib/ability'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -12,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { appAbility } from '@/lib/ability'
 
 interface NavItem {
   title: string
@@ -22,19 +22,21 @@ interface NavItem {
 
 const route = useRoute()
 
-const navItems = computed<NavItem[]>(() =>
-  [
+const navItems = computed(() => {
+  // AI modified: keep ability as a typed tuple for vue-tsc.
+  const items: NavItem[] = [
     {
       title: '仪表盘',
       to: '/dashboard',
       icon: LayoutDashboard,
       ability: ['read', 'Dashboard'],
     },
-  ].filter((item) => appAbility.can(item.ability[0], item.ability[1])),
-)
+  ]
+  return items.filter(item => appAbility.can(item.ability[0], item.ability[1]))
+})
 
 function isLeafActive(to: string): boolean {
-  return route.path === to || route.path.startsWith(to + '/')
+  return route.path === to || route.path.startsWith(`${to}/`)
 }
 </script>
 

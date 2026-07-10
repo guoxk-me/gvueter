@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vite-plus/test'
 import { mount } from '@vue/test-utils'
-import { createRouter, createMemoryHistory } from 'vue-router'
 import { createPinia } from 'pinia'
+import { describe, expect, it } from 'vite-plus/test'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '../App.vue'
 
 describe('App', () => {

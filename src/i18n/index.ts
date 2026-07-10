@@ -1,6 +1,7 @@
-import { createI18n, type Composer } from 'vue-i18n'
-import zhCN from './locales/zh-CN'
+import type { Composer } from 'vue-i18n'
+import { createI18n } from 'vue-i18n'
 import enUS from './locales/en-US'
+import zhCN from './locales/zh-CN'
 
 export type MessageSchema = typeof zhCN
 
@@ -11,10 +12,12 @@ const LOCALE_STORAGE_KEY = 'locale'
 
 function getDefaultLocale(): SupportedLocale {
   const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as SupportedLocale | null
-  if (stored && SUPPORTED_LOCALES.includes(stored)) return stored
+  if (stored && SUPPORTED_LOCALES.includes(stored))
+    return stored
 
   const browserLang = navigator.language
-  if (browserLang.startsWith('zh')) return 'zh-CN'
+  if (browserLang.startsWith('zh'))
+    return 'zh-CN'
   return 'en-US'
 }
 
