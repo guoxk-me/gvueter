@@ -1,38 +1,37 @@
-import { globalIgnores } from 'eslint/config'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginVue from 'eslint-plugin-vue'
-import pluginPlaywright from 'eslint-plugin-playwright'
-import pluginVitest from '@vitest/eslint-plugin'
-import pluginOxlint from 'eslint-plugin-oxlint'
-import skipFormatting from 'eslint-config-prettier/flat'
+import antfu from '@antfu/eslint-config'
 
-// To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
-// import { configureVueProject } from '@vue/eslint-config-typescript'
-// configureVueProject({ scriptLangs: ['ts', 'tsx'] })
-// More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
-
-export default defineConfigWithVueTs(
+// AI modified: switched to @antfu/eslint-config; Oxfmt/Oxlint no longer used.
+export default antfu(
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{vue,ts,mts,tsx}'],
+    vue: true,
+    typescript: true,
+    formatters: {
+      css: true,
+      html: true,
+      markdown: 'prettier',
+    },
+    stylistic: {
+      indent: 2,
+      quotes: 'single',
+      semi: false,
+    },
+    // AI modified: project only catalogs vite/vitest/vite-plus; do not force all deps into catalog.
+    pnpm: false,
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/public/mockServiceWorker.js',
+      '**/test-results/**',
+      '**/playwright-report/**',
+    ],
   },
-
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
-
-  ...pluginVue.configs['flat/essential'],
-  vueTsConfigs.recommended,
-
   {
-    ...pluginPlaywright.configs['flat/recommended'],
-    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    // AI modified: shadcn-vue primitives use single-word names and loose chart typings.
+    files: ['src/components/ui/**/*.{vue,ts}'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+      'ts/no-explicit-any': 'off',
+    },
   },
-
-  {
-    ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
-  },
-
-  ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
-
-  skipFormatting,
 )
