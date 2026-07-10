@@ -1,0 +1,46 @@
+<script setup lang="ts">
+import type { ButtonVariants } from '@/components/ui/button'
+import { Languages } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useLocaleToggle } from '@/composables/useLocaleToggle'
+
+const props = withDefaults(
+  defineProps<{
+    size?: ButtonVariants['size']
+    variant?: ButtonVariants['variant']
+    side?: 'top' | 'right' | 'bottom' | 'left'
+    class?: string
+  }>(),
+  {
+    size: 'icon-sm',
+    variant: 'ghost',
+    side: 'bottom',
+    class: undefined,
+  },
+)
+
+const { t } = useI18n()
+const { localeLabel, toggleLocale } = useLocaleToggle()
+</script>
+
+<template>
+  <Tooltip>
+    <TooltipTrigger as-child>
+      <Button
+        type="button"
+        :variant="variant"
+        :size="size"
+        :class="props.class"
+        :aria-label="t('settings.language')"
+        @click="toggleLocale"
+      >
+        <Languages class="size-4" aria-hidden="true" />
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent :side="side">
+      {{ localeLabel }}
+    </TooltipContent>
+  </Tooltip>
+</template>

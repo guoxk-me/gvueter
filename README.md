@@ -1,6 +1,6 @@
 # gvueter
 
-This project runs on Vue 3 with Vite+.
+This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
 
@@ -21,53 +21,53 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 
 ## Customize configuration
 
-See the [Vite Configuration Reference](https://vite.dev/config/) and Vite+ docs for the unified toolchain workflow.
+See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
 ```sh
-vp install
+pnpm install
 ```
 
 ### Compile and Hot-Reload for Development
 
 ```sh
-vp dev
+pnpm dev
 ```
 
-### Run Formatting, Linting, and Type Checks
+### Type-Check, Compile and Minify for Production
 
 ```sh
-vp check
+pnpm build
 ```
 
-### Build for Production
+### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
-vp build
-```
-
-### Run Unit Tests
-
-```sh
-vp test
+pnpm test:unit
 ```
 
 ### Run End-to-End Tests with [Playwright](https://playwright.dev)
 
 ```sh
 # Install browsers for the first run
-vp exec playwright install
+npx playwright install
 
 # When testing on CI, must build the project first
-vp build
+pnpm build
 
 # Runs the end-to-end tests
-vp exec playwright test
+pnpm test:e2e
 # Runs the tests only on Chromium
-vp exec playwright test --project=chromium
+pnpm test:e2e --project=chromium
 # Runs the tests of a specific file
-vp exec playwright test tests/example.spec.ts
+pnpm test:e2e tests/example.spec.ts
 # Runs the tests in debug mode
-vp exec playwright test --debug
+pnpm test:e2e --debug
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+pnpm lint
 ```
