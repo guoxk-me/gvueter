@@ -13,6 +13,10 @@
     },
     {
       "path": "./tsconfig.vitest.json"
+    },
+    {
+      // AI modified: the shared type gate must cover Playwright specifications as production contracts.
+      "path": "./e2e/tsconfig.json"
     }
   ],
   "files": []

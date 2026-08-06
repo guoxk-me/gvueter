@@ -1,0 +1,13 @@
+.git
+.github
+.env*
+.pnpm-store
+.playwright-cli
+dist
+coverage
+node_modules
+output
+playwright-report
+test-results
+sbom*.json
+*.log
