@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { toTypedSchema } from '@vee-validate/zod'
-import { Eye, EyeOff, Loader2 } from 'lucide-vue-next'
-import { useForm } from 'vee-validate'
-import { computed, onUnmounted, ref } from 'vue'
+import type { LoginCredentials, LoginField, LoginFormFailure } from '@/features/account/types'
+import type { CaptchaChallenge, SsoConfiguration } from '@/types/auth'
+import { computed, onMounted, onUnmounted, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { z } from 'zod'
 import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
 import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
-import { Button } from '@/components/ui/button'
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import {
+  getPostAuthenticationPath,
+  getSafeSsoAuthorizationUrl,
+} from '@/features/account/auth-redirect'
+import LoginForm from '@/features/account/components/LoginForm.vue'
+import SsoLoginButton from '@/features/account/components/SsoLoginButton.vue'
 import { ApiError } from '@/lib/http'
 import { useAuthStore } from '@/stores/auth'
 
@@ -20,103 +21,188 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const showPassword = ref(false)
-const isLoading = ref(false)
-
-const MAX_FAIL = 5
-const LOCK_SECONDS = 30
-const failCount = ref(0)
-const lockUntil = ref(0)
-const lockCountdown = ref(0)
+const maxFailedAttempts = 5
+const lockDurationSeconds = 30
+const isSubmitting = shallowRef(false)
+const isCaptchaLoading = shallowRef(false)
+const captcha = shallowRef<CaptchaChallenge | null>(null)
+const failedAttempts = shallowRef(0)
+const lockSecondsRemaining = shallowRef(0)
+const submissionFailure = shallowRef<LoginFormFailure | null>(null)
+const ssoConfiguration = shallowRef<SsoConfiguration | null>(null)
+const isSsoConfigurationLoading = shallowRef(true)
+const didSsoConfigurationFail = shallowRef(false)
+const isSsoStarting = shallowRef(false)
+let failureSequence = 0
+let lockUntil = 0
 let lockTimer: ReturnType<typeof setInterval> | null = null
 
-function isLocked() {
-  return Date.now() < lockUntil.value
-}
+const ssoButtonStatus = computed<'disabled' | 'error' | 'loading' | 'ready'>(() => {
+  if (isSsoConfigurationLoading.value) return 'loading'
+  if (didSsoConfigurationFail.value) return 'error'
+  if (!ssoConfiguration.value?.isEnabled) return 'disabled'
+  return 'ready'
+})
 
 function startLockCountdown() {
-  lockCountdown.value = Math.ceil((lockUntil.value - Date.now()) / 1000)
+  lockUntil = Date.now() + lockDurationSeconds * 1000
+  lockSecondsRemaining.value = lockDurationSeconds
+  if (lockTimer) {
+    clearInterval(lockTimer)
+  }
+
   lockTimer = setInterval(() => {
-    lockCountdown.value = Math.ceil((lockUntil.value - Date.now()) / 1000)
-    if (lockCountdown.value <= 0) {
-      lockCountdown.value = 0
-      clearInterval(lockTimer!)
+    lockSecondsRemaining.value = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1000))
+    if (lockSecondsRemaining.value === 0) {
+      failedAttempts.value = 0
+      if (lockTimer) {
+        clearInterval(lockTimer)
+      }
       lockTimer = null
     }
   }, 500)
 }
 
-onUnmounted(() => {
-  if (lockTimer)
-    clearInterval(lockTimer)
-})
-
-const PASSWORD_MIN = 6
-
-const formSchema = computed(() =>
-  toTypedSchema(
-    z.object({
-      email: z
-        .string({ required_error: t('auth.emailRequired') })
-        .min(1, t('auth.emailRequired'))
-        .email(t('auth.emailInvalid')),
-      password: z
-        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
-        .min(PASSWORD_MIN, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
-    }),
-  ),
-)
-
-const { handleSubmit, setFieldError } = useForm({ validationSchema: formSchema })
-
-const onSubmit = handleSubmit(async (values) => {
-  if (isLocked())
+async function refreshCaptcha(): Promise<void> {
+  if (isCaptchaLoading.value) {
     return
+  }
 
-  isLoading.value = true
+  isCaptchaLoading.value = true
+  try {
+    captcha.value = await authStore.getCaptcha()
+  } catch (error: unknown) {
+    captcha.value = null
+    toast.error(t('auth.captchaUnavailable'), {
+      description: error instanceof Error ? error.message : t('errors.serverError'),
+    })
+  } finally {
+    isCaptchaLoading.value = false
+  }
+}
+
+async function refreshSsoConfiguration(): Promise<void> {
+  if (isSsoConfigurationLoading.value && ssoConfiguration.value) return
+
+  isSsoConfigurationLoading.value = true
+  didSsoConfigurationFail.value = false
+  try {
+    ssoConfiguration.value = await authStore.getSsoConfiguration()
+  } catch {
+    // AI modified: SSO discovery failures stay recoverable without blocking password login.
+    ssoConfiguration.value = null
+    didSsoConfigurationFail.value = true
+  } finally {
+    isSsoConfigurationLoading.value = false
+  }
+}
+
+async function startSsoLogin(): Promise<void> {
+  if (isSsoStarting.value || ssoButtonStatus.value !== 'ready') return
+
+  isSsoStarting.value = true
+  try {
+    const start = await authStore.startSsoLogin(getPostAuthenticationPath(route.query.redirect))
+    const authorizationUrl = getSafeSsoAuthorizationUrl(start.authorizationUrl)
+    if (!authorizationUrl || start.expiresAt <= Date.now()) {
+      throw new Error('Invalid or expired SSO authorization transaction')
+    }
+    // AI modified: the backend creates the transaction before the browser leaves the login page.
+    window.location.assign(authorizationUrl)
+  } catch (error: unknown) {
+    const isConfigurationDisabled = error instanceof ApiError && error.code === 'SSO_NOT_CONFIGURED'
+    if (isConfigurationDisabled) await refreshSsoConfiguration()
+    toast.error(t('auth.ssoStartFailed'), {
+      description: t(isConfigurationDisabled ? 'auth.ssoNotConfigured' : 'auth.ssoGenericFailure'),
+    })
+  } finally {
+    isSsoStarting.value = false
+  }
+}
+
+function getLoginFailure(error: unknown): {
+  field?: LoginField
+  message: string
+  shouldCountAttempt: boolean
+} {
+  if (!(error instanceof ApiError)) {
+    return { message: t('errors.networkError'), shouldCountAttempt: false }
+  }
+
+  switch (error.code) {
+    case 'INVALID_CREDENTIALS':
+      // AI modified: show one generic field error without revealing which credential failed.
+      return {
+        field: 'password',
+        message: t('auth.invalidCredentials'),
+        shouldCountAttempt: true,
+      }
+    case 'INVALID_CAPTCHA':
+      return { field: 'captchaCode', message: error.message, shouldCountAttempt: true }
+    case 'LOGIN_LOCKED':
+      return { message: error.message, shouldCountAttempt: true }
+    default:
+      return { message: error.message, shouldCountAttempt: false }
+  }
+}
+
+async function login(credentials: LoginCredentials): Promise<void> {
+  if (isSubmitting.value || lockSecondsRemaining.value > 0 || !captcha.value) {
+    return
+  }
+
+  isSubmitting.value = true
+  const captchaId = captcha.value.captchaId
 
   try {
-    await authStore.login(values.email, values.password)
-    failCount.value = 0
+    const didAuthenticate = await authStore.login(credentials.email, credentials.password, {
+      captchaId,
+      captchaCode: credentials.captchaCode,
+      provider: 'password',
+    })
+    // AI modified: a superseded login finishes silently while the newest attempt owns the UI/session.
+    if (!didAuthenticate) return
+    failedAttempts.value = 0
     toast.success(t('auth.loginSuccess'), {
       description: t('auth.loginSuccessDesc', { name: authStore.user?.name }),
     })
-    const redirect = (route.query.redirect as string) || '/dashboard'
-    router.push(redirect)
-  }
-  catch (err) {
-    failCount.value++
+    await router.push(getPostAuthenticationPath(route.query.redirect))
+  } catch (error: unknown) {
+    const failure = getLoginFailure(error)
+    if (failure.shouldCountAttempt) failedAttempts.value += 1
+    const { shouldCountAttempt, ...formFailure } = failure
+    submissionFailure.value = { id: ++failureSequence, ...formFailure }
 
-    if (failCount.value >= MAX_FAIL) {
-      lockUntil.value = Date.now() + LOCK_SECONDS * 1000
-      failCount.value = 0
+    if (!failure.field) {
+      toast.error(t('auth.loginFailed'), { description: failure.message })
+    }
+
+    if (shouldCountAttempt && failedAttempts.value >= maxFailedAttempts) {
+      // AI modified: transport and server outages never consume the user's credential-attempt budget.
       startLockCountdown()
       toast.error(t('auth.lockoutTitle'), {
-        description: t('auth.lockoutDesc', { max: MAX_FAIL, seconds: LOCK_SECONDS }),
+        description: t('auth.lockoutDesc', {
+          max: maxFailedAttempts,
+          seconds: lockDurationSeconds,
+        }),
       })
-      return
     }
 
-    if (err instanceof ApiError) {
-      switch (err.code) {
-        case 'USER_NOT_FOUND':
-          setFieldError('email', t('auth.userNotFound'))
-          break
-        case 'WRONG_PASSWORD':
-          setFieldError('password', t('auth.wrongPassword'))
-          break
-        default:
-          toast.error(t('auth.loginFailed'), { description: err.message })
-      }
-    }
-    else {
-      toast.error(t('errors.networkError'), {
-        description: t('errors.serverError'),
-      })
-    }
+    // AI modified: every failed login consumes the challenge and requests a fresh one.
+    await refreshCaptcha()
+  } finally {
+    isSubmitting.value = false
   }
-  finally {
-    isLoading.value = false
+}
+
+onMounted(() => {
+  void refreshCaptcha()
+  void refreshSsoConfiguration()
+})
+
+onUnmounted(() => {
+  if (lockTimer) {
+    clearInterval(lockTimer)
   }
 })
 </script>
@@ -152,101 +238,46 @@ const onSubmit = handleSubmit(async (values) => {
       </p>
     </div>
 
-    <form
-      class="space-y-4"
-      novalidate
-      :aria-label="t('auth.loginFormLabel')"
-      @submit.prevent="onSubmit"
-    >
-      <FormField v-slot="{ componentField }" name="email">
-        <FormItem>
-          <FormLabel>{{ t('auth.email') }}</FormLabel>
-          <FormControl>
-            <Input
-              v-bind="componentField"
-              type="email"
-              :placeholder="t('auth.emailPlaceholder')"
-              autocomplete="email"
-              :disabled="isLoading || isLocked()"
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      </FormField>
+    <LoginForm
+      :captcha="captcha"
+      :is-captcha-loading="isCaptchaLoading"
+      :is-submitting="isSubmitting"
+      :failed-attempts="failedAttempts"
+      :max-attempts="maxFailedAttempts"
+      :lock-seconds-remaining="lockSecondsRemaining"
+      :submission-failure="submissionFailure"
+      @submit="login"
+      @refresh-captcha="refreshCaptcha"
+    />
 
-      <FormField v-slot="{ componentField }" name="password">
-        <FormItem>
-          <FormLabel>{{ t('auth.password') }}</FormLabel>
-          <FormControl>
-            <div class="relative">
-              <Input
-                id="password-input"
-                v-bind="componentField"
-                :type="showPassword ? 'text' : 'password'"
-                :placeholder="t('auth.passwordPlaceholder')"
-                autocomplete="current-password"
-                class="pr-10"
-                :disabled="isLoading || isLocked()"
-              />
-              <button
-                type="button"
-                class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
-                aria-controls="password-input"
-                :aria-pressed="showPassword"
-                @click="showPassword = !showPassword"
-              >
-                <EyeOff v-if="showPassword" class="size-4" aria-hidden="true" />
-                <Eye v-else class="size-4" aria-hidden="true" />
-              </button>
-            </div>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      </FormField>
+    <SsoLoginButton
+      :provider-name="ssoConfiguration?.providerName ?? t('auth.ssoDefaultProvider')"
+      :is-starting="isSsoStarting"
+      :status="ssoButtonStatus"
+      @retry="refreshSsoConfiguration"
+      @start="startSsoLogin"
+    />
 
-      <p
-        v-if="failCount > 0 && !isLocked()"
-        role="status"
-        aria-live="polite"
-        class="text-xs text-muted-foreground"
-      >
-        {{ t('auth.failCountHint', { count: failCount, remaining: MAX_FAIL - failCount }) }}
-      </p>
-
-      <Button type="submit" class="w-full" :disabled="isLoading || isLocked()">
-        <Loader2 v-if="isLoading" class="mr-2 size-4 animate-spin" aria-hidden="true" />
-        <span v-if="isLocked()" role="status" aria-live="assertive">
-          {{ t('auth.lockoutCountdown', { seconds: lockCountdown }) }}
-        </span>
-        <span v-else-if="isLoading">{{ t('auth.loggingIn') }}</span>
-        <span v-else>{{ t('auth.loginButton') }}</span>
-      </Button>
-
-      <div class="pt-1">
-        <div class="mb-3 border-t border-border" />
-        <div class="flex items-center justify-between">
-          <a
-            href="#"
-            class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-            @click.prevent="router.push({ name: 'forgot-password' })"
-          >
-            {{ t('auth.forgotPassword') }}
-          </a>
-          <a
-            href="#"
-            class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-            @click.prevent="router.push({ name: 'reset-password' })"
-          >
-            {{ t('auth.resetPasswordTitle') }}
-          </a>
-        </div>
+    <div class="border-t border-border pt-4">
+      <div class="flex items-center justify-between">
+        <RouterLink
+          :to="{ name: 'forgot-password' }"
+          class="text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          {{ t('auth.forgotPassword') }}
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'reset-password' }"
+          class="text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          {{ t('auth.resetPasswordTitle') }}
+        </RouterLink>
       </div>
+    </div>
 
-      <div class="flex items-center justify-center gap-1 pt-1">
-        <ThemeToggleButton size="icon" side="top" />
-        <LanguageToggleButton size="icon" side="top" />
-      </div>
-    </form>
+    <div class="flex items-center justify-center gap-1">
+      <ThemeToggleButton size="icon" side="top" />
+      <LanguageToggleButton size="icon" side="top" />
+    </div>
   </div>
 </template>

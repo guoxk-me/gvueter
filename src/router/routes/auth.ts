@@ -4,7 +4,6 @@ const authRoutes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('@/layouts/AuthLayout.vue'),
-    meta: { requiresGuest: true },
     children: [
       {
         path: '',
@@ -14,19 +13,26 @@ const authRoutes: RouteRecordRaw[] = [
         path: 'login',
         name: 'login',
         component: () => import('@/pages/auth/LoginPage.vue'),
-        meta: { title: '登录' },
+        meta: { requiresGuest: true, titleKey: 'auth.login' },
       },
       {
         path: 'forgot-password',
         name: 'forgot-password',
         component: () => import('@/pages/auth/ForgotPasswordPage.vue'),
-        meta: { title: '忘记密码' },
+        meta: { requiresGuest: true, titleKey: 'auth.forgotPasswordTitle' },
       },
       {
         path: 'reset-password/:token?',
         name: 'reset-password',
         component: () => import('@/pages/auth/ResetPasswordPage.vue'),
-        meta: { title: '重置密码' },
+        meta: { requiresGuest: true, titleKey: 'auth.resetPasswordTitle' },
+      },
+      {
+        path: 'sso/callback',
+        name: 'sso-callback',
+        component: () => import('@/pages/auth/SsoCallbackPage.vue'),
+        // AI modified: the callback clears its fragment before deciding whether an existing session wins.
+        meta: { titleKey: 'auth.ssoCallbackTitle' },
       },
     ],
   },

@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { i18n } from '@/i18n'
 import { appAbility } from '@/lib/ability'
+import { reportApplicationFailure } from '@/lib/application-recovery'
 import { registerForbiddenHandler, registerSessionInvalidationHandler } from '@/lib/request-policy'
 import { useAuthStore } from '@/stores/auth'
 import { usePermissionStore } from '@/stores/permission'
@@ -126,7 +127,13 @@ export function setupNavigationProgress(targetRouter: Router): void {
     if (to.fullPath !== from.fullPath) NProgress.start()
   })
   targetRouter.afterEach(() => NProgress.done())
-  targetRouter.onError(() => NProgress.done(true))
+  targetRouter.onError((failure, to) => {
+    NProgress.done(true)
+    // AI modified: failed guards and lazy routes enter one visible boundary with URL-safe diagnostics.
+    reportApplicationFailure('navigation', failure, {
+      routeName: typeof to.name === 'string' ? to.name : undefined,
+    })
+  })
   progressRouters.add(targetRouter)
 }
 
