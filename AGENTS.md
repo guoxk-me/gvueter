@@ -86,3 +86,28 @@ For GitHub Actions, consider using [`voidzero-dev/setup-vp`](https://github.com/
 - [ ] Run `vp install` after pulling remote changes and before getting started.
 - [ ] Run `vp check` and `vp test` to validate changes.
 <!--VITE PLUS END-->
+
+## Project release gates
+
+<!-- AI modified: project-specific gates extend the generated Vite+ checklist with browser and bundle evidence. -->
+
+Run the complete release gate from the repository root:
+
+```sh
+vp install --frozen-lockfile
+vp check
+vp run check
+vp run check:contracts
+vp run check:security
+vp run test:inventory
+vp pm audit --production --level high
+vp run test:coverage
+vp run build
+VITE_ENABLE_MOCKS=true vp run build
+CI=true VITE_ENABLE_MOCKS=true vp run test:e2e
+VITE_ENABLE_MOCKS=false vp run build
+```
+
+`vp run check` covers every TypeScript project, including Playwright specifications, plus project ESLint rules. `vp run test:coverage` runs the unit suite and enforces the configured V8 thresholds. The plain build is the deployable production artifact; the Mock-enabled build exists only for deterministic browser verification and must not be deployed, so the final command restores a production `dist`.
+
+Vite+ is a pre-1.0 beta toolchain. The dependency catalog pins the local core/test packages and coverage provider to the 0.1.19 compatibility set; CI and Docker also pin the global CLI to 0.1.19. Treat an upgrade as a coordinated toolchain migration: run the full gate above and review generated output before changing any of those versions. See [Testing and visual acceptance](./docs/testing.md) for the matrix and evidence policy.

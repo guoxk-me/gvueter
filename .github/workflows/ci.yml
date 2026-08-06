@@ -1,0 +1,179 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, admin]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      # AI modified: third-party actions are pinned to reviewed commits while comments retain update context.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1
+        with:
+          cache: true
+          # AI modified: Babel 8 supports this pinned Node branch and rejects earlier Node 24 releases.
+          node-version: 24.18.0
+          run-install: false
+          version: 0.1.19
+      - run: vp install --frozen-lockfile
+      # AI modified: keep the unified Vite+ gate and the Vue/Antfu supplemental gate explicit in CI.
+      - run: vp check
+      - run: vp run check
+      - run: vp run check:contracts
+      - run: vp run check:security
+      - run: vp run test:inventory
+      - run: vp pm audit --production --level high
+      # AI modified: the release unit-test gate also enforces configured V8 coverage thresholds.
+      - run: vp run test:coverage
+      - name: Upload unit coverage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          if-no-files-found: warn
+          name: unit-coverage
+          path: coverage/
+          retention-days: 14
+      - run: vp run build
+        env:
+          VITE_ENABLE_MOCKS: 'false'
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1
+        with:
+          cache: true
+          # AI modified: browser verification uses the same Node runtime as static verification and Docker.
+          node-version: 24.18.0
+          run-install: false
+          version: 0.1.19
+      - run: vp install --frozen-lockfile
+      # AI modified: Chromium owns pixels; all three engines run the behavioral suite.
+      - run: vp exec playwright install --with-deps chromium firefox webkit
+      - run: vp run build
+        env:
+          VITE_ENABLE_MOCKS: 'true'
+      - run: vp run test:e2e
+        env:
+          CI: 'true'
+          VITE_ENABLE_MOCKS: 'true'
+      - name: Upload browser failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          if-no-files-found: warn
+          name: playwright-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  container:
+    # AI modified: validate the deployable image only after static, unit, and browser release gates pass.
+    needs: [verify, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build the production container
+        run: docker build --build-arg VITE_ENABLE_MOCKS=false --tag gvueter-ci:${{ github.sha }} .
+      - name: Generate production image SPDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          artifact-name: gvueter-container-sbom.spdx.json
+          format: spdx-json
+          image: gvueter-ci:${{ github.sha }}
+          output-file: container-sbom.spdx.json
+          upload-artifact: true
+          upload-artifact-retention: 14
+      - name: Smoke-test the unprivileged runtime
+        run: |
+          docker network create gvueter-ci-network
+          docker run --detach --name gvueter-ci-backend \
+            --network gvueter-ci-network \
+            --network-alias backend \
+            node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436 \
+            node -e 'require("node:http").createServer((request, response) => { response.setHeader("Content-Type", "application/json"); response.end(JSON.stringify({ url: request.url, authorization: request.headers.authorization ?? null, requestId: request.headers["x-request-id"] ?? null, forwardedFor: request.headers["x-forwarded-for"] ?? null, forwardedProto: request.headers["x-forwarded-proto"] ?? null })) }).listen(8080, "0.0.0.0")'
+          docker run --detach --name gvueter-ci \
+            --network gvueter-ci-network \
+            --publish 127.0.0.1:8080:8080 \
+            gvueter-ci:${{ github.sha }}
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/healthz >/dev/null; then
+              break
+            fi
+            if [ "$attempt" = 30 ]; then
+              docker logs gvueter-ci
+              exit 1
+            fi
+            sleep 1
+          done
+          docker inspect --format '{{.Config.User}}' gvueter-ci | grep --line-regexp nginx
+          curl --fail --silent http://127.0.0.1:8080/healthz | grep --line-regexp ok
+          curl --fail --silent http://127.0.0.1:8080/readyz --output readiness-response.json
+          grep --fixed-strings '"url":"/healthz"' readiness-response.json
+          curl --fail --silent \
+            --header 'Authorization: Bearer smoke-token' \
+            --header 'X-Request-ID: smoke-request' \
+            'http://127.0.0.1:8080/api/probe?mode=ci' \
+            --output proxy-response.json
+          grep --fixed-strings '"url":"/probe?mode=ci"' proxy-response.json
+          grep --fixed-strings '"authorization":"Bearer smoke-token"' proxy-response.json
+          grep --fixed-strings '"requestId":"smoke-request"' proxy-response.json
+          grep --extended-regexp '"forwardedFor":"[^"]+"' proxy-response.json
+          grep --fixed-strings '"forwardedProto":"http"' proxy-response.json
+          curl --fail --silent http://127.0.0.1:8080/users | grep --fixed-strings '<div id="app"></div>'
+          curl --fail --silent --dump-header container-headers.txt --output /dev/null http://127.0.0.1:8080/
+          grep --ignore-case '^content-security-policy:' container-headers.txt
+          grep --ignore-case '^x-content-type-options: nosniff' container-headers.txt
+          grep --ignore-case '^x-frame-options: DENY' container-headers.txt
+          grep --ignore-case '^referrer-policy: strict-origin-when-cross-origin' container-headers.txt
+          grep --ignore-case '^permissions-policy: camera=(), microphone=(), geolocation=()' container-headers.txt
+          # AI modified: reset codes receive the SPA plus inherited security headers without entering access logs.
+          curl --fail --silent --dump-header reset-headers.txt --output /dev/null \
+            http://127.0.0.1:8080/reset-password/ci-reset-secret
+          grep --ignore-case '^content-security-policy:' reset-headers.txt
+          grep --ignore-case '^x-content-type-options: nosniff' reset-headers.txt
+          grep --ignore-case '^x-frame-options: DENY' reset-headers.txt
+          grep --ignore-case '^referrer-policy: no-referrer' reset-headers.txt
+          grep --ignore-case '^permissions-policy: camera=(), microphone=(), geolocation=()' reset-headers.txt
+          if docker logs gvueter-ci 2>&1 | grep --fixed-strings 'ci-reset-secret'; then
+            exit 1
+          fi
+      - name: Scan actionable container vulnerabilities
+        # AI modified: a SHA-pinned local image scan blocks fixed high/critical OS or package findings.
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+        with:
+          fail-build: true
+          image: gvueter-ci:${{ github.sha }}
+          only-fixed: true
+          output-file: container-scan.json
+          output-format: json
+          severity-cutoff: high
+      - name: Upload container scan evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          if-no-files-found: warn
+          name: container-security-evidence
+          path: |
+            container-sbom.spdx.json
+            container-headers.txt
+            reset-headers.txt
+            container-scan.json
+            proxy-response.json
+            readiness-response.json
+          retention-days: 14
+      - name: Stop the smoke container
+        if: always()
+        run: |
+          docker rm --force gvueter-ci gvueter-ci-backend || true
+          docker network rm gvueter-ci-network || true

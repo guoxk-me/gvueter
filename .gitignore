@@ -8,11 +8,17 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.pnpm-store
 .DS_Store
 dist
 dist-ssr
 coverage
 *.local
+
+# AI modified: keep local/deployment environment values out of Git while retaining the safe template.
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -40,3 +46,5 @@ __screenshots__/
 
 test-results/
 playwright-report/
+.playwright-cli/
+output/playwright/

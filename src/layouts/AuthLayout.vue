@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { RouterView } from 'vue-router'
 
 const { t } = useI18n()
 </script>

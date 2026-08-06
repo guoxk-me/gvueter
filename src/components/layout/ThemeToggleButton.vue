@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Monitor, Moon, Sun } from 'lucide-vue-next'
-import { useI18n } from 'vue-i18n'
 import type { ButtonVariants } from '@/components/ui/button'
-import { useTheme } from '@/composables/useTheme'
+import { Monitor, Moon, Sun } from '@lucide/vue'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useTheme } from '@/composables/useTheme'
 
 const props = withDefaults(
   defineProps<{

@@ -1,0 +1,11 @@
+{
+  "virtualTableRowThreshold": 200,
+  "lazyTreeNodeThreshold": 100,
+  "keepAliveMax": 20,
+  "entryGzipBytes": 87040,
+  "asyncChunkGzipBytes": 112640,
+  "firstScreenMilliseconds": 2500,
+  "routeTransitionMilliseconds": 250,
+  "layoutTransitionMilliseconds": 320,
+  "interactionMilliseconds": 100
+}

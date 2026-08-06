@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gvueter">
+  <rect width="512" height="512" rx="112" fill="#18181b" />
+  <circle cx="256" cy="256" r="154" fill="none" stroke="#a78bfa" stroke-width="28" />
+  <path
+    fill="#ffffff"
+    d="M347 200c-20-31-51-47-91-47-61 0-105 43-105 103s44 103 105 103c33 0 60-10 81-30v-48h-84v-48h140v118c-34 38-81 58-139 58-96 0-165-65-165-155S158 101 254 101c64 0 116 26 149 76l-56 23Z"
+  />
+</svg>

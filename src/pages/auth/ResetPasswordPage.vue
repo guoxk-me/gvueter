@@ -1,32 +1,35 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useForm } from 'vee-validate'
+import { Eye, EyeOff, Loader2, ShieldCheck } from '@lucide/vue'
 import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
-import { toast } from 'vue-sonner'
-import { ShieldCheck, Eye, EyeOff, Loader2 } from 'lucide-vue-next'
+import { useForm } from 'vee-validate'
+import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { ApiError } from '@/lib/http'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
+import { z } from 'zod'
+import { focusFirstInvalidControlAfterValidation } from '@/components/admin/form-focus'
 import { Button } from '@/components/ui/button'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
+import PasswordStrength from '@/features/account/components/PasswordStrength.vue'
+import { PASSWORD_MIN_LENGTH } from '@/features/account/types'
+import { ApiError } from '@/lib/http'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const urlToken = (route.params.token as string) || ''
+const urlToken = typeof route.params.token === 'string' ? route.params.token : ''
 const hasUrlToken = urlToken.length > 0
 
 const isLoading = ref(false)
 const isSuccess = ref(false)
 const showPassword = ref(false)
 const showConfirm = ref(false)
-
-const PASSWORD_MIN = 6
+const formElement = useTemplateRef<HTMLFormElement>('formElement')
+const successHeading = useTemplateRef<HTMLElement>('successHeading')
 
 const formSchema = computed(() => {
   const base = z
@@ -39,11 +42,14 @@ const formSchema = computed(() => {
               .min(1, t('auth.resetTokenRequired')),
           }),
       newPassword: z
-        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
-        .min(PASSWORD_MIN, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
+        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN_LENGTH }) })
+        .min(PASSWORD_MIN_LENGTH, t('auth.passwordMinLength', { min: PASSWORD_MIN_LENGTH }))
+        .regex(/[A-Z]/, t('account.passwordUppercase'))
+        .regex(/[a-z]/, t('account.passwordLowercase'))
+        .regex(/\d/, t('account.passwordNumber')),
       confirmPassword: z
-        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN }) })
-        .min(1, t('auth.passwordMinLength', { min: PASSWORD_MIN })),
+        .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN_LENGTH }) })
+        .min(1, t('auth.passwordMinLength', { min: PASSWORD_MIN_LENGTH })),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
       message: t('auth.passwordMismatch'),
@@ -55,20 +61,35 @@ const formSchema = computed(() => {
 
 const { handleSubmit } = useForm({ validationSchema: formSchema })
 
-const onSubmit = handleSubmit(async (values) => {
-  isLoading.value = true
-  const token = hasUrlToken ? urlToken : ((values as Record<string, string>).token ?? '')
-  try {
-    await authStore.resetPassword(token, values.newPassword)
-    isSuccess.value = true
-  } catch (err) {
-    if (err instanceof ApiError && err.code === 'INVALID_TOKEN') {
-      toast.error(t('auth.invalidToken'))
-    } else {
-      toast.error(t('errors.serverError'))
+const onSubmit = handleSubmit(
+  async (values) => {
+    if (isLoading.value) return
+
+    // AI modified: prevent repeated one-time-token consumption while the request is pending.
+    isLoading.value = true
+    const token = hasUrlToken ? urlToken : ((values as Record<string, string>).token ?? '')
+    try {
+      await authStore.resetPassword(token, values.newPassword)
+      isSuccess.value = true
+      await nextTick()
+      successHeading.value?.focus()
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'INVALID_RESET_TOKEN') {
+        toast.error(t('auth.invalidToken'))
+      } else {
+        toast.error(t('errors.serverError'))
+      }
+    } finally {
+      isLoading.value = false
     }
-  } finally {
-    isLoading.value = false
+  },
+  () => void focusFirstInvalidControlAfterValidation(formElement.value),
+)
+
+onMounted(() => {
+  if (hasUrlToken) {
+    // AI modified: retain the token in component memory but remove it from browser history and referrers.
+    void router.replace({ name: 'reset-password' })
   }
 })
 </script>
@@ -112,40 +133,47 @@ const onSubmit = handleSubmit(async (values) => {
           <ShieldCheck class="size-7" aria-hidden="true" />
         </div>
         <div>
-          <p class="font-semibold text-foreground">{{ t('auth.resetPasswordSuccessTitle') }}</p>
+          <h2 ref="successHeading" tabindex="-1" class="font-semibold text-foreground outline-none">
+            {{ t('auth.resetPasswordSuccessTitle') }}
+          </h2>
           <p class="mt-1 text-sm text-muted-foreground">
             {{ t('auth.resetPasswordSuccessDesc') }}
           </p>
         </div>
-        <Button class="w-full" @click="router.push({ name: 'login' })">
-          {{ t('auth.resetPasswordGoToLogin') }}
+        <Button as-child class="w-full">
+          <RouterLink :to="{ name: 'login' }">
+            {{ t('auth.resetPasswordGoToLogin') }}
+          </RouterLink>
         </Button>
       </div>
 
       <form
         v-else
+        ref="formElement"
         class="space-y-4"
         novalidate
         :aria-label="t('auth.resetPasswordFormLabel')"
         @submit.prevent="onSubmit"
       >
-        <FormField v-if="!hasUrlToken" name="token" v-slot="{ componentField }">
+        <FormField v-if="!hasUrlToken" v-slot="{ componentField }" name="token">
           <FormItem>
             <FormLabel>{{ t('auth.resetToken') }}</FormLabel>
             <FormControl>
+              <!-- AI modified: automatic translation cannot rewrite a one-time reset identifier. -->
               <Input
                 v-bind="componentField"
                 type="text"
                 :placeholder="t('auth.resetTokenPlaceholder')"
                 autocomplete="off"
                 :disabled="isLoading"
+                translate="no"
               />
             </FormControl>
             <FormMessage />
           </FormItem>
         </FormField>
 
-        <FormField name="newPassword" v-slot="{ componentField }">
+        <FormField v-slot="{ componentField, value }" name="newPassword">
           <FormItem>
             <FormLabel>{{ t('auth.newPassword') }}</FormLabel>
             <FormControl>
@@ -163,6 +191,7 @@ const onSubmit = handleSubmit(async (values) => {
                   type="button"
                   class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
+                  :title="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
                   aria-controls="new-password-input"
                   :aria-pressed="showPassword"
                   @click="showPassword = !showPassword"
@@ -172,11 +201,12 @@ const onSubmit = handleSubmit(async (values) => {
                 </button>
               </div>
             </FormControl>
+            <PasswordStrength :password="String(value ?? '')" />
             <FormMessage />
           </FormItem>
         </FormField>
 
-        <FormField name="confirmPassword" v-slot="{ componentField }">
+        <FormField v-slot="{ componentField }" name="confirmPassword">
           <FormItem>
             <FormLabel>{{ t('auth.confirmPassword') }}</FormLabel>
             <FormControl>
@@ -194,6 +224,7 @@ const onSubmit = handleSubmit(async (values) => {
                   type="button"
                   class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   :aria-label="showConfirm ? t('auth.hidePassword') : t('auth.showPassword')"
+                  :title="showConfirm ? t('auth.hidePassword') : t('auth.showPassword')"
                   aria-controls="confirm-password-input"
                   :aria-pressed="showConfirm"
                   @click="showConfirm = !showConfirm"
@@ -216,13 +247,12 @@ const onSubmit = handleSubmit(async (values) => {
         <div class="pt-1">
           <div class="mb-3 border-t border-border" />
           <div class="flex justify-center">
-            <a
-              href="#"
+            <RouterLink
+              :to="{ name: 'login' }"
               class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-              @click.prevent="router.push({ name: 'login' })"
             >
               {{ t('auth.forgotPasswordBackLink') }}
-            </a>
+            </RouterLink>
           </div>
         </div>
       </form>

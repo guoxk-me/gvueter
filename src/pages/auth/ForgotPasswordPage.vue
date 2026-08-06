@@ -1,30 +1,31 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useForm } from 'vee-validate'
+import { Loader2, MailCheck } from '@lucide/vue'
 import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
-import { MailCheck, Loader2 } from 'lucide-vue-next'
+import { useForm } from 'vee-validate'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { ApiError } from '@/lib/http'
+import { RouterLink } from 'vue-router'
+import { z } from 'zod'
+import { focusFirstInvalidControlAfterValidation } from '@/components/admin/form-focus'
 import { Button } from '@/components/ui/button'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
-const router = useRouter()
 const authStore = useAuthStore()
 
 const isLoading = ref(false)
 const isSuccess = ref(false)
 const sentEmail = ref('')
+const formElement = useTemplateRef<HTMLFormElement>('formElement')
+const successHeading = useTemplateRef<HTMLElement>('successHeading')
 
 const maskedEmail = computed(() => {
   const email = sentEmail.value
   const atIdx = email.indexOf('@')
   if (atIdx <= 1) return email
-  return email[0] + '***' + email.slice(atIdx)
+  return `${email[0]}***${email.slice(atIdx)}`
 })
 
 const formSchema = computed(() =>
@@ -40,22 +41,27 @@ const formSchema = computed(() =>
 
 const { handleSubmit, setFieldError } = useForm({ validationSchema: formSchema })
 
-const onSubmit = handleSubmit(async (values) => {
-  isLoading.value = true
-  try {
-    await authStore.forgotPassword(values.email)
-    sentEmail.value = values.email
-    isSuccess.value = true
-  } catch (err) {
-    if (err instanceof ApiError && err.code === 'USER_NOT_FOUND') {
-      setFieldError('email', t('auth.userNotFound'))
-    } else {
+const onSubmit = handleSubmit(
+  async (values) => {
+    if (isLoading.value) return
+
+    // AI modified: the pending guard prevents repeated reset-email mutations.
+    isLoading.value = true
+    try {
+      await authStore.forgotPassword(values.email)
+      sentEmail.value = values.email
+      isSuccess.value = true
+      await nextTick()
+      successHeading.value?.focus()
+    } catch {
       setFieldError('email', t('errors.serverError'))
+      await focusFirstInvalidControlAfterValidation(formElement.value)
+    } finally {
+      isLoading.value = false
     }
-  } finally {
-    isLoading.value = false
-  }
-})
+  },
+  () => void focusFirstInvalidControlAfterValidation(formElement.value),
+)
 </script>
 
 <template>
@@ -97,24 +103,29 @@ const onSubmit = handleSubmit(async (values) => {
           <MailCheck class="size-7" aria-hidden="true" />
         </div>
         <div>
-          <p class="font-semibold text-foreground">{{ t('auth.forgotPasswordSuccessTitle') }}</p>
+          <h2 ref="successHeading" tabindex="-1" class="font-semibold text-foreground outline-none">
+            {{ t('auth.forgotPasswordSuccessTitle') }}
+          </h2>
           <p class="mt-1 text-sm text-muted-foreground">
             {{ t('auth.forgotPasswordSuccessDesc', { email: maskedEmail }) }}
           </p>
         </div>
-        <Button class="w-full" @click="router.push({ name: 'login' })">
-          {{ t('auth.forgotPasswordBackToLogin') }}
+        <Button as-child class="w-full">
+          <RouterLink :to="{ name: 'login' }">
+            {{ t('auth.forgotPasswordBackToLogin') }}
+          </RouterLink>
         </Button>
       </div>
 
       <form
         v-else
+        ref="formElement"
         class="space-y-4"
         novalidate
         :aria-label="t('auth.forgotPasswordFormLabel')"
         @submit.prevent="onSubmit"
       >
-        <FormField name="email" v-slot="{ componentField }">
+        <FormField v-slot="{ componentField }" name="email">
           <FormItem>
             <FormLabel>{{ t('auth.email') }}</FormLabel>
             <FormControl>
@@ -139,13 +150,9 @@ const onSubmit = handleSubmit(async (values) => {
     </div>
 
     <p v-if="!isSuccess" class="text-center text-sm text-muted-foreground">
-      <a
-        href="#"
-        class="hover:text-foreground hover:underline"
-        @click.prevent="router.push({ name: 'login' })"
-      >
+      <RouterLink :to="{ name: 'login' }" class="hover:text-foreground hover:underline">
         {{ t('auth.forgotPasswordBackLink') }}
-      </a>
+      </RouterLink>
     </p>
   </div>
 </template>

@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss';
@@ -23,6 +24,8 @@
     /* Primary - violet */
     --primary: oklch(0.21 0.006 285.885);
     --primary-foreground: oklch(0.985 0 0);
+    --primary-text: var(--primary);
+    --primary-muted: color-mix(in oklch, var(--primary) 14%, transparent);
 
     /* Secondary */
     --secondary: oklch(0.967 0.001 286.375);
@@ -30,22 +33,30 @@
 
     /* Muted */
     --muted: oklch(0.967 0.001 286.375);
-    --muted-foreground: oklch(55.1% 0.027 264.364);
+    --muted-foreground: oklch(53% 0.027 264.364);
 
     /* Accent - violet tint */
     --accent: oklch(0.967 0.001 286.375);
-    --accent-foreground: oklch(70.2% 0.183 293.541);
+    --accent-foreground: oklch(42% 0.18 293.541);
 
     /* Destructive */
-    --destructive: oklch(0.577 0.245 27.325);
+    --destructive: oklch(0.49 0.21 27.325);
+    --destructive-foreground: oklch(0.985 0 0);
+    --destructive-text: var(--destructive);
+    --destructive-muted: color-mix(in oklch, var(--destructive) 14%, transparent);
 
+    /* AI modified: semantic solid/text pairs retain WCAG AA contrast in both theme modes. */
     /* Semantic functional colors */
-    --info: oklch(0.623 0.214 255.532);
+    --info: oklch(0.48 0.18 255.532);
     --info-foreground: oklch(0.985 0 0);
-    --success: oklch(0.627 0.194 149.214);
+    --success: oklch(0.45 0.15 149.214);
     --success-foreground: oklch(0.985 0 0);
-    --warning: oklch(0.702 0.191 47.604);
+    --success-text: var(--success);
+    --success-muted: color-mix(in oklch, var(--success) 14%, transparent);
+    --warning: oklch(0.47 0.15 47.604);
     --warning-foreground: oklch(0.985 0 0);
+    --warning-text: var(--warning);
+    --warning-muted: color-mix(in oklch, var(--warning) 16%, transparent);
     --brand: var(--accent-foreground);
     --brand-foreground: oklch(0.985 0 0);
 
@@ -60,22 +71,59 @@
     --chart-3: oklch(0.398 0.1 270);
     --chart-4: oklch(0.828 0.12 300);
     --chart-5: oklch(0.769 0.18 285);
+    --chart-grid: color-mix(in oklch, var(--border) 78%, transparent);
+    --chart-axis: var(--muted-foreground);
+    --chart-surface: var(--card);
 
     /* Sidebar */
     --sidebar: oklch(0.985 0.001 286.375);
     --sidebar-foreground: oklch(0.141 0.005 285.823);
-    --sidebar-primary: oklch(0.646 0.222 293.541);
+    --sidebar-primary: oklch(0.5 0.2 293.541);
     --sidebar-primary-foreground: oklch(0.985 0 0);
     --sidebar-accent: oklch(0.967 0.001 286.375);
-    --sidebar-accent-foreground: oklch(70.2% 0.183 293.541);
+    --sidebar-accent-foreground: oklch(42% 0.18 293.541);
     --sidebar-border: oklch(0.92 0.004 286.32);
     --sidebar-ring: oklch(0.705 0.015 286.067);
 
     /* 主题切换过渡变量 */
-    --theme-transition: all 0.4s ease-out;
+
+    /* AI modified: one density contract drives default buttons, forms, and tables. */
+    --control-height: 2.25rem;
+    --control-padding-x: 0.75rem;
+    --control-font-size: 0.875rem;
+    --table-row-height: 2.5rem;
+    --table-cell-padding-x: 0.5rem;
+    --table-cell-padding-y: 0.5rem;
+    --scrollbar-size: 0.625rem;
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: color-mix(in oklch, var(--muted-foreground) 38%, transparent);
+    --scrollbar-thumb-hover: color-mix(in oklch, var(--muted-foreground) 58%, transparent);
+    /* AI modified: CSS and Motion consumers share one restrained admin interaction rhythm. */
+    --motion-duration-fast: 120ms;
+    --motion-duration-standard: 180ms;
+    --motion-duration-emphasized: 240ms;
+    --motion-duration-overlay: 280ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --motion-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+    --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --motion-distance-sm: 0.25rem;
+    --motion-distance-md: 0.5rem;
+    --page-transition-duration: var(--motion-duration-standard);
+    --page-transition-distance: var(--motion-distance-md);
+
+    /* AI modified: page composition and Shell chrome consume one measurable geometry contract. */
+    --admin-shell-header-height: 3.5rem;
+    --admin-context-breadcrumb-height: 2rem;
+    --admin-context-tabs-height: 2.5rem;
+    --admin-page-padding: 1rem;
+    --admin-page-padding-wide: 1.5rem;
+    --admin-touch-target: 2.75rem;
   }
 
   .dark {
+    /* AI modified: native inputs and browser chrome follow the selected dark theme. */
+    color-scheme: dark;
+
     /* Base */
     --background: oklch(14.5% 0 0);
     --foreground: oklch(96.7% 0.003 264.542);
@@ -89,6 +137,7 @@
     /* Primary */
     --primary: oklch(0.985 0 0);
     --primary-foreground: oklch(0.21 0.006 285.885);
+    --primary-text: var(--primary);
 
     /* Secondary */
     --secondary: oklch(0.274 0.006 286.033);
@@ -104,14 +153,18 @@
 
     /* Destructive */
     --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(0.18 0.02 25);
+    --destructive-text: var(--destructive);
 
     /* Semantic functional colors */
-    --info: oklch(0.546 0.245 255.532);
-    --info-foreground: oklch(0.985 0 0);
-    --success: oklch(0.527 0.177 149.214);
-    --success-foreground: oklch(0.985 0 0);
-    --warning: oklch(0.621 0.191 47.604);
-    --warning-foreground: oklch(0.985 0 0);
+    --info: oklch(0.62 0.2 255.532);
+    --info-foreground: oklch(0.16 0.02 255);
+    --success: oklch(0.66 0.17 149.214);
+    --success-foreground: oklch(0.16 0.02 150);
+    --success-text: var(--success);
+    --warning: oklch(0.72 0.17 47.604);
+    --warning-foreground: oklch(0.16 0.02 47);
+    --warning-text: var(--warning);
     --brand: var(--accent-foreground);
     --brand-foreground: oklch(0.985 0 0);
 
@@ -131,7 +184,7 @@
     --sidebar: oklch(0.205 0.006 285.885);
     --sidebar-foreground: oklch(96.7% 0.003 264.542);
     --sidebar-primary: oklch(70.2% 0.183 293.541);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-primary-foreground: oklch(0.16 0.02 293);
     --sidebar-accent: oklch(0.274 0.006 286.033);
     --sidebar-accent-foreground: oklch(70.2% 0.183 293.541);
     --sidebar-border: oklch(0.274 0.006 286.033);
@@ -146,6 +199,7 @@
   [role='button'],
   a {
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   body {
@@ -162,6 +216,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-muted: var(--primary-muted);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -169,12 +224,16 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-muted: var(--destructive-muted);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-muted: var(--success-muted);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-muted: var(--warning-muted);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-border: var(--border);
@@ -185,6 +244,9 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
+  --color-chart-surface: var(--chart-surface);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -206,6 +268,159 @@
   --font-heading: var(--font-sans);
 
   --breakpoint-xs: 25rem;
+  /* AI modified: Tailwind lg utilities consume the same 1024px Shell breakpoint contract. */
+  --breakpoint-lg: 64rem;
+}
+
+/* AI modified: on-surface semantic text uses contrast-safe tokens while solid fills keep their hue. */
+@utility text-primary {
+  color: var(--primary-text);
+}
+
+@utility text-success {
+  color: var(--success-text);
+}
+
+@utility text-warning {
+  color: var(--warning-text);
+}
+
+@utility text-destructive {
+  color: var(--destructive-text);
+}
+
+:root[data-component-size='sm'] {
+  --control-height: 2rem;
+  --control-padding-x: 0.625rem;
+  --control-font-size: 0.8125rem;
+  --table-row-height: 2.125rem;
+  --table-cell-padding-x: 0.375rem;
+  --table-cell-padding-y: 0.375rem;
+}
+
+:root[data-component-size='md'] {
+  --control-height: 2.5rem;
+  --control-padding-x: 0.875rem;
+  --control-font-size: 0.875rem;
+  --table-row-height: 2.75rem;
+  --table-cell-padding-x: 0.625rem;
+  --table-cell-padding-y: 0.625rem;
+}
+
+:root[data-component-size='lg'] {
+  --control-height: 2.75rem;
+  --control-padding-x: 1rem;
+  --control-font-size: 1rem;
+  --table-row-height: 3rem;
+  --table-cell-padding-x: 0.75rem;
+  --table-cell-padding-y: 0.75rem;
+}
+
+:root[data-page-transition='fade'] {
+  --page-transition-distance: 0;
+}
+
+:root[data-page-transition='none'] {
+  --page-transition-duration: 0ms;
+  --page-transition-distance: 0;
+}
+
+/* Default-sized shadcn/reka controls inherit the global density without overriding explicit local sizes. */
+:root[data-component-size] [data-slot='button']:is([data-size='default'], :not([data-size])) {
+  min-height: var(--control-height);
+  height: var(--control-height);
+  padding-inline: var(--control-padding-x);
+  font-size: var(--control-font-size);
+}
+
+:root[data-component-size] [data-slot='input'],
+:root[data-component-size] [data-slot='select-trigger'][data-size='default'] {
+  min-height: var(--control-height);
+  height: var(--control-height);
+  padding-inline: var(--control-padding-x);
+  font-size: var(--control-font-size);
+}
+
+:root[data-component-size] [data-slot='textarea'] {
+  padding-inline: var(--control-padding-x);
+  font-size: var(--control-font-size);
+}
+
+:root[data-component-size] [data-slot='table'] {
+  font-size: var(--control-font-size);
+}
+
+:root[data-component-size] [data-slot='table-head'] {
+  height: var(--table-row-height);
+  padding-inline: var(--table-cell-padding-x);
+}
+
+:root[data-component-size] [data-slot='table-cell'] {
+  padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+}
+
+/* AI modified: coarse-pointer controls expose a 44px hit target without changing dense desktop geometry. */
+@media (pointer: coarse) {
+  :root[data-component-size] [data-slot='button']:is([data-size], :not([data-size])),
+  :root[data-component-size] [data-slot='input'],
+  :root[data-component-size] [data-slot='select-trigger']:is([data-size], :not([data-size])) {
+    /* AI modified: match density-selector specificity so 44px remains the effective minimum. */
+    min-block-size: var(--admin-touch-target);
+  }
+
+  :where(
+    [data-slot='button'],
+    [data-slot='input'],
+    [data-slot='select-trigger'],
+    [data-admin-navigation-target],
+    button,
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea,
+    a[href],
+    [role='button'],
+    [role='menuitem'],
+    [role='option'],
+    [role='tab'],
+    [role='treeitem']
+  ) {
+    min-block-size: var(--admin-touch-target);
+  }
+
+  :where(
+    [data-slot='button'][data-size^='icon'],
+    [data-admin-navigation-target],
+    button,
+    [role='button']
+  ) {
+    min-inline-size: var(--admin-touch-target);
+  }
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 0.1875rem solid transparent;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
 }
 
 /* ── 主题切换 View Transition 颜色渐变动画 ─────────────────────────────────── */
@@ -237,6 +452,15 @@
 
 /* 尊重用户的减少动效偏好 */
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0s;

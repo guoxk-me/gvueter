@@ -1,38 +1,40 @@
-import { globalIgnores } from 'eslint/config'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginVue from 'eslint-plugin-vue'
-import pluginPlaywright from 'eslint-plugin-playwright'
-import pluginVitest from '@vitest/eslint-plugin'
-import pluginOxlint from 'eslint-plugin-oxlint'
-import skipFormatting from 'eslint-config-prettier/flat'
+import antfu from '@antfu/eslint-config'
 
-// To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
-// import { configureVueProject } from '@vue/eslint-config-typescript'
-// configureVueProject({ scriptLangs: ['ts', 'tsx'] })
-// More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
-
-export default defineConfigWithVueTs(
+// AI modified: keep @antfu/eslint-config minimal — vue/typescript/pnpm only.
+export default antfu(
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{vue,ts,mts,tsx}'],
+    // AI modified: Oxfmt is the single formatter; ESLint keeps semantic Vue/TypeScript/project checks.
+    ignores: ['public/mockServiceWorker.js', 'src/auto-imports.d.ts'],
+    stylistic: false,
+    vue: true,
+    typescript: true,
+    pnpm: true,
   },
-
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
-
-  ...pluginVue.configs['flat/essential'],
-  vueTsConfigs.recommended,
-
   {
-    ...pluginPlaywright.configs['flat/recommended'],
-    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    name: 'gvueter/oxfmt-formatting-ownership',
+    rules: {
+      // AI modified: formatting-equivalent rules defer to vp fmt so required gates cannot rewrite each other.
+      'style/arrow-parens': 'off',
+      'style/brace-style': 'off',
+      'style/member-delimiter-style': 'off',
+      'style/operator-linebreak': 'off',
+      'unicorn/number-literal-case': 'off',
+    },
   },
-
   {
-    ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
+    files: ['**/*.vue'],
+    name: 'gvueter/oxfmt-vue-formatting-ownership',
+    rules: {
+      'vue/html-closing-bracket-newline': 'off',
+      'vue/html-indent': 'off',
+      'vue/html-self-closing': 'off',
+      'vue/multiline-html-element-content-newline': 'off',
+      'vue/singleline-html-element-content-newline': 'off',
+    },
   },
-
-  ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
-
-  skipFormatting,
-)
+).override('antfu/pnpm/pnpm-workspace-yaml', {
+  rules: {
+    // AI modified: keep the pnpm rule active while enforcing the setting compatible with the frozen lockfile.
+    'pnpm/yaml-enforce-settings': ['error', { settings: { shellEmulator: true } }],
+  },
+})

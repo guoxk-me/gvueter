@@ -1,165 +1,114 @@
-import { watch } from 'vue'
-import { useAppearanceStore } from '@/stores/appearance'
-import { type ThemeColorId, getPreset } from '@/lib/theme-presets'
-import { useTheme } from '@/composables/useTheme'
+import type { EffectScope } from 'vue'
+import type { AppSettings, ResolvedTheme } from '@/stores/appearance'
+import { effectScope, onScopeDispose, watch } from 'vue'
+import { getBrowserStorage, safeStorageSet } from '@/lib/browser-storage'
+import { getThemeCssVariables } from '@/lib/theme-presets'
+import { readStoredAppSettings, resolveThemeMode, useAppearanceStore } from '@/stores/appearance'
 
-/**
- * 将主题色应用为 inline CSS 变量（覆盖 main.css 默认值）
- * 支持 light / dark 两套，跟随当前 resolvedTheme 自动切换
- */
-
-/** 将 hex 色转换为近似 oklch 字符串（简单映射，仅用于 custom 色） */
-function hexToOklch(hex: string): string {
-  // 简单地把 hex 转 rgb 再近似到 oklch 的 l/c/h
-  // 对于自定义色，我们直接输出 hex（现代浏览器支持在 oklch 场景使用 hex）
-  return hex
-}
-
-function applyVars(vars: Record<string, string>) {
+function applyCssVariables(variables: Record<string, string>): void {
   const root = document.documentElement
-  for (const [key, value] of Object.entries(vars)) {
-    root.style.setProperty(key, value)
-  }
+  for (const [property, color] of Object.entries(variables)) root.style.setProperty(property, color)
 }
 
-function clearVars(keys: string[]) {
-  const root = document.documentElement
-  for (const key of keys) {
-    root.style.removeProperty(key)
-  }
+function syncLegacyPreferences(settings: AppSettings): void {
+  // AI modified: keep legacy theme/locale consumers synchronized while AppSettings becomes the source of truth.
+  const storage = getBrowserStorage('local')
+  safeStorageSet(storage, 'theme', settings.themeMode)
+  safeStorageSet(storage, 'locale', settings.locale)
 }
 
-const VAR_KEYS = [
-  '--primary',
-  '--primary-foreground',
-  '--ring',
-  '--accent-foreground',
-  '--sidebar-primary',
-  '--sidebar-primary-foreground',
-  '--sidebar-accent-foreground',
-  '--chart-1',
-]
-
-function buildCustomVars(hex: string, isDark: boolean): Record<string, string> {
-  const color = hexToOklch(hex)
-  if (isDark) {
-    return {
-      '--primary': 'oklch(0.985 0 0)',
-      '--primary-foreground': color,
-      '--ring': color,
-      '--accent-foreground': color,
-      '--sidebar-primary': color,
-      '--sidebar-primary-foreground': 'oklch(0.985 0 0)',
-      '--sidebar-accent-foreground': color,
-      '--chart-1': color,
-    }
-  }
-  return {
-    '--primary': color,
-    '--primary-foreground': 'oklch(0.985 0 0)',
-    '--ring': color,
-    '--accent-foreground': color,
-    '--sidebar-primary': color,
-    '--sidebar-primary-foreground': 'oklch(0.985 0 0)',
-    '--sidebar-accent-foreground': color,
-    '--chart-1': color,
-  }
-}
-
-function applyThemeColor(colorId: ThemeColorId, customColor: string, isDark: boolean) {
+export function applyAppSettingsToDocument(
+  settings: AppSettings,
+  resolvedTheme: ResolvedTheme = resolveThemeMode(settings.themeMode),
+): void {
   if (typeof document === 'undefined') return
 
-  if (colorId === 'violet') {
-    // 默认色：移除 inline 覆盖，让 CSS 文件生效
-    clearVars(VAR_KEYS)
-    return
-  }
+  const root = document.documentElement
+  const isDark = resolvedTheme === 'dark'
 
-  if (colorId === 'custom') {
-    applyVars(buildCustomVars(customColor, isDark))
-    return
-  }
+  root.classList.toggle('dark', isDark)
+  root.classList.toggle('is-sidebar-collapsed', settings.sidebarDefault === 'collapsed')
+  root.classList.toggle('has-watermark', settings.isWatermarkVisible)
+  root.classList.toggle('has-tabs', settings.isTabsVisible)
+  root.style.colorScheme = resolvedTheme
+  root.lang = settings.locale
 
-  const preset = getPreset(colorId)
-  if (!preset) return
+  root.dataset.theme = resolvedTheme
+  root.dataset.themeMode = settings.themeMode
+  root.dataset.locale = settings.locale
+  root.dataset.componentSize = settings.componentSize
+  root.dataset.layout = settings.layout
+  root.dataset.contentWidth = settings.contentWidth
+  root.dataset.sidebar = settings.sidebarDefault
+  root.dataset.stickyHeader = String(settings.isHeaderSticky)
+  root.dataset.watermark = String(settings.isWatermarkVisible)
+  root.dataset.breadcrumb = String(settings.isBreadcrumbVisible)
+  root.dataset.breadcrumbIcon = String(settings.hasBreadcrumbIcon)
+  root.dataset.tabs = String(settings.isTabsVisible)
+  root.dataset.tabStyle = settings.tabStyle
+  root.dataset.footer = String(settings.isFooterVisible)
+  root.dataset.pageTransition = settings.pageTransition
 
-  const vars = isDark ? preset.dark : preset.light
-  applyVars({
-    '--primary': vars.primary,
-    '--primary-foreground': vars.primaryForeground,
-    '--ring': vars.ring,
-    '--accent-foreground': vars.accentForeground,
-    '--sidebar-primary': vars.sidebarPrimary,
-    '--sidebar-primary-foreground': vars.sidebarPrimaryForeground,
-    '--sidebar-accent-foreground': vars.sidebarAccentForeground,
-    '--chart-1': vars.chart1,
+  applyCssVariables(
+    getThemeCssVariables(
+      settings.themeColor,
+      settings.customColor,
+      {
+        success: settings.successColor,
+        warning: settings.warningColor,
+        destructive: settings.destructiveColor,
+      },
+      isDark,
+    ),
+  )
+  syncLegacyPreferences(settings)
+}
+
+type AppearanceStore = ReturnType<typeof useAppearanceStore>
+
+let activeAppearanceStore: AppearanceStore | undefined
+let settingsEffectScope: EffectScope | undefined
+
+function startSettingsSync(appearance: AppearanceStore): void {
+  if (activeAppearanceStore === appearance && settingsEffectScope?.active) return
+
+  settingsEffectScope?.stop()
+  activeAppearanceStore = appearance
+  settingsEffectScope = effectScope(true)
+
+  settingsEffectScope.run(() => {
+    watch(
+      () => appearance.settings,
+      (settings) => applyAppSettingsToDocument(settings),
+      { immediate: true, flush: 'sync' },
+    )
+
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleColorSchemeChange = (): void => {
+      if (appearance.themeMode === 'system')
+        applyAppSettingsToDocument(appearance.settings, colorSchemeQuery.matches ? 'dark' : 'light')
+    }
+
+    colorSchemeQuery.addEventListener?.('change', handleColorSchemeChange)
+    onScopeDispose(() => colorSchemeQuery.removeEventListener?.('change', handleColorSchemeChange))
   })
 }
 
-let initialized = false
-
 export function useThemeColor() {
   const appearance = useAppearanceStore()
-  const { resolvedTheme } = useTheme()
+  startSettingsSync(appearance)
 
-  if (!initialized) {
-    initialized = true
-    // 立即应用
-    applyThemeColor(appearance.themeColor, appearance.customColor, resolvedTheme.value === 'dark')
-
-    // 监听 themeColor / customColor / resolvedTheme 变化
-    watch(
-      [() => appearance.themeColor, () => appearance.customColor, resolvedTheme],
-      ([colorId, customColor, theme]) => {
-        applyThemeColor(colorId as ThemeColorId, customColor, theme === 'dark')
-      },
-    )
+  return {
+    applyThemeColor: () => applyAppSettingsToDocument(appearance.settings),
   }
-
-  return { applyThemeColor }
 }
 
 /**
- * 在 main.ts 中调用，无需 Pinia，仅读取 localStorage 快速应用
- * 避免首屏闪烁（FOUC）
+ * Applies persisted settings before Vue mounts to avoid theme, density, and layout flashes.
  */
-export function hydrateThemeColorEarly() {
+export function hydrateThemeColorEarly(): void {
   if (typeof window === 'undefined') return
-  try {
-    const raw = localStorage.getItem('appearance')
-    if (!raw) return
-    const stored = JSON.parse(raw) as { themeColor?: string; customColor?: string }
-    const colorId = stored.themeColor as ThemeColorId | undefined
-    const customColor = stored.customColor ?? '#8b5cf6'
-    if (!colorId || colorId === 'violet') return
-
-    const isDark =
-      document.documentElement.classList.contains('dark') ||
-      (localStorage.getItem('theme') === 'system' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-    if (colorId === 'custom') {
-      applyVars(buildCustomVars(customColor, isDark))
-      return
-    }
-
-    // 动态导入（同步 ESM 静态 import 的方式在 early 阶段不可用，直接内联逻辑）
-    void import('@/lib/theme-presets').then(({ THEME_PRESETS }) => {
-      const preset = THEME_PRESETS.find((p) => p.id === colorId)
-      if (!preset) return
-      const vars = isDark ? preset.dark : preset.light
-      applyVars({
-        '--primary': vars.primary,
-        '--primary-foreground': vars.primaryForeground,
-        '--ring': vars.ring,
-        '--accent-foreground': vars.accentForeground,
-        '--sidebar-primary': vars.sidebarPrimary,
-        '--sidebar-primary-foreground': vars.sidebarPrimaryForeground,
-        '--sidebar-accent-foreground': vars.sidebarAccentForeground,
-        '--chart-1': vars.chart1,
-      })
-    })
-  } catch {
-    // ignore
-  }
+  applyAppSettingsToDocument(readStoredAppSettings())
 }

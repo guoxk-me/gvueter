@@ -1,4 +1,11 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    // AI modified: Playwright tests use both browser globals and Node helpers during one type-check.
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true
+  },
   "include": ["./**/*"]
 }

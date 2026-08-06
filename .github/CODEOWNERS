@@ -1,0 +1,7 @@
+# AI modified: repository ownership is explicit for review routing and sensitive configuration changes.
+* @guoxk-me
+/.github/ @guoxk-me
+/Dockerfile @guoxk-me
+/nginx.conf @guoxk-me
+/SECURITY.md @guoxk-me
+/docs/security.md @guoxk-me

@@ -1,12 +1,21 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { defineAbilityFor, updateAbility, appAbility } from '@/lib/ability'
 import type { User } from '@/stores/auth'
+import { subject } from '@casl/ability'
+import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import {
+  appAbility,
+  defineAbilityFor as defineAbilityFromSnapshot,
+  hasActivePermissionIdentifier,
+  updateAbility as updateAbilityFromSnapshot,
+} from '@/lib/ability'
+import { getTestAuthorization } from './auth-test-helpers'
 
 const adminUser: User = {
   id: 1,
   name: 'Admin',
   email: 'admin@example.com',
   role: 'admin',
+  status: 'active',
+  createdAt: '2026-01-01T08:00:00.000Z',
 }
 
 const editorUser: User = {
@@ -14,6 +23,10 @@ const editorUser: User = {
   name: 'Editor',
   email: 'editor@example.com',
   role: 'editor',
+  status: 'active',
+  departmentId: 'product',
+  departmentPath: 'company/product',
+  createdAt: '2026-01-01T08:00:00.000Z',
 }
 
 const viewerUser: User = {
@@ -21,6 +34,16 @@ const viewerUser: User = {
   name: 'Viewer',
   email: 'viewer@example.com',
   role: 'viewer',
+  status: 'active',
+  createdAt: '2026-01-01T08:00:00.000Z',
+}
+
+function defineAbilityFor(user: User | null) {
+  return defineAbilityFromSnapshot(user, user ? getTestAuthorization(user) : null)
+}
+
+function updateAbility(user: User | null): void {
+  updateAbilityFromSnapshot(user, user ? getTestAuthorization(user) : null)
 }
 
 describe('defineAbilityFor', () => {
@@ -36,10 +59,14 @@ describe('defineAbilityFor', () => {
     })
   })
 
+  it('does not infer grants from a display role without a backend snapshot', () => {
+    expect(defineAbilityFromSnapshot(adminUser).can('read', 'Dashboard')).toBe(false)
+  })
+
   describe('admin role', () => {
-    it('can manage all subjects', () => {
+    it('can update Settings', () => {
       const ability = defineAbilityFor(adminUser)
-      expect(ability.can('manage', 'all')).toBe(true)
+      expect(ability.can('update', 'Settings')).toBe(true)
     })
 
     it('can read Dashboard', () => {
@@ -88,6 +115,31 @@ describe('defineAbilityFor', () => {
       const ability = defineAbilityFor(editorUser)
       expect(ability.can('create', 'User')).toBe(false)
     })
+
+    it('limits readable users to the current department tree', () => {
+      const ability = defineAbilityFor(editorUser)
+
+      expect(
+        ability.can(
+          'read',
+          subject('User', {
+            ...adminUser,
+            departmentId: 'product-design',
+            departmentPath: 'company/product/design',
+          }),
+        ),
+      ).toBe(true)
+      expect(
+        ability.can(
+          'read',
+          subject('User', {
+            ...adminUser,
+            departmentId: 'finance',
+            departmentPath: 'company/finance',
+          }),
+        ),
+      ).toBe(false)
+    })
   })
 
   describe('viewer role', () => {
@@ -130,7 +182,8 @@ describe('updateAbility (singleton)', () => {
 
   it('grants admin permissions after login', () => {
     updateAbility(adminUser)
-    expect(appAbility.can('manage', 'all')).toBe(true)
+    expect(appAbility.can('delete', 'User')).toBe(true)
+    expect(hasActivePermissionIdentifier('system:monitoring:read')).toBe(true)
   })
 
   it('grants editor permissions after login', () => {
@@ -141,8 +194,9 @@ describe('updateAbility (singleton)', () => {
 
   it('revokes permissions after logout', () => {
     updateAbility(adminUser)
-    expect(appAbility.can('manage', 'all')).toBe(true)
+    expect(appAbility.can('update', 'Settings')).toBe(true)
     updateAbility(null)
     expect(appAbility.can('read', 'Dashboard')).toBe(false)
+    expect(hasActivePermissionIdentifier('system:monitoring:read')).toBe(false)
   })
 })
