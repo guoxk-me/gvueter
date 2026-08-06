@@ -1,94 +1,50 @@
-import { computed, ref } from 'vue'
+import type { ResolvedTheme, ThemeMode } from '@/stores/appearance'
+import { storeToRefs } from 'pinia'
+import { computed, shallowRef } from 'vue'
+import { useThemeColor } from '@/composables/useThemeColor'
+import { THEME_MODES, useAppearanceStore } from '@/stores/appearance'
 
-export const THEME_MODES = ['system', 'light', 'dark'] as const
+export { THEME_MODES } from '@/stores/appearance'
+export type { ResolvedTheme, ThemeMode } from '@/stores/appearance'
 
-export type ThemeMode = (typeof THEME_MODES)[number]
-export type ResolvedTheme = Exclude<ThemeMode, 'system'>
+const systemPrefersDark = shallowRef(false)
+let isSystemPreferenceObserved = false
 
-const THEME_STORAGE_KEY = 'theme'
-const themeMode = ref<ThemeMode>('system')
-const systemPrefersDark = ref(false)
-
-let isInitialized = false
-
-function isThemeMode(value: string | null): value is ThemeMode {
-  return value !== null && THEME_MODES.includes(value as ThemeMode)
-}
-
-function getStoredThemeMode(): ThemeMode {
-  if (typeof window === 'undefined') {
-    return 'system'
-  }
-
-  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
-  return isThemeMode(storedTheme) ? storedTheme : 'system'
-}
-
-function getMediaQuery() {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  return window.matchMedia('(prefers-color-scheme: dark)')
-}
-
-function getResolvedTheme(mode: ThemeMode): ResolvedTheme {
-  if (mode === 'system') {
-    return systemPrefersDark.value ? 'dark' : 'light'
-  }
-
-  return mode
-}
-
-function applyResolvedTheme(mode: ThemeMode) {
-  if (typeof document === 'undefined') {
+function observeSystemPreference(): void {
+  if (
+    isSystemPreferenceObserved ||
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return
   }
 
-  const resolvedTheme = getResolvedTheme(mode)
-  document.documentElement.classList.toggle('dark', resolvedTheme === 'dark')
-  document.documentElement.style.colorScheme = resolvedTheme
-}
-
-function initializeTheme() {
-  if (isInitialized || typeof window === 'undefined') {
-    return
-  }
-
-  const mediaQuery = getMediaQuery()
-  systemPrefersDark.value = mediaQuery?.matches ?? false
-  themeMode.value = getStoredThemeMode()
-  applyResolvedTheme(themeMode.value)
-
-  const handlePreferenceChange = (event: MediaQueryListEvent) => {
+  const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  systemPrefersDark.value = colorSchemeQuery.matches
+  colorSchemeQuery.addEventListener?.('change', (event) => {
     systemPrefersDark.value = event.matches
-
-    if (themeMode.value === 'system') {
-      applyResolvedTheme('system')
-    }
-  }
-
-  mediaQuery?.addEventListener('change', handlePreferenceChange)
-  isInitialized = true
+  })
+  isSystemPreferenceObserved = true
 }
 
 export function useTheme() {
-  initializeTheme()
+  const appearance = useAppearanceStore()
+  const { themeMode } = storeToRefs(appearance)
 
-  const resolvedTheme = computed<ResolvedTheme>(() => getResolvedTheme(themeMode.value))
+  // AI modified: legacy theme controls now project the single AppSettings source into the DOM.
+  useThemeColor()
+  observeSystemPreference()
+
+  const resolvedTheme = computed<ResolvedTheme>(() => {
+    if (themeMode.value !== 'system') return themeMode.value
+    return systemPrefersDark.value ? 'dark' : 'light'
+  })
   const isDark = computed(() => resolvedTheme.value === 'dark')
 
-  function setTheme(mode: ThemeMode, event?: MouseEvent) {
-    void event // crossfade 不需要点击坐标
+  function setTheme(mode: ThemeMode, event?: MouseEvent): void {
+    void event
 
-    const apply = () => {
-      themeMode.value = mode
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(THEME_STORAGE_KEY, mode)
-      }
-      applyResolvedTheme(mode)
-    }
-
+    const apply = (): void => appearance.setThemeMode(mode)
     if (typeof document === 'undefined' || !document.startViewTransition) {
       apply()
       return
@@ -97,13 +53,13 @@ export function useTheme() {
     document.startViewTransition(apply)
   }
 
-  function cycleTheme(event?: MouseEvent) {
+  function cycleTheme(event?: MouseEvent): void {
     const currentIndex = THEME_MODES.indexOf(themeMode.value)
     const nextMode = THEME_MODES[(currentIndex + 1) % THEME_MODES.length] ?? 'system'
     setTheme(nextMode, event)
   }
 
-  function toggleTheme(event?: MouseEvent) {
+  function toggleTheme(event?: MouseEvent): void {
     cycleTheme(event)
   }
 
