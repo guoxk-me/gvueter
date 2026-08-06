@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ButtonVariants } from '@/components/ui/button'
-import { Languages } from 'lucide-vue-next'
+import { Languages } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'

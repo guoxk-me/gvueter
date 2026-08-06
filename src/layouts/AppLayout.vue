@@ -1,29 +1,19 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { LazyMotion, MotionConfig, useReducedMotion } from 'motion-v'
+import ConfigurableAdminLayout from '@/components/layout/ConfigurableAdminLayout.vue'
 import { useThemeColor } from '@/composables/useThemeColor'
-import { useAppearanceStore } from '@/stores/appearance'
+import { loadAdminMotionFeatures } from '@/lib/motion-contract'
 
-// 初始化主题色（保证在 layout 挂载时已激活监听）
+// AI modified: activate document tokens before the configurable shell renders its regions.
 useThemeColor()
-
-const appearance = useAppearanceStore()
-
-const SidebarLayout = defineAsyncComponent(() => import('./AdminLayout.vue'))
-const TopNavLayout = defineAsyncComponent(() => import('./TopNavLayout.vue'))
-const MixedLayout = defineAsyncComponent(() => import('./MixedLayout.vue'))
-
-const currentLayout = computed(() => {
-  switch (appearance.layout) {
-    case 'top':
-      return TopNavLayout
-    case 'mixed':
-      return MixedLayout
-    default:
-      return SidebarLayout
-  }
-})
+const shouldReduceMotion = useReducedMotion()
 </script>
 
 <template>
-  <component :is="currentLayout" />
+  <!-- AI modified: authenticated motion features load lazily and reduced-motion users receive final states. -->
+  <LazyMotion :features="loadAdminMotionFeatures" strict>
+    <MotionConfig reduced-motion="user" :skip-animations="shouldReduceMotion">
+      <ConfigurableAdminLayout />
+    </MotionConfig>
+  </LazyMotion>
 </template>
