@@ -1,152 +1,89 @@
-# CASL 权限系统集成说明
+# CASL 权限与数据范围
 
-## 改动概览
+CASL 是浏览器端的体验层权限模型。路由、菜单、`PermissionGate` 和按钮隐藏都不能替代后端鉴权；MSW handler 会再次验证 token、能力和数据范围，用于演示真实接口边界。
 
-本次改动为项目引入了基于 CASL 的细粒度权限控制系统，覆盖权限定义、响应式同步、路由守卫和单元测试四个层面。
+## 契约
 
----
+```ts
+type PermissionAction = 'read' | 'create' | 'update' | 'delete'
+type PermissionSubject =
+  | 'Dashboard'
+  | 'User'
+  | 'Content'
+  | 'Analytics'
+  | 'Settings'
+  | 'RolePolicy'
+  | 'Monitoring'
+  | 'AuditLog'
 
-## 新增文件
+interface RolePermission {
+  action: PermissionAction
+  subject: PermissionSubject
+}
 
-### `src/lib/ability.ts`
+interface AuthorizationGrant extends RolePermission {
+  permissionIdentifier: string
+}
 
-**改动内容：**
+interface AuthorizationSnapshot {
+  contractVersion: 1
+  policyVersion: string
+  grants: AuthorizationGrant[]
+  dataScope: DataScopeGrant
+}
 
-- 定义了 `AppSubject`（权限对象：`Dashboard`、`User`、`Content`、`Settings`、`all`）和 `AppAction`（权限动作：`manage`、`read`、`create`、`update`、`delete`）两个类型
-- 实现了 `defineAbilityFor(user)` 函数，根据用户角色返回对应的权限规则集
-- 导出了全局单例 `appAbility`（整个应用共享同一个 Ability 实例）
-- 导出了 `updateAbility(user)` 函数，用于登录/登出时原地更新单例的规则
-
-**权限矩阵：**
-
-| 能力                     | admin | editor | viewer |
-| ------------------------ | ----- | ------ | ------ |
-| 管理一切（`manage all`） | ✅    | —      | —      |
-| 读取 Dashboard           | ✅    | ✅     | ✅     |
-| 读取 Content             | ✅    | ✅     | ✅     |
-| 创建/修改 Content        | ✅    | ✅     | —      |
-| 删除 Content             | ✅    | —      | —      |
-| 读取 User                | ✅    | ✅     | —      |
-| 管理 User / Settings     | ✅    | —      | —      |
-
-**为什么这样做：**
-选择将权限规则集中在一个文件里，而不是散落在各个组件或路由中，方便后续统一维护。`defineAbilityFor` 是纯函数，便于单元测试。单例 `appAbility` 用 `ability.update(rules)` 原地更新，是 CASL 官方推荐的响应式模式——Vue 的响应式系统能感知到 `update` 操作，从而触发组件重渲染。
-
----
-
-### `src/router/types.ts`
-
-**改动内容：**
-
-- 通过 TypeScript 模块扩展（`declare module 'vue-router'`）为 `RouteMeta` 补充了 `requiredAbility?: [AppAction, AppSubject]` 字段
-
-**为什么这样做：**
-Vue Router 的 `meta` 默认类型为 `Record<string, any>`，没有类型约束。扩展之后，路由文件中写 `requiredAbility` 时会有类型检查和 IDE 自动补全，避免拼写错误。
-
----
-
-### `src/__tests__/ability.spec.ts`
-
-**改动内容：**
-
-- 新增 20 个测试用例，覆盖：
-  - 未登录状态（无权限）
-  - `admin` 角色的全部权限
-  - `editor` 角色的正向/反向权限（可以做什么、不可以做什么）
-  - `viewer` 角色的只读限制
-  - `updateAbility` 单例：登录后权限生效、登出后权限清除
-
-**为什么这样做：**
-权限逻辑是业务安全的核心，必须有测试兜底。纯函数 `defineAbilityFor` 天然易测，无需 mock 任何依赖。对单例 `appAbility` 的测试则验证了登录/登出的完整生命周期。
-
----
-
-## 修改文件
-
-### `src/stores/auth.ts`
-
-**改动内容：**
-
-- 移除了之前存储在 store 内部的 `ability` ref（冗余设计）
-- 改为用 `watch(user, (newUser) => updateAbility(newUser), { immediate: true })` 监听用户变化，自动同步全局单例
-
-**为什么这样做：**
-之前的设计在 store 里维护了一个独立的 `ability` ref，和全局单例是两个对象，会导致组件通过 `useAbility()` 拿到的实例与 store 里的不一致。改为统一更新全局单例后，所有消费方（组件、路由守卫）都读同一个对象，状态不会分叉。
-
----
-
-### `src/main.ts`
-
-**改动内容：**
-
-- 引入 `@casl/vue` 的 `abilitiesPlugin`
-- 在 `app.use(abilitiesPlugin, appAbility)` 注册插件，将全局单例注入 Vue 应用
-
-**为什么这样做：**
-注册插件后，所有组件可以直接调用 `useAbility()` 获取权限实例，也可以使用模板中的 `$can()` 语法糖，无需每个组件手动导入 `appAbility`。
-
----
-
-### `src/router/index.ts`
-
-**改动内容：**
-
-- `beforeEach` 守卫新增了对 `requiredAbility` 的检查：找到当前路由链中最精确的一条带有 `requiredAbility` 的记录，调用 `appAbility.can(action, subject)` 验证
-- 无权限时：已登录则跳回 `/dashboard`，未登录则跳到登录页
-
-**为什么这样做：**
-仅凭 `requiresAuth` 只能区分"是否登录"，无法区分"有没有权限访问这个页面"。加入 `requiredAbility` 检查后，不同角色即使都已登录，也只能访问自己权限范围内的页面，实现真正的多角色隔离。
-
----
-
-### `src/router/routes/admin.ts`
-
-**改动内容：**
-
-- Dashboard 路由新增 `requiredAbility: ['read', 'Dashboard']` 元信息
-
-**为什么这样做：**
-这是路由级权限声明的示例，后续新增页面（用户管理、内容管理、系统设置等）按同样模式声明对应的 `requiredAbility`，路由守卫会自动拦截越权访问，无需在每个页面组件内重复判断。
-
----
-
-## 整体设计思路
-
-```
-用户登录
-   │
-   ▼
-auth store 的 watch 触发
-   │
-   ▼
-updateAbility(user) → appAbility.update(rules)
-   │
-   ├─► Vue 组件响应式更新（useAbility / $can）
-   └─► 路由守卫读取最新 appAbility 做拦截判断
+type DataScope =
+  | { scope: 'all' }
+  | { scope: 'departmentTree' }
+  | { scope: 'department' }
+  | { scope: 'self' }
+  | { scope: 'custom'; departmentIds: string[] }
 ```
 
-CASL 的核心设计哲学是"描述用户**能做什么**，而不是描述用户**是什么角色**"。虽然本次实现是基于角色分配规则，但权限检查的调用方（组件、路由）全部使用 `can('read', 'Dashboard')` 这样的语义，与角色名解耦，未来如果需要更细粒度的控制（比如某个编辑只能修改自己创建的内容），只需修改 `defineAbilityFor` 中的规则，调用方代码无需改动。
+`/auth/login`、SSO exchange 与 `/auth/me` 必须原子返回后端选定的 `tenantId`、用户和 `AuthorizationSnapshot`。客户端提交的 tenant 只是选择提示，不能建立成员关系；`src/lib/ability.ts` 只把后端快照投影为单例 `appAbility`，不会再根据用户对象上的展示角色读取本地策略；缺少或不符合契约的快照按无权限处理。`src/features/roles/role-policy.ts` 只为 MSW 模拟服务端策略，数据范围投影位于 `src/features/roles/data-scope.ts`。
 
----
+## 默认角色
 
-## 组件中的用法示例
+| 能力                       | admin  | editor | viewer |
+| -------------------------- | ------ | ------ | ------ |
+| Dashboard / Analytics 读取 | 全部   | 允许   | 允许   |
+| Content 读取               | 允许   | 允许   | 允许   |
+| Content 创建、更新         | 允许   | 允许   | 拒绝   |
+| User 读取                  | 全租户 | 部门树 | 拒绝   |
+| Settings 读取/写入         | 允许   | 拒绝   | 拒绝   |
+| RolePolicy 读取/写入       | 允许   | 拒绝   | 拒绝   |
+| Monitoring 读取            | 允许   | 允许   | 允许   |
+| Monitoring 操作            | 允许   | 拒绝   | 拒绝   |
+| AuditLog 读取              | 允许   | 允许   | 拒绝   |
+
+超级管理员默认拥有所有 subject 的四种显式动作和全部数据范围；模板不依赖难以审计的隐式 `manage all`。普通 `editor` / `viewer` 使用更窄的显式授权和数据范围，角色卡与执行层预览会直接展示差异。
+
+## 三层执行
+
+1. 动态导航编译器根据 `requiredAbility` 隐藏无权菜单，并记录被拒路径。
+2. Vue Router 守卫在直接访问时检查路由 meta；无权账号进入 `/forbidden`。
+3. API/MSW handler 使用 `authorizeMockPermission` 再次鉴权；用户列表在搜索和分页前应用服务端数据范围。角色策略使用独立 `RolePolicy` subject，避免把普通系统设置权限误当成角色授权权限。
+
+## 五类示例与刷新闭环
+
+| 权限层   | 模板中的真实示例                                                     | 最终执行方                                |
+| -------- | -------------------------------------------------------------------- | ----------------------------------------- |
+| 路由     | 动态路由 `meta.requiredAbility` 与直达 `/forbidden`                  | Router 仅做前端拦截，服务端仍校验页面请求 |
+| 菜单     | `resolveBackendNavigation` 过滤无权分支并记录拒绝路径                | 后端返回菜单契约，前端负责可发现性        |
+| 按钮     | 用户、内容、系统参数页面通过 `canAccess` / `PermissionGate` 控制操作 | 对应写接口再次鉴权                        |
+| 字段     | 用户邮箱在无 `update User` 时脱敏，角色分配需要 `update RolePolicy`  | 服务端响应负责敏感字段裁剪或脱敏          |
+| 数据范围 | `self`、部门、部门树、自定义部门、全部数据                           | 用户列表 handler 在搜索和分页前应用范围   |
+
+权限矩阵支持只读、逐项编辑和“全部授予 / 全部清除”批量设置。保存的角色正好是当前登录角色时，客户端先重新读取 `/auth/me` 的新 `policyVersion` 与 grants，再更新 CASL、卸载并重装菜单/动态路由、清理不可用 Tab；若当前页面权限已被撤销则立即进入 `/forbidden`。角色保存响应本身不能直接给当前浏览器提权。
+
+## 前后端不一致
+
+前端能力来自最近一次后端授权快照，网络延迟或多端修改可能造成短暂不一致。`policyVersion` 变化会触发主体边界清理，避免复用旧菜单、查询缓存和 Tab。接口响应始终是最终结果：`401` 进入统一会话恢复/登录边界，`403` 保留业务上下文并显示服务端拒绝原因，`409` 显示策略冲突原因；客户端不会因按钮曾经可见而把失败当作成功。反方向上，即使前端隐藏了入口，生产后端也不能因此省略授权。
 
 ```vue
-<script setup>
-import { useAbility } from '@casl/vue'
-
-const { can } = useAbility()
-</script>
-
-<template>
-  <!-- 只有 editor 和 admin 能看到"新建"按钮 -->
-  <button v-if="can('create', 'Content')">
-    新建文章
-  </button>
-
-  <!-- 只有 admin 能看到设置入口 -->
-  <nav-item v-if="can('read', 'Settings')" to="/settings">
-    系统设置
-  </nav-item>
-</template>
+<PermissionGate action="update" subject="Settings">
+  <Button>保存配置</Button>
+</PermissionGate>
 ```
+
+生产后端必须从已认证主体推导角色、租户与数据范围，不能信任客户端提交的角色名、CASL rules、部门 ID 或隐藏状态。按钮隐藏不等于权限控制。
