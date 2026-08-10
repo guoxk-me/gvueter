@@ -3,6 +3,7 @@ import { AlertCircle, RefreshCw } from '@lucide/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ApiError } from '@/lib/http'
 import EmptyState from './EmptyState.vue'
 
@@ -62,11 +63,12 @@ const errorDescription = computed(() =>
 
 <template>
   <slot v-if="props.isLoading" name="loading">
-    <div class="space-y-3" role="status" aria-live="polite" aria-busy="true">
+    <!-- AI modified: default loading placeholders use the shared Skeleton primitive while retaining live-region semantics. -->
+    <div class="flex flex-col gap-3" role="status" aria-live="polite" aria-busy="true">
       <span class="sr-only">{{ t('common.loading') }}</span>
-      <div class="h-5 w-2/5 animate-pulse rounded bg-muted" />
-      <div class="h-20 animate-pulse rounded bg-muted" />
-      <div class="h-20 animate-pulse rounded bg-muted" />
+      <Skeleton class="h-5 w-2/5" />
+      <Skeleton class="h-20" />
+      <Skeleton class="h-20" />
     </div>
   </slot>
   <slot
@@ -81,7 +83,7 @@ const errorDescription = computed(() =>
       <EmptyState :title="errorTitle" :description="errorDescription" :icon="AlertCircle">
         <template #actions>
           <Button variant="outline" @click="emit('retry')">
-            <RefreshCw class="mr-2 size-4" aria-hidden="true" />
+            <RefreshCw data-icon="inline-start" aria-hidden="true" />
             {{ retryLabel }}
           </Button>
         </template>

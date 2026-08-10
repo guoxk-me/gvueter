@@ -183,50 +183,41 @@ describe('selection interaction examples', () => {
     await vi.waitFor(() => expect(document.activeElement).toBe(trigger.element))
   })
 
-  it('names the date-range trigger and guards, applies, and clears a controlled range', async () => {
+  it('names the date-range trigger and guards incomplete, applies, and clears a range', async () => {
     const wrapper = mount(DateRangePicker, {
       attachTo: document.body,
       props: {
         label: 'Active date',
         presets: [{ label: 'Last week', value: { start: '2026-07-06', end: '2026-07-12' } }],
       },
+      global: { plugins: [i18n] },
     })
 
     await wrapper.get('[aria-label="Active date"]').trigger('click')
     await nextTick()
-    const calendars = [
-      ...document.body.querySelectorAll<HTMLElement>('[data-slot="calendar"]'),
-    ]
-    expect(calendars).toHaveLength(2)
-    const startCalendarDays = [
-      ...calendars[0].querySelectorAll<HTMLButtonElement>(
+    const calendar = document.body.querySelector<HTMLElement>('[data-slot="range-calendar"]')
+    expect(calendar?.getAttribute('aria-label')).toContain('Start date')
+    const calendarDays = [
+      ...(calendar?.querySelectorAll<HTMLButtonElement>(
         '[data-reka-calendar-cell-trigger]:not([data-outside-visible-view]):not([data-outside-view])',
-      ),
+      ) ?? []),
     ]
-    const endCalendarDays = [
-      ...calendars[1].querySelectorAll<HTMLButtonElement>(
-        '[data-reka-calendar-cell-trigger]:not([data-outside-visible-view]):not([data-outside-view])',
-      ),
-    ]
-    expect(startCalendarDays.length).toBeGreaterThanOrEqual(2)
-    expect(endCalendarDays.length).toBeGreaterThanOrEqual(2)
-    startCalendarDays[startCalendarDays.length - 1]!.click()
-    endCalendarDays[0]!.click()
+    expect(calendarDays.length).toBeGreaterThanOrEqual(2)
+    calendarDays[0]!.click()
     await nextTick()
-    expect(document.body.querySelector('[role="alert"]')?.textContent).toContain(
-      'end date must be after',
-    )
-    const invalidApply = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
+    const applyButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
       (button) => button.textContent?.trim() === 'Apply',
     )
-    expect(invalidApply?.disabled).toBe(true)
+    expect(applyButton?.disabled).toBe(true)
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 
     const preset = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
       (button) => button.textContent?.trim() === 'Last week',
     )
     preset?.click()
     await nextTick()
-    invalidApply?.click()
+    expect(applyButton?.disabled).toBe(false)
+    applyButton?.click()
     await nextTick()
     const appliedRangeEvents = wrapper.emitted('update:modelValue') ?? []
     expect(appliedRangeEvents[appliedRangeEvents.length - 1]?.[0]).toEqual({

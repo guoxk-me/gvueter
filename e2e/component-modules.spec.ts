@@ -176,6 +176,29 @@ async function expectModuleLayout(
       document.documentElement.clientHeight - 1,
     )
     const titleHitTarget = document.elementFromPoint(titleCenterX, titleCenterY)
+    const mainRectangle = main.getBoundingClientRect()
+    // AI modified: preserve the owning DOM evidence when a module regresses at a responsive width.
+    const overflowingElements = [...main.querySelectorAll<HTMLElement>('*')]
+      .map((element) => {
+        const rectangle = element.getBoundingClientRect()
+        const style = window.getComputedStyle(element)
+
+        return {
+          className: element.className,
+          clientWidth: element.clientWidth,
+          overflowX: style.overflowX,
+          right: Math.round(rectangle.right * 100) / 100,
+          scrollWidth: element.scrollWidth,
+          tagName: element.tagName.toLowerCase(),
+          testId: element.dataset.testid ?? null,
+          text: (element.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 120),
+        }
+      })
+      .filter(
+        (element) =>
+          element.right > mainRectangle.right + 1 || element.scrollWidth > element.clientWidth + 1,
+      )
+      .slice(0, 20)
 
     // AI modified: layout acceptance checks the actual rendered geometry, including title occlusion.
     return {
@@ -184,13 +207,17 @@ async function expectModuleLayout(
       isTitleTopmost: title === titleHitTarget || title.contains(titleHitTarget),
       mainClientWidth: main.clientWidth,
       mainScrollWidth: main.scrollWidth,
+      overflowingElements,
       titleLeft: titleRectangle.left,
       titleRight: titleRectangle.right,
     }
   })
 
   expect(geometry.documentScrollWidth).toBeLessThanOrEqual(geometry.documentClientWidth)
-  expect(geometry.mainScrollWidth).toBeLessThanOrEqual(geometry.mainClientWidth + 1)
+  expect(
+    geometry.mainScrollWidth,
+    `main overflow candidates: ${JSON.stringify(geometry.overflowingElements)}`,
+  ).toBeLessThanOrEqual(geometry.mainClientWidth + 1)
   expect(geometry.titleLeft).toBeGreaterThanOrEqual(0)
   expect(geometry.titleRight).toBeLessThanOrEqual(geometry.documentClientWidth + 1)
   expect(geometry.isTitleTopmost).toBe(true)

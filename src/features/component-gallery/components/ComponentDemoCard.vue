@@ -13,7 +13,8 @@ defineSlots<{
 </script>
 
 <template>
-  <Card>
+  <!-- AI modified: demo cards may shrink as grid items so wide examples stay locally contained. -->
+  <Card class="min-w-0">
     <CardHeader>
       <CardTitle class="text-base">
         {{ title }}

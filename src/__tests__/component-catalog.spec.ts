@@ -29,11 +29,11 @@ describe('component catalog inventory', () => {
       'src/components/data-table/DataTable.vue',
       'src/components/pro-table/ProTable.vue',
     ])
-    // AI modified: the root application recovery boundary is a cataloged administrative component.
-    expect(adminComponentCatalog).toHaveLength(47)
+    // AI modified: counts include the reusable DateTimePicker and every installed shadcn primitive.
+    expect(adminComponentCatalog).toHaveLength(48)
     expect(tableComponentCatalog).toHaveLength(2)
-    expect(uiPrimitiveCatalog).toHaveLength(27)
-    expect(componentCatalog).toHaveLength(76)
+    expect(uiPrimitiveCatalog).toHaveLength(65)
+    expect(componentCatalog).toHaveLength(115)
   })
 
   it('uses unique stable IDs and references existing source and evidence locations', () => {

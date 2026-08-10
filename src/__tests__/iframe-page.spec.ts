@@ -62,6 +62,13 @@ describe('IframePage lifecycle', () => {
 
     expect(wrapper.text()).toContain('Loading embedded content')
     expect(wrapper.text()).toContain('Embedded content is provided by')
+    // AI modified: iframe chrome uses shared status and separator primitives with Button icon metadata.
+    expect(wrapper.get('[data-slot="badge"][role="status"]').text()).toContain('Loading')
+    expect(wrapper.find('[data-slot="separator"]').exists()).toBe(true)
+    expect(
+      wrapper.get('button[aria-label="Refresh embedded page"] svg').attributes('data-icon'),
+    ).toBe('inline-start')
+    expect(externalLink.get('svg').attributes('data-icon')).toBe('inline-start')
     expect(frame.attributes()).toMatchObject({
       src: FIRST_SOURCE,
       title: 'Embedded help',

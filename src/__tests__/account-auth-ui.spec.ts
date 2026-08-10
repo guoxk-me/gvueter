@@ -168,6 +168,8 @@ describe('authentication account UI', () => {
 
     expect(getCaptcha).toHaveBeenCalledOnce()
     expect(wrapper.text()).toContain(firstCaptcha.challenge)
+    // AI modified: authentication navigation uses the shared separator primitive.
+    expect(wrapper.find('[data-slot="separator"]').exists()).toBe(true)
 
     await wrapper.get('input[type="email"]').setValue('admin@example.com')
     await wrapper.get('input[type="password"]').setValue('admin123')
@@ -473,7 +475,7 @@ describe('authentication account UI', () => {
     expect(wrapper.get('a').attributes('href')).toBe('/login')
   })
 
-  it('focuses reset-password success feedback and exposes a real login link', async () => {
+  it('keeps grouped reset-password controls accessible before focusing success feedback', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const auth = useAuthStore(pinia)
@@ -492,10 +494,29 @@ describe('authentication account UI', () => {
       global: { plugins: [pinia, i18n, router] },
     })
     const fields = wrapper.findAll('input')
+    const newPasswordInput = wrapper.get<HTMLInputElement>('input[name="newPassword"]')
+    const confirmPasswordInput = wrapper.get<HTMLInputElement>('input[name="confirmPassword"]')
+    const passwordInputs = [newPasswordInput, confirmPasswordInput]
+
+    // AI modified: FormControl metadata must reach each native input through InputGroupInput.
+    for (const passwordInput of passwordInputs) {
+      expect(passwordInput.attributes('id')).toBeTruthy()
+      expect(passwordInput.attributes('aria-describedby')).toBeTruthy()
+      expect(passwordInput.attributes('aria-invalid')).toBe('false')
+      expect(passwordInput.attributes('data-slot')).toBe('input-group-control')
+      expect(passwordInput.element.closest('[data-slot="input-group"]')).not.toBeNull()
+    }
+    const passwordVisibilityButtons = wrapper.findAll('button[aria-label="Show password"]')
+    expect(passwordVisibilityButtons).toHaveLength(2)
+    expect(passwordVisibilityButtons[0]!.get('svg').attributes('data-icon')).toBe('inline-start')
+    await passwordVisibilityButtons[0]!.trigger('click')
+    expect(newPasswordInput.attributes('type')).toBe('text')
+    expect(confirmPasswordInput.attributes('type')).toBe('password')
+    expect(wrapper.find('[data-slot="separator"]').exists()).toBe(true)
 
     await fields[0]!.setValue('reset-token')
-    await fields[1]!.setValue('NewPassword1')
-    await fields[2]!.setValue('NewPassword1')
+    await newPasswordInput.setValue('NewPassword1')
+    await confirmPasswordInput.setValue('NewPassword1')
     wrapper.get<HTMLFormElement>('form').element.requestSubmit()
     await vi.waitFor(() => expect(wrapper.find('h2[tabindex="-1"]').exists()).toBe(true))
 

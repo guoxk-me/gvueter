@@ -133,7 +133,7 @@ describe('long text rendering boundaries', () => {
       slots: { default: UNBROKEN_IDENTIFIER },
     })
     expect(badge.text()).toBe(UNBROKEN_IDENTIFIER)
-    expect(badge.classes()).toEqual(expect.arrayContaining(['max-w-full', 'text-ellipsis']))
+    expect(badge.classes()).toEqual(expect.arrayContaining(['max-w-full', 'truncate']))
     expect(badge.attributes('title')).toBe(UNBROKEN_IDENTIFIER)
 
     const emptyState = mount(EmptyState, {

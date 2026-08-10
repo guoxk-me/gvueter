@@ -9,8 +9,10 @@ import { HttpResponse, http as mswHttp } from 'msw'
 import { createPinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
+import { DateTimePicker } from '@/components/admin'
 import FormWorkbench from '@/features/form-workbench/components/FormWorkbench.vue'
 import WorkbenchBasicFields from '@/features/form-workbench/components/WorkbenchBasicFields.vue'
+import WorkbenchContentFields from '@/features/form-workbench/components/WorkbenchContentFields.vue'
 import {
   FORM_WORKBENCH_DRAFT_DEBOUNCE_MS,
   FORM_WORKBENCH_DRAFT_KEY,
@@ -236,7 +238,7 @@ describe('form workbench basic-field accessibility', () => {
     expect(wrapper.get('fieldset').attributes('aria-describedby')).toBe(
       'workbench-reviewers-message',
     )
-    expect(wrapper.get('fieldset input[type="checkbox"]').attributes('aria-describedby')).toBe(
+    expect(wrapper.get('fieldset [role="checkbox"]').attributes('aria-describedby')).toBe(
       'workbench-reviewers-message',
     )
 
@@ -251,6 +253,105 @@ describe('form workbench basic-field accessibility', () => {
     expect(wrapper.get('#workbench-title-message').text()).toBe('Title is required.')
     expect(wrapper.get('#workbench-reviewers-message').attributes('role')).toBe('alert')
     expect(wrapper.get('#workbench-province-message').attributes('role')).toBe('alert')
+    expect(
+      wrapper
+        .get('#workbench-title')
+        .element.closest('[data-slot="field"]')
+        ?.getAttribute('data-invalid'),
+    ).toBe('true')
+  })
+
+  it('commits the calendar date and time together while forwarding form and error attributes', async () => {
+    const wrapper = mount(DateTimePicker, {
+      attachTo: document.body,
+      props: {
+        id: 'publish-at-picker',
+        name: 'publishAt',
+        label: 'Publish date and time',
+        timeLabel: 'Publish time',
+        modelValue: '2026-07-20T09:30',
+        applyLabel: 'Confirm',
+        clearLabel: 'Reset',
+        ariaInvalid: true,
+        ariaDescribedby: 'publish-at-error',
+      },
+      global: { plugins: [i18n] },
+    })
+
+    const trigger = wrapper.get('#publish-at-picker')
+    expect(trigger.attributes()).toMatchObject({
+      'aria-invalid': 'true',
+      'aria-describedby': 'publish-at-error',
+      'aria-label': 'Publish date and time',
+    })
+    expect(wrapper.get('input[type="hidden"]').attributes()).toMatchObject({
+      name: 'publishAt',
+      value: '2026-07-20T09:30',
+    })
+
+    await trigger.trigger('click')
+    await flushPromises()
+    const timeInput = document.body.querySelector<HTMLInputElement>('#publish-at-picker-time')
+    expect(timeInput).not.toBeNull()
+    timeInput!.value = '10:45'
+    timeInput!.dispatchEvent(new Event('input', { bubbles: true }))
+    await flushPromises()
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+
+    const confirmButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
+      (button) => button.textContent?.trim() === 'Confirm',
+    )
+    expect(confirmButton?.disabled).toBe(false)
+    confirmButton?.click()
+    await flushPromises()
+    const appliedValues = wrapper.emitted('update:modelValue') ?? []
+    expect(appliedValues[appliedValues.length - 1]?.[0]).toBe('2026-07-20T10:45')
+
+    await trigger.trigger('click')
+    await flushPromises()
+    const resetButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
+      (button) => button.textContent?.trim() === 'Reset',
+    )
+    resetButton?.click()
+    await flushPromises()
+    const clearedValues = wrapper.emitted('update:modelValue') ?? []
+    expect(clearedValues[clearedValues.length - 1]?.[0]).toBe('')
+  })
+
+  it('associates content-step errors with the active-range group and Markdown control', () => {
+    const wrapper = mount(WorkbenchContentFields, {
+      props: {
+        errors: {
+          activeRange: 'Select an active range.',
+          markdown: 'Enter Markdown notes.',
+        },
+        isDisabled: false,
+        restoredAttachmentNames: [],
+        restoredImageNames: [],
+      },
+      global: {
+        plugins: [i18n],
+        stubs: {
+          DateRangePicker: true,
+          FileUpload: true,
+          RichTextEditor: true,
+        },
+      },
+    })
+
+    const activeRangeGroup = wrapper.get('[aria-labelledby="workbench-active-range-label"]')
+    expect(activeRangeGroup.attributes()).toMatchObject({
+      'aria-describedby': 'workbench-active-range-message',
+      'data-invalid': 'true',
+    })
+    expect(wrapper.get('#workbench-active-range-message').attributes('role')).toBe('alert')
+    expect(wrapper.get('#workbench-markdown').attributes()).toMatchObject({
+      name: 'markdown',
+      autocomplete: 'off',
+      'aria-invalid': 'true',
+      'aria-describedby': 'workbench-markdown-message',
+    })
+    expect(wrapper.get('#workbench-markdown-message').attributes('role')).toBe('alert')
   })
 })
 

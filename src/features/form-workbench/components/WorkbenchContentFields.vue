@@ -3,6 +3,8 @@ import type { DateRangeValue, FileUploadEntry } from '@/components/admin'
 import type { FormWorkbenchErrors } from '@/features/form-workbench/types'
 import { useI18n } from 'vue-i18n'
 import { DateRangePicker, FileUpload, RichTextEditor } from '@/components/admin'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Textarea } from '@/components/ui/textarea'
 
 defineProps<{
   errors: FormWorkbenchErrors
@@ -20,17 +22,24 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="space-y-6">
-    <div class="space-y-2">
-      <p class="text-sm font-medium">
+  <!-- AI modified: content controls now share one Field contract for labels, disabled state, and validation. -->
+  <FieldGroup class="gap-6">
+    <Field
+      aria-labelledby="workbench-active-range-label"
+      :aria-describedby="errors.activeRange ? 'workbench-active-range-message' : undefined"
+      :data-invalid="Boolean(errors.activeRange) || undefined"
+      :data-disabled="isDisabled || undefined"
+    >
+      <FieldLabel id="workbench-active-range-label">
         {{ t('formWorkbench.fields.activeRange') }}
-      </p>
+      </FieldLabel>
       <p v-if="isDisabled" class="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
         {{ activeRange ? `${activeRange.start} – ${activeRange.end}` : t('common.noData') }}
       </p>
       <DateRangePicker
         v-else
         v-model="activeRange"
+        :label="t('formWorkbench.fields.activeRange')"
         :placeholder="t('formWorkbench.fields.selectRange')"
         :start-label="t('formWorkbench.fields.startDate')"
         :end-label="t('formWorkbench.fields.endDate')"
@@ -39,16 +48,16 @@ const { t } = useI18n()
         :invalid-range-label="t('formWorkbench.validation.activeRangeRequired')"
         :is-invalid="Boolean(errors.activeRange)"
       />
-      <p v-if="errors.activeRange" class="text-xs text-destructive" role="alert">
+      <FieldError v-if="errors.activeRange" id="workbench-active-range-message">
         {{ errors.activeRange }}
-      </p>
-    </div>
+      </FieldError>
+    </Field>
 
-    <div class="grid gap-5 xl:grid-cols-2">
-      <div class="space-y-2">
-        <p class="text-sm font-medium">
+    <FieldGroup class="grid gap-5 xl:grid-cols-2">
+      <Field aria-labelledby="workbench-attachments-label" :data-disabled="isDisabled || undefined">
+        <FieldLabel id="workbench-attachments-label">
           {{ t('formWorkbench.fields.attachments') }}
-        </p>
+        </FieldLabel>
         <FileUpload
           v-model="attachments"
           accept=".pdf,.txt,.csv"
@@ -60,18 +69,18 @@ const { t } = useI18n()
           :browse-label="t('formWorkbench.upload.browse')"
           :remove-label="t('formWorkbench.upload.remove')"
         />
-        <p v-if="restoredAttachmentNames.length" class="text-xs text-muted-foreground">
+        <FieldDescription v-if="restoredAttachmentNames.length">
           {{
             t('formWorkbench.draft.filesRequireReselection', {
               names: restoredAttachmentNames.join(', '),
             })
           }}
-        </p>
-      </div>
-      <div class="space-y-2">
-        <p class="text-sm font-medium">
+        </FieldDescription>
+      </Field>
+      <Field aria-labelledby="workbench-images-label" :data-disabled="isDisabled || undefined">
+        <FieldLabel id="workbench-images-label">
           {{ t('formWorkbench.fields.images') }}
-        </p>
+        </FieldLabel>
         <FileUpload
           v-model="images"
           accept="image/png,image/jpeg,image/webp"
@@ -83,20 +92,24 @@ const { t } = useI18n()
           :browse-label="t('formWorkbench.upload.browse')"
           :remove-label="t('formWorkbench.upload.remove')"
         />
-        <p v-if="restoredImageNames.length" class="text-xs text-muted-foreground">
+        <FieldDescription v-if="restoredImageNames.length">
           {{
             t('formWorkbench.draft.filesRequireReselection', {
               names: restoredImageNames.join(', '),
             })
           }}
-        </p>
-      </div>
-    </div>
+        </FieldDescription>
+      </Field>
+    </FieldGroup>
 
-    <div class="space-y-2">
-      <p class="text-sm font-medium">
+    <Field
+      aria-labelledby="workbench-rich-content-label"
+      :data-invalid="Boolean(errors.richContent) || undefined"
+      :data-disabled="isDisabled || undefined"
+    >
+      <FieldLabel id="workbench-rich-content-label">
         {{ t('formWorkbench.fields.richContent') }}
-      </p>
+      </FieldLabel>
       <RichTextEditor
         v-model="richContent"
         :read-only="isDisabled"
@@ -104,24 +117,31 @@ const { t } = useI18n()
         :error="errors.richContent"
         :placeholder="t('formWorkbench.fields.richContentPlaceholder')"
       />
-    </div>
+    </Field>
 
-    <div class="space-y-2">
-      <label for="workbench-markdown" class="text-sm font-medium">
+    <Field
+      :data-invalid="Boolean(errors.markdown) || undefined"
+      :data-disabled="isDisabled || undefined"
+    >
+      <FieldLabel for="workbench-markdown">
         {{ t('formWorkbench.fields.markdown') }}
-      </label>
-      <textarea
+      </FieldLabel>
+      <Textarea
         id="workbench-markdown"
         v-model="markdown"
+        name="markdown"
         rows="8"
-        class="min-h-44 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
+        autocomplete="off"
+        class="min-h-44 font-mono"
         :placeholder="t('formWorkbench.fields.markdownPlaceholder')"
         :disabled="isDisabled"
         :aria-invalid="Boolean(errors.markdown)"
+        aria-describedby="workbench-markdown-message"
       />
-      <p v-if="errors.markdown" class="text-xs text-destructive" role="alert">
+      <FieldError v-if="errors.markdown" id="workbench-markdown-message">
         {{ errors.markdown }}
-      </p>
-    </div>
-  </div>
+      </FieldError>
+      <FieldDescription v-else id="workbench-markdown-message" />
+    </Field>
+  </FieldGroup>
 </template>

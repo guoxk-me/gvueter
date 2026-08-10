@@ -580,7 +580,7 @@ export const adminComponentCatalog = [
       enhancement: 'planned',
     },
     maturity: 'beta',
-    summary: 'Selects an ISO-date interval from native date inputs or supplied presets.',
+    summary: 'Selects an ISO-date interval through the shadcn-vue RangeCalendar or presets.',
     businessScenarios: ['Report period', 'Log retention filter', 'Order date filter'],
     contract: {
       props: [
@@ -606,7 +606,7 @@ export const adminComponentCatalog = [
     accessibility: {
       status: 'documented',
       notes: [
-        'The trigger has a stable caller-provided name, native date inputs are labelled, and popover focus behavior comes from Reka.',
+        'The trigger has a stable caller-provided name, and RangeCalendar provides one labelled keyboard range-selection surface.',
       ],
     },
     demoLocations: [
@@ -616,13 +616,70 @@ export const adminComponentCatalog = [
     tests: {
       locations: ['src/__tests__/selection-examples.spec.ts'],
       coverage:
-        'Named trigger, invalid-range guard, preset application, controlled output, and clear flow are asserted.',
+        'Named trigger, incomplete-range guard, preset application, controlled output, and clear flow are asserted.',
     },
     businessUsages: ['Component gallery order filters'],
     release: {
       version: '0.0.0',
       migrationNote:
-        'Initial catalog baseline; retain date-only semantics when adding locale display.',
+        'RangeCalendar replaced independent native-style date fields while retaining date-only ISO output.',
+    },
+  },
+  {
+    id: 'date-time-picker',
+    kind: 'business',
+    module: 'forms',
+    displayName: 'DateTimePicker',
+    sourcePath: 'src/components/admin/DateTimePicker.vue',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'covered',
+      enhancement: 'planned',
+    },
+    maturity: 'beta',
+    summary: 'Commits a calendar date and minute-precision local time as one ISO-like form value.',
+    businessScenarios: ['Content scheduling', 'Publication time', 'Local appointment entry'],
+    contract: {
+      props: [
+        'id',
+        'name',
+        'label',
+        'placeholder',
+        'timeLabel',
+        'applyLabel',
+        'clearLabel',
+        'disabled',
+        'autocomplete',
+        'ariaInvalid',
+        'ariaDescribedby',
+        'class',
+      ],
+      events: ['update:modelValue', 'update:open'],
+      slots: [],
+      models: ['modelValue', 'open'],
+    },
+    states: ['closed', 'draft date', 'draft time', 'applied', 'cleared', 'disabled', 'invalid'],
+    limitations: [
+      'The value is a local YYYY-MM-DDTHH:mm string; timezone selection and seconds are outside this component.',
+    ],
+    accessibility: {
+      status: 'documented',
+      notes: [
+        'The trigger owns field ARIA, Calendar provides keyboard date selection, and the time input has an explicit label.',
+      ],
+    },
+    demoLocations: ['src/features/form-workbench/components/WorkbenchBasicFields.vue'],
+    tests: {
+      locations: ['src/__tests__/form-workbench.spec.ts'],
+      coverage:
+        'Atomic apply, clear behavior, hidden form value, and validation attribute forwarding are asserted.',
+    },
+    businessUsages: ['Form workbench publication scheduling'],
+    release: {
+      version: '0.0.0',
+      migrationNote:
+        'Replaces datetime-local date ownership with a shadcn Calendar while retaining the existing local-time string contract.',
     },
   },
   {
@@ -1581,11 +1638,12 @@ export const adminComponentCatalog = [
       enhancement: 'planned',
     },
     maturity: 'beta',
-    summary: 'Provides bounded numeric entry with keyboard input and increment controls.',
+    summary: 'Adapts the shadcn-vue NumberField to the admin model and copy contract.',
     businessScenarios: ['Quantity entry', 'Retry count', 'Capacity configuration'],
     contract: {
       props: [
         'id',
+        'name',
         'min',
         'max',
         'step',
@@ -1600,10 +1658,12 @@ export const adminComponentCatalog = [
       models: ['modelValue'],
     },
     states: ['empty', 'bounded', 'minimum', 'maximum', 'disabled'],
-    limitations: ['Locale decimal separators and arbitrary-precision values are not supported.'],
+    limitations: ['Arbitrary-precision numeric values remain outside the JavaScript number model.'],
     accessibility: {
       status: 'documented',
-      notes: ['Uses a native number input and explicitly named increment and decrement controls.'],
+      notes: [
+        'Uses Reka spinbutton semantics with explicitly named increment and decrement controls.',
+      ],
     },
     demoLocations: ['src/features/component-gallery/components/ComponentsFormDemo.vue'],
     tests: {
@@ -1613,7 +1673,8 @@ export const adminComponentCatalog = [
     businessUsages: ['Component gallery form example'],
     release: {
       version: '0.0.0',
-      migrationNote: 'Initial catalog baseline; do not use for currency precision.',
+      migrationNote:
+        'The legacy hand-built stepper now delegates bounds, keyboard input, and locale parsing to shadcn-vue NumberField.',
     },
   },
   {
@@ -1715,10 +1776,10 @@ export const adminComponentCatalog = [
       enhancement: 'none',
     },
     maturity: 'stable',
-    summary: 'Wraps password entry with a separately controlled visibility toggle.',
+    summary: 'Composes password entry and its visibility action through shadcn-vue InputGroup.',
     businessScenarios: ['Login secret', 'Password change', 'Credential configuration'],
     contract: {
-      props: ['id', 'placeholder', 'autocomplete', 'disabled', 'showLabel', 'hideLabel'],
+      props: ['id', 'placeholder', 'autocomplete', 'disabled', 'showLabel', 'hideLabel', 'class'],
       events: ['update:modelValue'],
       slots: [],
       models: ['modelValue'],
@@ -1739,7 +1800,8 @@ export const adminComponentCatalog = [
     businessUsages: ['Account authentication and password-change forms'],
     release: {
       version: '0.0.0',
-      migrationNote: 'Initial catalog baseline; no migration is required.',
+      migrationNote:
+        'InputGroup now owns the composite layout while validation attributes are forwarded to the real input.',
     },
   },
   {
@@ -2651,6 +2713,228 @@ export const tableComponentCatalog = [
     },
   },
 ] as const satisfies readonly ComponentCatalogEntry[]
+
+// AI modified: unadopted installed primitives share conservative evidence metadata instead of implying product support.
+const unadoptedUiPrimitiveInventory = [
+  {
+    id: 'ui-accordion',
+    displayName: 'Accordion',
+    sourcePath: 'src/components/ui/accordion',
+    summary: 'Installed shadcn-vue/Reka accordion root, item, trigger, and content family.',
+    candidateScenario: 'Candidate grouped disclosure content',
+  },
+  {
+    id: 'ui-alert-dialog',
+    displayName: 'AlertDialog',
+    sourcePath: 'src/components/ui/alert-dialog',
+    summary: 'Installed shadcn-vue/Reka confirmation-dialog family.',
+    candidateScenario: 'Candidate destructive-action confirmation',
+  },
+  {
+    id: 'ui-aspect-ratio',
+    displayName: 'AspectRatio',
+    sourcePath: 'src/components/ui/aspect-ratio',
+    summary: 'Installed shadcn-vue/Reka aspect-ratio wrapper.',
+    candidateScenario: 'Candidate bounded media presentation',
+  },
+  {
+    id: 'ui-attachment',
+    displayName: 'Attachment',
+    sourcePath: 'src/components/ui/attachment',
+    summary: 'Installed attachment presentation family with media, metadata, actions, and states.',
+    candidateScenario: 'Candidate uploaded-file presentation',
+  },
+  {
+    id: 'ui-bubble',
+    displayName: 'Bubble',
+    sourcePath: 'src/components/ui/bubble',
+    summary: 'Installed message-bubble presentation family with grouping and reactions.',
+    candidateScenario: 'Candidate conversational message presentation',
+  },
+  {
+    id: 'ui-button-group',
+    displayName: 'ButtonGroup',
+    sourcePath: 'src/components/ui/button-group',
+    summary: 'Installed button-group layout family with text and separator pieces.',
+    candidateScenario: 'Candidate tightly related action grouping',
+  },
+  {
+    id: 'ui-carousel',
+    displayName: 'Carousel',
+    sourcePath: 'src/components/ui/carousel',
+    summary: 'Installed carousel family with viewport content, items, and navigation controls.',
+    candidateScenario: 'Candidate sequential media browsing',
+  },
+  {
+    id: 'ui-collapsible',
+    displayName: 'Collapsible',
+    sourcePath: 'src/components/ui/collapsible',
+    summary: 'Installed shadcn-vue/Reka collapsible root, trigger, and content family.',
+    candidateScenario: 'Candidate single-region disclosure',
+  },
+  {
+    id: 'ui-combobox',
+    displayName: 'Combobox',
+    sourcePath: 'src/components/ui/combobox',
+    summary: 'Installed shadcn-vue/Reka combobox family with input, groups, items, and viewport.',
+    candidateScenario: 'Candidate searchable option selection',
+  },
+  {
+    id: 'ui-command',
+    displayName: 'Command',
+    sourcePath: 'src/components/ui/command',
+    summary: 'Installed command-menu family with search, groups, items, and dialog composition.',
+    candidateScenario: 'Candidate keyboard command palette',
+  },
+  {
+    id: 'ui-context-menu',
+    displayName: 'ContextMenu',
+    sourcePath: 'src/components/ui/context-menu',
+    summary: 'Installed shadcn-vue/Reka context-menu family with grouped and nested choices.',
+    candidateScenario: 'Candidate pointer context actions',
+  },
+  {
+    id: 'ui-drawer',
+    displayName: 'Drawer primitives',
+    sourcePath: 'src/components/ui/drawer',
+    summary: 'Installed drawer family with overlay, content, title, description, and actions.',
+    candidateScenario: 'Candidate edge-mounted modal task',
+  },
+  {
+    id: 'ui-hover-card',
+    displayName: 'HoverCard',
+    sourcePath: 'src/components/ui/hover-card',
+    summary: 'Installed shadcn-vue/Reka hover-card trigger and content family.',
+    candidateScenario: 'Candidate supplementary preview content',
+  },
+  {
+    id: 'ui-input-otp',
+    displayName: 'InputOTP',
+    sourcePath: 'src/components/ui/input-otp',
+    summary: 'Installed segmented one-time-password input family.',
+    candidateScenario: 'Candidate verification-code entry',
+  },
+  {
+    id: 'ui-item',
+    displayName: 'Item',
+    sourcePath: 'src/components/ui/item',
+    summary: 'Installed item-layout family with media, content, metadata, and actions.',
+    candidateScenario: 'Candidate structured list-row presentation',
+  },
+  {
+    id: 'ui-kbd',
+    displayName: 'Kbd',
+    sourcePath: 'src/components/ui/kbd',
+    summary: 'Installed keyboard-key and key-group presentation primitives.',
+    candidateScenario: 'Candidate keyboard-shortcut documentation',
+  },
+  {
+    id: 'ui-marker',
+    displayName: 'Marker',
+    sourcePath: 'src/components/ui/marker',
+    summary: 'Installed marker presentation family with content and icon pieces.',
+    candidateScenario: 'Candidate compact annotated marker',
+  },
+  {
+    id: 'ui-menubar',
+    displayName: 'Menubar',
+    sourcePath: 'src/components/ui/menubar',
+    summary: 'Installed shadcn-vue/Reka menubar family with grouped, selectable, and nested menus.',
+    candidateScenario: 'Candidate desktop-style command navigation',
+  },
+  {
+    id: 'ui-message',
+    displayName: 'Message',
+    sourcePath: 'src/components/ui/message',
+    summary: 'Installed message-layout family with avatar, header, content, and footer pieces.',
+    candidateScenario: 'Candidate conversational transcript row',
+  },
+  {
+    id: 'ui-message-scroller',
+    displayName: 'MessageScroller',
+    sourcePath: 'src/components/ui/message-scroller',
+    summary: 'Installed message-scroller family with provider, viewport, items, and jump control.',
+    candidateScenario: 'Candidate anchored conversation history',
+  },
+  {
+    id: 'ui-native-select',
+    displayName: 'NativeSelect',
+    sourcePath: 'src/components/ui/native-select',
+    summary: 'Installed styled native select, option, and option-group family.',
+    candidateScenario: 'Candidate platform-native option selection',
+  },
+  {
+    id: 'ui-navigation-menu',
+    displayName: 'NavigationMenu',
+    sourcePath: 'src/components/ui/navigation-menu',
+    summary: 'Installed shadcn-vue/Reka navigation-menu family with triggers, links, and viewport.',
+    candidateScenario: 'Candidate multi-level site navigation',
+  },
+  {
+    id: 'ui-pin-input',
+    displayName: 'PinInput',
+    sourcePath: 'src/components/ui/pin-input',
+    summary: 'Installed segmented PIN input family with groups, slots, and separators.',
+    candidateScenario: 'Candidate short numeric-secret entry',
+  },
+  {
+    id: 'ui-progress',
+    displayName: 'Progress',
+    sourcePath: 'src/components/ui/progress',
+    summary: 'Installed shadcn-vue/Reka determinate progress primitive.',
+    candidateScenario: 'Candidate bounded task progress',
+  },
+  {
+    id: 'ui-radio-group',
+    displayName: 'RadioGroup',
+    sourcePath: 'src/components/ui/radio-group',
+    summary: 'Installed shadcn-vue/Reka radio-group root and item family.',
+    candidateScenario: 'Candidate mutually exclusive option set',
+  },
+  {
+    id: 'ui-slider',
+    displayName: 'Slider',
+    sourcePath: 'src/components/ui/slider',
+    summary: 'Installed shadcn-vue/Reka single- or multi-thumb slider primitive.',
+    candidateScenario: 'Candidate bounded continuous-value entry',
+  },
+  {
+    id: 'ui-spinner',
+    displayName: 'Spinner',
+    sourcePath: 'src/components/ui/spinner',
+    summary: 'Installed visual loading-spinner primitive.',
+    candidateScenario: 'Candidate compact in-progress indicator',
+  },
+  {
+    id: 'ui-stepper',
+    displayName: 'Stepper primitives',
+    sourcePath: 'src/components/ui/stepper',
+    summary:
+      'Installed shadcn-vue/Reka stepper family with items, indicators, titles, and triggers.',
+    candidateScenario: 'Candidate multi-step workflow navigation',
+  },
+  {
+    id: 'ui-tags-input',
+    displayName: 'TagsInput',
+    sourcePath: 'src/components/ui/tags-input',
+    summary: 'Installed shadcn-vue/Reka tags-input family with editable and removable items.',
+    candidateScenario: 'Candidate free-form token entry',
+  },
+  {
+    id: 'ui-toggle',
+    displayName: 'Toggle',
+    sourcePath: 'src/components/ui/toggle',
+    summary: 'Installed shadcn-vue/Reka pressed-state toggle primitive.',
+    candidateScenario: 'Candidate single formatting or view toggle',
+  },
+  {
+    id: 'ui-toggle-group',
+    displayName: 'ToggleGroup',
+    sourcePath: 'src/components/ui/toggle-group',
+    summary: 'Installed shadcn-vue/Reka single- or multi-select toggle-group family.',
+    candidateScenario: 'Candidate compact bounded option set',
+  },
+] as const
 
 export const uiPrimitiveCatalog = [
   {
@@ -3891,6 +4175,366 @@ export const uiPrimitiveCatalog = [
         'Initial primitive inventory; essential names must remain in aria-label even when a tooltip exists.',
     },
   },
+  // AI modified: newly installed primitive directories stay evidence-conservative until real consumers, demos, and tests exist.
+  {
+    id: 'ui-alert',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'Alert',
+    sourcePath: 'src/components/ui/alert',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary: 'Styled alert family with title, description, and semantic visual variants.',
+    businessScenarios: ['Persistent contextual feedback', 'Validation summary', 'Warning notice'],
+    contract: {
+      props: ['variant', 'class', 'as'],
+      events: [],
+      slots: ['default'],
+      models: [],
+    },
+    states: ['default', 'destructive', 'custom role'],
+    limitations: [
+      'The primitive does not choose live-region semantics or dismissal behavior; Callout owns those business decisions.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: [
+        'Callers must choose an appropriate role and must not communicate severity by color alone.',
+      ],
+    },
+    demoLocations: ['src/features/component-gallery/components/ComponentsFeedbackDemo.vue'],
+    tests: {
+      locations: ['src/__tests__/admin-components.spec.ts', 'src/__tests__/async-state.spec.ts'],
+      coverage:
+        'Exercised indirectly through Callout and AsyncState; primitive variants are not isolated.',
+    },
+    businessUsages: ['Callout', 'AsyncState error presentation'],
+    release: {
+      version: '0.0.0',
+      migrationNote:
+        'Compose business feedback through Callout unless raw Alert semantics are intentional.',
+    },
+  },
+  {
+    id: 'ui-calendar',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'Calendar',
+    sourcePath: 'src/components/ui/calendar',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary: 'shadcn-vue/Reka single-date calendar family backed by internationalized dates.',
+    businessScenarios: ['Date selection', 'Publication scheduling', 'Audit-log filtering'],
+    contract: {
+      props: ['modelValue', 'defaultValue', 'minValue', 'maxValue', 'disabled', 'locale', 'class'],
+      events: ['update:modelValue'],
+      slots: ['default'],
+      models: ['modelValue'],
+    },
+    states: ['empty', 'selected date', 'disabled date', 'month navigation'],
+    limitations: [
+      'Time, timezone, value serialization, and apply-or-cancel behavior remain responsibilities of the owning field.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: [
+        'Reka supplies calendar-grid keyboard behavior; project tests cover it only through composed fields.',
+      ],
+    },
+    demoLocations: ['src/features/form-workbench/components/WorkbenchBasicFields.vue'],
+    tests: {
+      locations: ['src/__tests__/form-workbench.spec.ts'],
+      coverage:
+        'Exercised indirectly through DateTimePicker; standalone calendar navigation is not isolated.',
+    },
+    businessUsages: ['DateTimePicker', 'OperationLogPanel'],
+    release: {
+      version: '0.0.0',
+      migrationNote: 'Keep date serialization and commit policy in the consuming field.',
+    },
+  },
+  {
+    id: 'ui-empty',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'Empty',
+    sourcePath: 'src/components/ui/empty',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary: 'Composable empty-state surface with media, header, title, description, and actions.',
+    businessScenarios: ['No records', 'No search results', 'Unavailable optional content'],
+    contract: {
+      props: ['class', 'variant'],
+      events: [],
+      slots: ['default'],
+      models: [],
+    },
+    states: ['text only', 'icon media', 'with action'],
+    limitations: [
+      'Domain copy, recovery action, and empty-state classification remain caller-owned.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: ['Consumers provide heading hierarchy, meaningful copy, and accessible action names.'],
+    },
+    demoLocations: ['src/features/component-gallery/components/ComponentsFeedbackDemo.vue'],
+    tests: {
+      locations: [
+        'src/__tests__/admin-components.spec.ts',
+        'src/__tests__/async-state.spec.ts',
+        'src/__tests__/long-text-states.spec.ts',
+      ],
+      coverage:
+        'Exercised indirectly through EmptyState and AsyncState, including long-text containment.',
+    },
+    businessUsages: ['EmptyState', 'AsyncState empty presentation'],
+    release: {
+      version: '0.0.0',
+      migrationNote:
+        'Use EmptyState when the standard administrative copy and action contract is needed.',
+    },
+  },
+  {
+    id: 'ui-field',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'Field',
+    sourcePath: 'src/components/ui/field',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary:
+      'Composable field layout family for labels, descriptions, errors, groups, and fieldsets.',
+    businessScenarios: ['Form field layout', 'Validation feedback', 'Related option grouping'],
+    contract: {
+      props: ['orientation', 'data-invalid', 'data-disabled', 'class'],
+      events: [],
+      slots: ['default'],
+      models: [],
+    },
+    states: ['vertical', 'horizontal', 'responsive', 'invalid', 'disabled'],
+    limitations: [
+      'Field components organize semantics but do not own form values or validation rules.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: [
+        'Consumers must connect labels, descriptions, errors, and control ARIA attributes consistently.',
+      ],
+    },
+    demoLocations: [
+      'src/features/form-workbench/components/WorkbenchBasicFields.vue',
+      'src/features/form-workbench/components/WorkbenchContentFields.vue',
+    ],
+    tests: {
+      locations: ['src/__tests__/form-workbench.spec.ts'],
+      coverage:
+        'Exercised indirectly through the form workbench; each family member is not isolated.',
+    },
+    businessUsages: ['Form workbench fields', 'DateTimePicker time field'],
+    release: {
+      version: '0.0.0',
+      migrationNote:
+        'Prefer this family for new form layout while preserving vee-validate FormControl wiring where required.',
+    },
+  },
+  {
+    id: 'ui-input-group',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'InputGroup',
+    sourcePath: 'src/components/ui/input-group',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary: 'Input composition family for controls, addons, inline text, and embedded buttons.',
+    businessScenarios: ['Password reveal control', 'Prefixed input', 'Inline field action'],
+    contract: {
+      props: ['class', 'align', 'variant', 'size'],
+      events: [],
+      slots: ['default'],
+      models: [],
+    },
+    states: ['input', 'textarea', 'leading addon', 'trailing addon', 'invalid', 'disabled'],
+    limitations: [
+      'InputGroup does not supply the external label or validation message, and embedded controls still need accessible names.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: [
+        'The native control retains field ARIA; addon buttons require explicit accessible labels.',
+      ],
+    },
+    demoLocations: ['src/features/component-gallery/components/ComponentsFormDemo.vue'],
+    tests: {
+      locations: [
+        'src/__tests__/admin-components.spec.ts',
+        'src/__tests__/account-auth-ui.spec.ts',
+      ],
+      coverage: 'Exercised indirectly through PasswordField and reset-password controls.',
+    },
+    businessUsages: ['PasswordField', 'ResetPasswordPage'],
+    release: {
+      version: '0.0.0',
+      migrationNote: 'Use InputGroupInput or InputGroupTextarea rather than nesting raw controls.',
+    },
+  },
+  {
+    id: 'ui-number-field',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'NumberField',
+    sourcePath: 'src/components/ui/number-field',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary: 'Reka numeric field family with localized input and increment or decrement controls.',
+    businessScenarios: ['Bounded quantity', 'Configuration number', 'Step-based numeric entry'],
+    contract: {
+      props: ['modelValue', 'defaultValue', 'min', 'max', 'step', 'disabled', 'name', 'id'],
+      events: ['update:modelValue'],
+      slots: ['default'],
+      models: ['modelValue'],
+    },
+    states: ['empty', 'numeric value', 'minimum', 'maximum', 'disabled'],
+    limitations: [
+      'Domain units, nullable serialization, and validation messages remain wrapper responsibilities.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: [
+        'Reka supplies spinbutton semantics; increment and decrement naming is inherited from the primitive.',
+      ],
+    },
+    demoLocations: ['src/features/component-gallery/components/ComponentsFormDemo.vue'],
+    tests: {
+      locations: ['src/__tests__/admin-components.spec.ts'],
+      coverage:
+        'Exercised indirectly through the admin NumberField wrapper, including stepping and bounds.',
+    },
+    businessUsages: ['Admin NumberField'],
+    release: {
+      version: '0.0.0',
+      migrationNote: 'Keep nullable-string adaptation and business labels in the admin wrapper.',
+    },
+  },
+  {
+    id: 'ui-range-calendar',
+    kind: 'ui-primitive',
+    module: 'primitives',
+    displayName: 'RangeCalendar',
+    sourcePath: 'src/components/ui/range-calendar',
+    availability: {
+      implementation: 'implemented',
+      demo: 'indirect',
+      test: 'indirect',
+      enhancement: 'none',
+    },
+    maturity: 'stable',
+    summary: 'shadcn-vue/Reka calendar family for selecting one contiguous date range.',
+    businessScenarios: ['Reporting range', 'Advanced filtering', 'Active-period entry'],
+    contract: {
+      props: ['modelValue', 'defaultValue', 'minValue', 'maxValue', 'disabled', 'locale', 'class'],
+      events: ['update:modelValue'],
+      slots: ['default'],
+      models: ['modelValue'],
+    },
+    states: ['empty', 'start only', 'complete range', 'disabled date', 'month navigation'],
+    limitations: [
+      'Date serialization, presets, incomplete-range policy, and apply behavior remain caller-owned.',
+    ],
+    accessibility: {
+      status: 'partial',
+      notes: [
+        'Reka supplies calendar-grid semantics; project coverage reaches it only through DateRangePicker.',
+      ],
+    },
+    demoLocations: [
+      'src/features/component-gallery/components/ComponentsOperationsDemo.vue',
+      'src/features/component-gallery/selection/SelectionExamplesPage.vue',
+    ],
+    tests: {
+      locations: [
+        'src/__tests__/selection-examples.spec.ts',
+        'src/__tests__/accessibility-contracts.spec.ts',
+      ],
+      coverage:
+        'Exercised indirectly through DateRangePicker; standalone range navigation is not isolated.',
+    },
+    businessUsages: ['DateRangePicker'],
+    release: {
+      version: '0.0.0',
+      migrationNote:
+        'Keep serialization and commit policy in DateRangePicker or another owning field.',
+    },
+  },
+  ...unadoptedUiPrimitiveInventory.map(
+    (primitive): ComponentCatalogEntry => ({
+      id: primitive.id,
+      kind: 'ui-primitive',
+      module: 'primitives',
+      displayName: primitive.displayName,
+      sourcePath: primitive.sourcePath,
+      availability: {
+        implementation: 'implemented',
+        demo: 'missing',
+        test: 'missing',
+        enhancement: 'none',
+      },
+      maturity: 'experimental',
+      summary: primitive.summary,
+      businessScenarios: [primitive.candidateScenario],
+      contract: { props: [], events: [], slots: [], models: [] },
+      states: ['installed source only'],
+      limitations: [
+        'No application consumer, gallery demo, or project test currently establishes a supported project contract for this installed family.',
+      ],
+      accessibility: {
+        status: 'unknown',
+        notes: [
+          'No project-specific accessibility verification exists because the primitive has no current consumer.',
+        ],
+      },
+      demoLocations: [],
+      tests: {
+        locations: [],
+        coverage: 'No project test currently exercises this installed primitive family.',
+      },
+      businessUsages: [],
+      release: {
+        version: '0.0.0',
+        migrationNote:
+          'Inventory only; audit the upstream contract and add a real consumer, demo, and tests before promotion.',
+      },
+    }),
+  ),
 ] as const satisfies readonly ComponentCatalogEntry[]
 
 // AI modified: consumers retain the full status union even when the current audited catalog has no missing evidence.

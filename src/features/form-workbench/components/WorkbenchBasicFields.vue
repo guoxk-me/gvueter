@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AcceptableValue } from 'reka-ui'
 import type {
   DynamicWorkbenchField,
   FormWorkbenchErrors,
@@ -9,12 +10,34 @@ import type {
 } from '@/features/form-workbench/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { DateTimePicker } from '@/components/admin'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { getWorkbenchCities } from '@/features/form-workbench/form-workbench-rules'
 import {
   FORM_WORKBENCH_FIELDS,
   WORKBENCH_PROVINCES,
   WORKBENCH_REVIEWERS,
 } from '@/features/form-workbench/types'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<{
   values: FormWorkbenchValues
@@ -31,93 +54,121 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const cities = computed(() => getWorkbenchCities(props.values.province))
+const EMPTY_LOCATION_VALUE = '__empty-location__'
 
 function getInputValue(field: DynamicWorkbenchField): string | number {
   return props.values[field.name]
 }
 
-function updateDynamicField(field: DynamicWorkbenchField, event: Event): void {
-  const input = event.target as HTMLInputElement | HTMLSelectElement
+function updateDynamicInput(field: DynamicWorkbenchField, value: string | number): void {
   if (field.name === 'title') {
-    emit('change', { title: input.value })
+    emit('change', { title: String(value) })
     return
   }
-  if (field.name === 'budget') {
-    emit('change', { budget: Number(input.value) || 0 })
-    return
-  }
-  emit('change', { category: input.value as WorkbenchCategory })
+  if (field.name === 'budget') emit('change', { budget: Number(value) || 0 })
 }
 
-function updateReviewer(reviewer: WorkbenchReviewer, event: Event): void {
-  const isChecked = (event.target as HTMLInputElement).checked
-  const reviewers = isChecked
-    ? [...new Set([...props.values.reviewers, reviewer])]
-    : props.values.reviewers.filter((candidate) => candidate !== reviewer)
+function updateDynamicSelect(field: DynamicWorkbenchField, value: AcceptableValue): void {
+  if (field.name !== 'category' || typeof value !== 'string') return
+  emit('change', { category: value as WorkbenchCategory })
+}
+
+function updateReviewer(
+  reviewer: WorkbenchReviewer,
+  checkedState: boolean | 'indeterminate',
+): void {
+  const reviewers =
+    checkedState === true
+      ? [...new Set([...props.values.reviewers, reviewer])]
+      : props.values.reviewers.filter((candidate) => candidate !== reviewer)
   emit('change', { reviewers })
 }
 
-function updateProvince(event: Event): void {
+function getLocationSelectValue(value: string): string {
+  return value || EMPTY_LOCATION_VALUE
+}
+
+function updateProvince(value: AcceptableValue): void {
+  if (typeof value !== 'string') return
   emit('change', {
-    province: (event.target as HTMLSelectElement).value as WorkbenchProvince | '',
+    province: value === EMPTY_LOCATION_VALUE ? '' : (value as WorkbenchProvince),
   })
+}
+
+function updateCity(value: AcceptableValue): void {
+  if (typeof value !== 'string') return
+  emit('change', { city: value === EMPTY_LOCATION_VALUE ? '' : value })
 }
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- AI modified: the first field group renders from a typed business schema instead of duplicated markup. -->
-    <div class="grid gap-5 md:grid-cols-2">
-      <div v-for="field in FORM_WORKBENCH_FIELDS" :key="field.name" class="space-y-2">
-        <label :for="`workbench-${field.name}`" class="text-sm font-medium">
+  <!-- AI modified: shadcn Field primitives now keep labels, disabled state, and validation attached to every control. -->
+  <FieldGroup class="gap-6">
+    <FieldGroup class="grid gap-5 md:grid-cols-2">
+      <Field
+        v-for="field in FORM_WORKBENCH_FIELDS"
+        :key="field.name"
+        :data-invalid="Boolean(errors[field.name]) || undefined"
+        :data-disabled="
+          isDisabled || (field.name === 'budget' && values.category === 'internal') || undefined
+        "
+      >
+        <FieldLabel :for="`workbench-${field.name}`">
           {{ t(field.labelKey) }}
-        </label>
-        <select
+        </FieldLabel>
+        <Select
           v-if="field.kind === 'select'"
-          :id="`workbench-${field.name}`"
-          :value="getInputValue(field)"
-          class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
+          :model-value="getInputValue(field)"
+          :name="field.name"
+          autocomplete="off"
           :disabled="isDisabled"
-          :aria-invalid="Boolean(errors[field.name])"
-          :aria-describedby="`workbench-${field.name}-message`"
-          @change="updateDynamicField(field, $event)"
+          @update:model-value="updateDynamicSelect(field, $event)"
         >
-          <option v-for="option in field.options" :key="option.value" :value="option.value">
-            {{ t(option.labelKey) }}
-          </option>
-        </select>
-        <input
+          <SelectTrigger
+            :id="`workbench-${field.name}`"
+            class="w-full"
+            :aria-invalid="Boolean(errors[field.name])"
+            :aria-describedby="`workbench-${field.name}-message`"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem
+                v-for="option in field.options ?? []"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ t(option.labelKey) }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Input
           v-else
           :id="`workbench-${field.name}`"
-          :value="getInputValue(field)"
+          :model-value="getInputValue(field)"
+          :name="field.name"
           :type="field.kind"
           :min="field.min"
+          autocomplete="off"
           :placeholder="field.placeholderKey ? t(field.placeholderKey) : undefined"
-          class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
           :disabled="isDisabled || (field.name === 'budget' && values.category === 'internal')"
           :aria-invalid="Boolean(errors[field.name])"
           :aria-describedby="`workbench-${field.name}-message`"
-          @input="updateDynamicField(field, $event)"
+          @update:model-value="updateDynamicInput(field, $event)"
           @blur="field.name === 'title' ? emit('blurTitle') : undefined"
         />
-        <!-- AI modified: one stable message node keeps errors and async/linkage status attached to its control. -->
-        <p
+        <FieldError v-if="errors[field.name]" :id="`workbench-${field.name}-message`">
+          {{ errors[field.name] }}
+        </FieldError>
+        <FieldDescription
+          v-else
           :id="`workbench-${field.name}-message`"
-          class="text-xs"
-          :class="
-            errors[field.name]
-              ? 'text-destructive'
-              : field.name === 'title' && titleAvailability === 'available'
-                ? 'text-success'
-                : 'text-muted-foreground'
-          "
-          :role="errors[field.name] ? 'alert' : undefined"
-          :aria-live="!errors[field.name] && field.name === 'title' ? 'polite' : undefined"
+          :class="cn(field.name === 'title' && titleAvailability === 'available' && 'text-success')"
+          :aria-live="field.name === 'title' ? 'polite' : undefined"
         >
-          <template v-if="errors[field.name]">
-            {{ errors[field.name] }}
-          </template>
-          <template v-else-if="field.name === 'budget' && values.category === 'internal'">
+          <template v-if="field.name === 'budget' && values.category === 'internal'">
             {{ t('formWorkbench.linkage.internalBudget') }}
           </template>
           <template v-else-if="field.name === 'title' && isCheckingTitle">
@@ -126,148 +177,178 @@ function updateProvince(event: Event): void {
           <template v-else-if="field.name === 'title' && titleAvailability === 'available'">
             {{ t('formWorkbench.uniqueAvailable') }}
           </template>
-        </p>
-      </div>
-    </div>
+        </FieldDescription>
+      </Field>
+    </FieldGroup>
 
-    <fieldset
-      class="space-y-3"
+    <FieldSet
       :aria-invalid="Boolean(errors.reviewers)"
       aria-describedby="workbench-reviewers-message"
     >
-      <legend class="text-sm font-medium">
+      <FieldLegend variant="label">
         {{ t('formWorkbench.fields.reviewers') }}
-      </legend>
-      <div class="flex flex-wrap gap-4">
-        <label
+      </FieldLegend>
+      <FieldGroup class="flex-row flex-wrap gap-4">
+        <Field
           v-for="reviewer in WORKBENCH_REVIEWERS"
           :key="reviewer"
-          class="flex items-center gap-2 text-sm"
+          orientation="horizontal"
+          class="w-auto"
+          :data-invalid="Boolean(errors.reviewers) || undefined"
+          :data-disabled="isDisabled || undefined"
         >
-          <input
-            type="checkbox"
-            class="size-4 accent-primary"
-            :checked="values.reviewers.includes(reviewer)"
+          <Checkbox
+            :id="`workbench-reviewer-${reviewer}`"
+            name="reviewers"
+            :value="reviewer"
+            :model-value="values.reviewers.includes(reviewer)"
             :disabled="isDisabled"
+            :aria-invalid="Boolean(errors.reviewers)"
             aria-describedby="workbench-reviewers-message"
-            @change="updateReviewer(reviewer, $event)"
+            @update:model-value="updateReviewer(reviewer, $event)"
           />
-          {{ t(`formWorkbench.reviewers.${reviewer}`) }}
-        </label>
-      </div>
-      <p
-        id="workbench-reviewers-message"
-        class="text-xs text-destructive"
-        :role="errors.reviewers ? 'alert' : undefined"
-      >
+          <FieldLabel :for="`workbench-reviewer-${reviewer}`" class="font-normal">
+            {{ t(`formWorkbench.reviewers.${reviewer}`) }}
+          </FieldLabel>
+        </Field>
+      </FieldGroup>
+      <FieldError v-if="errors.reviewers" id="workbench-reviewers-message">
         {{ errors.reviewers }}
-      </p>
-    </fieldset>
+      </FieldError>
+      <FieldDescription v-else id="workbench-reviewers-message" />
+    </FieldSet>
 
-    <div class="grid gap-5 md:grid-cols-2">
-      <div class="space-y-2">
-        <label for="workbench-province" class="text-sm font-medium">
+    <FieldGroup class="grid gap-5 md:grid-cols-2">
+      <Field
+        :data-invalid="Boolean(errors.province) || undefined"
+        :data-disabled="isDisabled || undefined"
+      >
+        <FieldLabel for="workbench-province">
           {{ t('formWorkbench.fields.province') }}
-        </label>
-        <select
-          id="workbench-province"
-          :value="values.province"
-          class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
+        </FieldLabel>
+        <Select
+          :model-value="getLocationSelectValue(values.province)"
+          name="province"
+          autocomplete="address-level1"
           :disabled="isDisabled"
-          :aria-invalid="Boolean(errors.province)"
-          aria-describedby="workbench-province-message"
-          @change="updateProvince"
+          @update:model-value="updateProvince"
         >
-          <option value="">
-            {{ t('formWorkbench.fields.selectProvince') }}
-          </option>
-          <option v-for="province in WORKBENCH_PROVINCES" :key="province" :value="province">
-            {{ t(`formWorkbench.provinces.${province}`) }}
-          </option>
-        </select>
-        <p
-          id="workbench-province-message"
-          class="text-xs text-destructive"
-          :role="errors.province ? 'alert' : undefined"
-        >
+          <SelectTrigger
+            id="workbench-province"
+            class="w-full"
+            :aria-invalid="Boolean(errors.province)"
+            aria-describedby="workbench-province-message"
+          >
+            <SelectValue :placeholder="t('formWorkbench.fields.selectProvince')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem :value="EMPTY_LOCATION_VALUE">
+                {{ t('formWorkbench.fields.selectProvince') }}
+              </SelectItem>
+              <SelectItem v-for="province in WORKBENCH_PROVINCES" :key="province" :value="province">
+                {{ t(`formWorkbench.provinces.${province}`) }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <FieldError v-if="errors.province" id="workbench-province-message">
           {{ errors.province }}
-        </p>
-      </div>
-      <div class="space-y-2">
-        <label for="workbench-city" class="text-sm font-medium">
+        </FieldError>
+        <FieldDescription v-else id="workbench-province-message" />
+      </Field>
+      <Field
+        :data-invalid="Boolean(errors.city) || undefined"
+        :data-disabled="isDisabled || cities.length === 0 || undefined"
+      >
+        <FieldLabel for="workbench-city">
           {{ t('formWorkbench.fields.city') }}
-        </label>
-        <select
-          id="workbench-city"
-          :value="values.city"
-          class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
+        </FieldLabel>
+        <Select
+          :model-value="getLocationSelectValue(values.city)"
+          name="city"
+          autocomplete="address-level2"
           :disabled="isDisabled || cities.length === 0"
-          :aria-invalid="Boolean(errors.city)"
-          aria-describedby="workbench-city-message"
-          @change="emit('change', { city: ($event.target as HTMLSelectElement).value })"
+          @update:model-value="updateCity"
         >
-          <option value="">
-            {{ t('formWorkbench.fields.selectCity') }}
-          </option>
-          <option v-for="city in cities" :key="city" :value="city">
-            {{ t(`formWorkbench.cities.${city}`) }}
-          </option>
-        </select>
-        <p
-          id="workbench-city-message"
-          class="text-xs text-destructive"
-          :role="errors.city ? 'alert' : undefined"
-        >
+          <SelectTrigger
+            id="workbench-city"
+            class="w-full"
+            :aria-invalid="Boolean(errors.city)"
+            aria-describedby="workbench-city-message"
+          >
+            <SelectValue :placeholder="t('formWorkbench.fields.selectCity')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem :value="EMPTY_LOCATION_VALUE">
+                {{ t('formWorkbench.fields.selectCity') }}
+              </SelectItem>
+              <SelectItem v-for="city in cities" :key="city" :value="city">
+                {{ t(`formWorkbench.cities.${city}`) }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <FieldError v-if="errors.city" id="workbench-city-message">
           {{ errors.city }}
-        </p>
-      </div>
-    </div>
+        </FieldError>
+        <FieldDescription v-else id="workbench-city-message" />
+      </Field>
+    </FieldGroup>
 
-    <div class="grid gap-5 md:grid-cols-2">
-      <div class="space-y-2">
-        <label for="workbench-publish-at" class="text-sm font-medium">
+    <FieldGroup class="grid gap-5 md:grid-cols-2">
+      <Field
+        :data-invalid="Boolean(errors.publishAt) || undefined"
+        :data-disabled="isDisabled || undefined"
+      >
+        <FieldLabel for="workbench-publish-at">
           {{ t('formWorkbench.fields.publishAt') }}
-        </label>
-        <input
+        </FieldLabel>
+        <DateTimePicker
           id="workbench-publish-at"
-          :value="values.publishAt"
-          type="datetime-local"
-          class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
+          name="publishAt"
+          :model-value="values.publishAt"
+          autocomplete="off"
+          :label="t('formWorkbench.fields.publishAt')"
+          :time-label="t('formWorkbench.fields.publishAt')"
+          :placeholder="t('formWorkbench.validation.publishAtRequired')"
+          :apply-label="t('common.confirm')"
+          :clear-label="t('common.reset')"
           :disabled="isDisabled"
           :aria-invalid="Boolean(errors.publishAt)"
           aria-describedby="workbench-publish-at-message"
-          @input="emit('change', { publishAt: ($event.target as HTMLInputElement).value })"
+          @update:model-value="emit('change', { publishAt: $event })"
         />
-        <p
-          id="workbench-publish-at-message"
-          class="text-xs text-destructive"
-          :role="errors.publishAt ? 'alert' : undefined"
-        >
+        <FieldError v-if="errors.publishAt" id="workbench-publish-at-message">
           {{ errors.publishAt }}
-        </p>
-      </div>
-      <div class="space-y-2">
-        <label for="workbench-address" class="text-sm font-medium">
+        </FieldError>
+        <FieldDescription v-else id="workbench-publish-at-message" />
+      </Field>
+      <Field
+        :data-invalid="Boolean(errors.address) || undefined"
+        :data-disabled="isDisabled || undefined"
+      >
+        <FieldLabel for="workbench-address">
           {{ t('formWorkbench.fields.address') }}
-        </label>
-        <textarea
+        </FieldLabel>
+        <Textarea
           id="workbench-address"
-          :value="values.address"
+          name="address"
+          :model-value="values.address"
           rows="3"
-          class="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-50"
+          autocomplete="street-address"
+          class="min-h-20"
           :disabled="isDisabled"
           :aria-invalid="Boolean(errors.address)"
           aria-describedby="workbench-address-message"
-          @input="emit('change', { address: ($event.target as HTMLTextAreaElement).value })"
+          @update:model-value="emit('change', { address: String($event) })"
         />
-        <p
-          id="workbench-address-message"
-          class="text-xs text-destructive"
-          :role="errors.address ? 'alert' : undefined"
-        >
+        <FieldError v-if="errors.address" id="workbench-address-message">
           {{ errors.address }}
-        </p>
-      </div>
-    </div>
-  </div>
+        </FieldError>
+        <FieldDescription v-else id="workbench-address-message" />
+      </Field>
+    </FieldGroup>
+  </FieldGroup>
 </template>

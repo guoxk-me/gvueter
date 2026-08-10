@@ -224,6 +224,17 @@ describe('DashboardPage query states', () => {
     expect(wrapper.text()).toContain('Active users by department')
     expect(wrapper.findAll('[data-testid="chart"]')).toHaveLength(2)
     expect(useNotificationStore(pinia).unreadCount).toBe(2)
+    const notificationsCard = wrapper.get('#notifications')
+    // AI modified: notification counts and row boundaries use the installed UI primitives.
+    expect(notificationsCard.get('[data-slot="badge"]').text()).toBe('2')
+    expect(notificationsCard.findAll('[data-slot="separator"]')).toHaveLength(2)
+    expect(
+      notificationsCard
+        .findAll('button')
+        .find((button) => button.text().includes('Mark all read'))
+        ?.get('svg')
+        .attributes('data-icon'),
+    ).toBe('inline-start')
   })
 
   it('renders a retryable error state', async () => {

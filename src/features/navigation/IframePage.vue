@@ -3,7 +3,9 @@ import { ExternalLink, LoaderCircle, RefreshCw, TriangleAlert } from '@lucide/vu
 import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 
 defineOptions({ name: 'IframePage' })
 
@@ -94,21 +96,16 @@ onBeforeUnmount(clearLoadTimeout)
     :aria-busy="frameState === 'loading'"
     :aria-label="iframeTitle"
   >
-    <header
-      class="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3"
-    >
+    <header class="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2">
           <p class="text-xs font-medium text-muted-foreground">
             {{ t('nav.iframePage.sourceNotice', { source: iframeSource }) }}
           </p>
-          <span
-            class="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
-            role="status"
-            aria-live="polite"
-          >
+          <!-- AI modified: the shared badge exposes the frame state without duplicating status styling. -->
+          <Badge variant="secondary" role="status" aria-live="polite">
             {{ frameStatusLabel }}
-          </span>
+          </Badge>
         </div>
         <p class="mt-1 truncate text-sm" :title="iframeUrl">
           {{ iframeUrl || t('nav.iframePage.unknownSource') }}
@@ -123,7 +120,7 @@ onBeforeUnmount(clearLoadTimeout)
           :aria-label="t('nav.iframePage.refresh')"
           @click="refreshFrame"
         >
-          <RefreshCw class="size-4" aria-hidden="true" />
+          <RefreshCw data-icon="inline-start" aria-hidden="true" />
           {{ t('common.refresh') }}
         </Button>
         <Button
@@ -136,11 +133,13 @@ onBeforeUnmount(clearLoadTimeout)
           rel="noopener noreferrer"
           :aria-label="t('nav.iframePage.openInNewWindow')"
         >
-          <ExternalLink class="size-4" aria-hidden="true" />
+          <ExternalLink data-icon="inline-start" aria-hidden="true" />
           {{ t('nav.iframePage.openInNewWindow') }}
         </Button>
       </div>
     </header>
+    <!-- AI modified: the shared separator defines the boundary between controls and embedded content. -->
+    <Separator />
 
     <div class="relative min-h-0 flex-1">
       <iframe
@@ -196,7 +195,7 @@ onBeforeUnmount(clearLoadTimeout)
               }}
             </p>
             <Button type="button" variant="outline" @click="refreshFrame">
-              <RefreshCw class="size-4" aria-hidden="true" />
+              <RefreshCw data-icon="inline-start" aria-hidden="true" />
               {{ t('common.retry') }}
             </Button>
           </template>

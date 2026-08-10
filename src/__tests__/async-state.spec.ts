@@ -18,11 +18,15 @@ describe('AsyncState error contract', () => {
     })
 
     expect(wrapper.get('[role="status"]').attributes('aria-busy')).toBe('true')
+    expect(wrapper.findAll('[data-slot="skeleton"]')).toHaveLength(3)
     expect(wrapper.text()).not.toContain('Retryable failure')
 
     await wrapper.setProps({ isLoading: false })
     expect(wrapper.get('[role="alert"]').text()).toContain('Retryable failure')
-    await wrapper.get('button').trigger('click')
+    expect(wrapper.find('[role="alert"] [data-slot="empty"]').exists()).toBe(true)
+    const retryButton = wrapper.get('button')
+    expect(retryButton.get('svg').attributes('data-icon')).toBe('inline-start')
+    await retryButton.trigger('click')
     expect(wrapper.emitted('retry')).toHaveLength(1)
 
     await wrapper.setProps({ error: null })
@@ -61,6 +65,23 @@ describe('AsyncState error contract', () => {
     })
 
     expect(wrapper.text()).toBe('Static failure')
+  })
+
+  it('preserves custom loading and empty slot contracts', async () => {
+    const wrapper = mount(AsyncState, {
+      props: { isLoading: true, isEmpty: true },
+      slots: {
+        loading: '<p>Custom loading state</p>',
+        empty: '<p>Custom empty state</p>',
+      },
+      global: { plugins: [i18n] },
+    })
+
+    expect(wrapper.text()).toBe('Custom loading state')
+    expect(wrapper.find('[data-slot="skeleton"]').exists()).toBe(false)
+
+    await wrapper.setProps({ isLoading: false })
+    expect(wrapper.text()).toBe('Custom empty state')
   })
 
   it('announces default loading and error states through live semantics', () => {

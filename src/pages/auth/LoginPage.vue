@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
 import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
+import { Separator } from '@/components/ui/separator'
 import {
   getPostAuthenticationPath,
   getSafeSsoAuthorizationUrl,
@@ -258,7 +259,9 @@ onUnmounted(() => {
       @start="startSsoLogin"
     />
 
-    <div class="border-t border-border pt-4">
+    <!-- AI modified: use the shared separator so authentication navigation follows UI primitives. -->
+    <div class="flex flex-col gap-4">
+      <Separator />
       <div class="flex items-center justify-between">
         <RouterLink
           :to="{ name: 'forgot-password' }"

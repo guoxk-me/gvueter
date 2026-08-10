@@ -11,6 +11,8 @@ import { focusFirstInvalidControlAfterValidation } from '@/components/admin/form
 import { Button } from '@/components/ui/button'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Separator } from '@/components/ui/separator'
 import PasswordStrength from '@/features/account/components/PasswordStrength.vue'
 import { PASSWORD_MIN_LENGTH } from '@/features/account/types'
 import { ApiError } from '@/lib/http'
@@ -176,31 +178,32 @@ onMounted(() => {
         <FormField v-slot="{ componentField, value }" name="newPassword">
           <FormItem>
             <FormLabel>{{ t('auth.newPassword') }}</FormLabel>
-            <FormControl>
-              <div class="relative">
-                <Input
-                  id="new-password-input"
+            <!-- AI modified: FormControl wraps the real grouped input so validation attributes reach it. -->
+            <InputGroup :data-disabled="isLoading || undefined">
+              <FormControl>
+                <InputGroupInput
                   v-bind="componentField"
                   :type="showPassword ? 'text' : 'password'"
                   :placeholder="t('auth.newPasswordPlaceholder')"
                   autocomplete="new-password"
-                  class="pr-10"
                   :disabled="isLoading"
                 />
-                <button
+              </FormControl>
+              <InputGroupAddon align="inline-end">
+                <Button
                   type="button"
-                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  variant="ghost"
+                  size="icon-xs"
                   :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
                   :title="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
-                  aria-controls="new-password-input"
                   :aria-pressed="showPassword"
                   @click="showPassword = !showPassword"
                 >
-                  <EyeOff v-if="showPassword" class="size-4" aria-hidden="true" />
-                  <Eye v-else class="size-4" aria-hidden="true" />
-                </button>
-              </div>
-            </FormControl>
+                  <EyeOff v-if="showPassword" data-icon="inline-start" aria-hidden="true" />
+                  <Eye v-else data-icon="inline-start" aria-hidden="true" />
+                </Button>
+              </InputGroupAddon>
+            </InputGroup>
             <PasswordStrength :password="String(value ?? '')" />
             <FormMessage />
           </FormItem>
@@ -209,43 +212,49 @@ onMounted(() => {
         <FormField v-slot="{ componentField }" name="confirmPassword">
           <FormItem>
             <FormLabel>{{ t('auth.confirmPassword') }}</FormLabel>
-            <FormControl>
-              <div class="relative">
-                <Input
-                  id="confirm-password-input"
+            <InputGroup :data-disabled="isLoading || undefined">
+              <FormControl>
+                <InputGroupInput
                   v-bind="componentField"
                   :type="showConfirm ? 'text' : 'password'"
                   :placeholder="t('auth.confirmPasswordPlaceholder')"
                   autocomplete="new-password"
-                  class="pr-10"
                   :disabled="isLoading"
                 />
-                <button
+              </FormControl>
+              <InputGroupAddon align="inline-end">
+                <Button
                   type="button"
-                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  variant="ghost"
+                  size="icon-xs"
                   :aria-label="showConfirm ? t('auth.hidePassword') : t('auth.showPassword')"
                   :title="showConfirm ? t('auth.hidePassword') : t('auth.showPassword')"
-                  aria-controls="confirm-password-input"
                   :aria-pressed="showConfirm"
                   @click="showConfirm = !showConfirm"
                 >
-                  <EyeOff v-if="showConfirm" class="size-4" aria-hidden="true" />
-                  <Eye v-else class="size-4" aria-hidden="true" />
-                </button>
-              </div>
-            </FormControl>
+                  <EyeOff v-if="showConfirm" data-icon="inline-start" aria-hidden="true" />
+                  <Eye v-else data-icon="inline-start" aria-hidden="true" />
+                </Button>
+              </InputGroupAddon>
+            </InputGroup>
             <FormMessage />
           </FormItem>
         </FormField>
 
         <Button type="submit" class="w-full" :disabled="isLoading">
-          <Loader2 v-if="isLoading" class="mr-2 size-4 animate-spin" aria-hidden="true" />
+          <Loader2
+            v-if="isLoading"
+            data-icon="inline-start"
+            class="animate-spin"
+            aria-hidden="true"
+          />
           <span v-if="isLoading">{{ t('auth.resetPasswording') }}</span>
           <span v-else>{{ t('auth.resetPasswordButton') }}</span>
         </Button>
 
-        <div class="pt-1">
-          <div class="mb-3 border-t border-border" />
+        <!-- AI modified: the shared separator owns the visual division before the return link. -->
+        <div class="flex flex-col gap-3 pt-1">
+          <Separator />
           <div class="flex justify-center">
             <RouterLink
               :to="{ name: 'login' }"

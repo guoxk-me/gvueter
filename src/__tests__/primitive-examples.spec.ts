@@ -82,9 +82,10 @@ afterEach(() => {
 })
 
 describe('primitive catalog route', () => {
-  it('keeps the installed 27-entry catalog authoritative and wires the dedicated route', () => {
-    expect(uiPrimitiveCatalog).toHaveLength(27)
-    expect(new Set(uiPrimitiveCatalog.map((primitive) => primitive.id)).size).toBe(27)
+  it('keeps the installed 65-entry catalog authoritative and wires the dedicated route', () => {
+    // AI modified: inventory includes every installed shadcn primitive, even before product adoption.
+    expect(uiPrimitiveCatalog).toHaveLength(65)
+    expect(new Set(uiPrimitiveCatalog.map((primitive) => primitive.id)).size).toBe(65)
     expect(uiPrimitiveCatalog.every((primitive) => primitive.kind === 'ui-primitive')).toBe(true)
 
     const adminRoot = adminRoutes.find((route) => route.name === 'admin-root')

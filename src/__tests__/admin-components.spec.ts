@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { defineComponent, nextTick, shallowRef } from 'vue'
 import Callout from '@/components/admin/Callout.vue'
 import DetailDrawer from '@/components/admin/DetailDrawer.vue'
+import EmptyState from '@/components/admin/EmptyState.vue'
 import FormDialog from '@/components/admin/FormDialog.vue'
 import NumberField from '@/components/admin/NumberField.vue'
 import PageHeader from '@/components/admin/PageHeader.vue'
@@ -354,16 +355,19 @@ describe('advanced form controls', () => {
       },
     })
 
-    // AI modified: the composite focus treatment must cover its input and both step buttons.
-    expect(wrapper.classes()).toEqual(
-      expect.arrayContaining([
-        'focus-within:border-ring',
-        'focus-within:ring-[3px]',
-        'focus-within:ring-ring/50',
-      ]),
+    // AI modified: the business wrapper now delegates input and boundary behavior to the shadcn number field.
+    expect(wrapper.get('[data-slot="input"].border-input').element.tagName).toBe('INPUT')
+    const incrementButton = wrapper.get('[aria-label="Increase seats"]')
+    await nextTick()
+    incrementButton.element.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, button: 0 }),
     )
-    await wrapper.get('[aria-label="Increase seats"]').trigger('click')
+    window.dispatchEvent(new MouseEvent('pointerup', { button: 0 }))
+    await nextTick()
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([3])
+
+    await wrapper.setProps({ modelValue: 3 })
+    expect(incrementButton.attributes('disabled')).toBeDefined()
   })
 
   it('toggles password visibility without changing its controlled value', async () => {
@@ -373,11 +377,24 @@ describe('advanced form controls', () => {
         showLabel: 'Show secret',
         hideLabel: 'Hide secret',
       },
+      attrs: {
+        'aria-invalid': 'true',
+        'aria-describedby': 'password-error',
+      },
     })
 
-    expect(wrapper.get('input').attributes('type')).toBe('password')
-    await wrapper.get('[aria-label="Show secret"]').trigger('click')
-    expect(wrapper.get('input').attributes('type')).toBe('text')
+    const input = wrapper.get('[data-slot="input-group-control"]')
+    expect(input.attributes()).toMatchObject({
+      'aria-invalid': 'true',
+      'aria-describedby': 'password-error',
+    })
+    expect(input.attributes('type')).toBe('password')
+    const visibilityButton = wrapper.get('[aria-label="Show secret"]')
+    expect(visibilityButton.attributes('title')).toBe('Show secret')
+    await visibilityButton.trigger('click')
+    expect(input.attributes('type')).toBe('text')
+    expect(visibilityButton.attributes('aria-label')).toBe('Hide secret')
+    expect(visibilityButton.attributes('title')).toBe('Hide secret')
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 })
@@ -388,13 +405,65 @@ describe('feedback components', () => {
       props: {
         visible: true,
         title: 'Review required',
+        description: 'Confirm the latest policy.',
         dismissible: true,
         closeLabel: 'Dismiss review',
       },
     })
 
-    await wrapper.get('[aria-label="Dismiss review"]').trigger('click')
+    expect(wrapper.get('[data-slot="alert"]').attributes('role')).toBe('status')
+    expect(wrapper.get('[data-slot="alert-title"]').text()).toBe('Review required')
+    expect(wrapper.get('[data-slot="alert-description"]').text()).toContain(
+      'Confirm the latest policy.',
+    )
+
+    const dismissButton = wrapper.get('[aria-label="Dismiss review"]')
+    expect(dismissButton.get('svg').attributes('data-icon')).toBe('inline-start')
+    await dismissButton.trigger('click')
     expect(wrapper.emitted('update:visible')?.[0]).toEqual([false])
+  })
+
+  it('preserves callout content slots through the shared alert composition', () => {
+    const wrapper = mount(Callout, {
+      props: {
+        title: 'Permission warning',
+        tone: 'warning',
+      },
+      slots: {
+        default: '<p>Only administrators can continue.</p>',
+        actions: '<button type="button">Review access</button>',
+      },
+    })
+
+    expect(wrapper.get('[data-slot="alert"]').attributes('role')).toBe('alert')
+    expect(wrapper.text()).toContain('Only administrators can continue.')
+    expect(wrapper.get('button').text()).toBe('Review access')
+  })
+
+  it('renders empty-state content and actions with the shared empty composition', () => {
+    const wrapper = mount(EmptyState, {
+      props: {
+        title: 'No matching records',
+        description: 'Clear the active filters and try again.',
+      },
+      slots: {
+        actions: '<button type="button">Clear filters</button>',
+      },
+    })
+
+    expect(wrapper.find('[data-slot="empty"]').exists()).toBe(true)
+    expect(wrapper.get('[data-slot="empty-icon"] svg').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('h2').text()).toBe('No matching records')
+    expect(wrapper.get('[data-slot="empty-description"]').text()).toBe(
+      'Clear the active filters and try again.',
+    )
+    expect(wrapper.get('[data-slot="empty-content"] button').text()).toBe('Clear filters')
+
+    const customIconWrapper = mount(EmptyState, {
+      props: { title: 'Archived records' },
+      slots: { icon: '<span data-testid="archive-icon">Archive</span>' },
+    })
+    expect(customIconWrapper.get('[data-testid="archive-icon"]').text()).toBe('Archive')
   })
 
   it('bounds progress semantics and visible width to the configured maximum', () => {

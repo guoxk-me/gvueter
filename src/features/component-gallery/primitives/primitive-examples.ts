@@ -386,11 +386,11 @@ const ENGLISH_GAP_DECISIONS = [
   {
     id: 'calendar-date-picker',
     name: 'Calendar / DatePicker',
-    status: 'defer',
+    status: 'not-applicable',
     reason:
-      'Current date filters use explicit native dates and a typed DateRangePicker; no calendar-only workflow is missing.',
+      'Date filters now use the installed Calendar and RangeCalendar primitives through typed business components.',
     alternative:
-      'Use DateRangePicker and locale-aware display formatting until a scheduling use case exists.',
+      'Use DateRangePicker for intervals and DateTimePicker for scheduling instead of native date inputs.',
   },
   {
     id: 'radio',
@@ -500,9 +500,9 @@ const CHINESE_GAP_DECISIONS = [
   {
     id: 'calendar-date-picker',
     name: 'Calendar / DatePicker',
-    status: 'defer',
-    reason: '当前日期筛选使用明确的原生日期和类型化 DateRangePicker，没有缺失纯日历流程。',
-    alternative: '在出现排期场景前，使用 DateRangePicker 与 locale-aware 展示格式。',
+    status: 'not-applicable',
+    reason: '日期筛选已通过类型化业务组件组合已安装的 Calendar 与 RangeCalendar。',
+    alternative: '区间使用 DateRangePicker，排期使用 DateTimePicker，不再使用原生日期输入。',
   },
   {
     id: 'radio',

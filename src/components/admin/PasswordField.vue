@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import type { HTMLAttributes } from 'vue'
 import { Eye, EyeOff } from '@lucide/vue'
-import { shallowRef } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { shallowRef, useAttrs } from 'vue'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group'
 
-withDefaults(
+defineOptions({ inheritAttrs: false })
+
+const props = withDefaults(
   defineProps<{
     id?: string
     placeholder?: string
@@ -12,6 +19,7 @@ withDefaults(
     disabled?: boolean
     showLabel?: string
     hideLabel?: string
+    class?: HTMLAttributes['class']
   }>(),
   {
     placeholder: '',
@@ -24,30 +32,32 @@ withDefaults(
 
 const password = defineModel<string>({ default: '' })
 const isVisible = shallowRef(false)
+// AI modified: validation and form attributes must reach the real input instead of the composite wrapper.
+const inputAttrs = useAttrs()
 </script>
 
 <template>
-  <div class="relative">
-    <Input
+  <InputGroup :class="props.class">
+    <InputGroupInput
+      v-bind="inputAttrs"
       :id="id"
       v-model="password"
       :type="isVisible ? 'text' : 'password'"
       :placeholder="placeholder"
       :autocomplete="autocomplete"
       :disabled="disabled"
-      class="pr-10"
     />
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon-sm"
-      class="absolute top-1/2 right-1 -translate-y-1/2"
-      :aria-label="isVisible ? hideLabel : showLabel"
-      :disabled="disabled"
-      @click="isVisible = !isVisible"
-    >
-      <EyeOff v-if="isVisible" class="size-4" aria-hidden="true" />
-      <Eye v-else class="size-4" aria-hidden="true" />
-    </Button>
-  </div>
+    <InputGroupAddon align="inline-end">
+      <InputGroupButton
+        type="button"
+        size="icon-xs"
+        :aria-label="isVisible ? hideLabel : showLabel"
+        :disabled="disabled"
+        @click="isVisible = !isVisible"
+      >
+        <EyeOff v-if="isVisible" data-icon="inline-start" aria-hidden="true" />
+        <Eye v-else data-icon="inline-start" aria-hidden="true" />
+      </InputGroupButton>
+    </InputGroupAddon>
+  </InputGroup>
 </template>

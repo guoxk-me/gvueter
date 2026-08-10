@@ -212,7 +212,7 @@ function resetFilters(): void {
     </div>
 
     <div class="grid gap-3 rounded-lg border border-border p-4 sm:grid-cols-2 xl:grid-cols-4">
-      <label class="space-y-1.5 text-sm">
+      <div class="space-y-1.5 text-sm">
         <span>{{ t('contentAdmin.logs.filters.startDate') }}</span>
         <Popover v-model:open="isStartDatePickerOpen">
           <PopoverTrigger as-child>
@@ -240,8 +240,8 @@ function resetFilters(): void {
             />
           </PopoverContent>
         </Popover>
-      </label>
-      <label class="space-y-1.5 text-sm">
+      </div>
+      <div class="space-y-1.5 text-sm">
         <span>{{ t('contentAdmin.logs.filters.endDate') }}</span>
         <!-- AI modified: keep end-date filter updates in sync with start-date picker behavior. -->
         <Popover v-model:open="isEndDatePickerOpen">
@@ -269,7 +269,7 @@ function resetFilters(): void {
             />
           </PopoverContent>
         </Popover>
-      </label>
+      </div>
       <label class="relative space-y-1.5 text-sm">
         <span>{{ t('contentAdmin.logs.filters.actor') }}</span>
         <div class="relative">

@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { Buffer } from 'node:buffer'
 import { expect, test } from '@playwright/test'
 
@@ -63,6 +63,41 @@ async function searchUsers(page: Page, keyword: string): Promise<void> {
   await page.getByRole('searchbox', { name: 'Search' }).fill(keyword)
   await page.getByRole('button', { name: 'Search', exact: true }).click()
   await searchRequest
+}
+
+// AI modified: workbench shadcn Selects are exercised through their public combobox semantics.
+async function selectWorkbenchOption(
+  page: Page,
+  fieldLabel: string,
+  optionLabel: string,
+): Promise<void> {
+  const trigger = page.getByRole('combobox', { name: fieldLabel, exact: true })
+  await trigger.click()
+  await page.getByRole('option', { name: optionLabel, exact: true }).click()
+  await expect(trigger).toHaveText(optionLabel)
+}
+
+async function showCalendarMonth(
+  calendar: Locator,
+  heading: Locator,
+  targetMonth: Date,
+  targetHeading: string,
+): Promise<void> {
+  const displayedMonthLabel = (await heading.textContent())?.trim()
+  if (!displayedMonthLabel) throw new Error('The calendar did not expose its visible month')
+  const displayedMonth = new Date(`${displayedMonthLabel} 1`)
+  if (Number.isNaN(displayedMonth.getTime()))
+    throw new Error(`The calendar exposed an invalid month: ${displayedMonthLabel}`)
+
+  const monthOffset =
+    (targetMonth.getFullYear() - displayedMonth.getFullYear()) * 12 +
+    targetMonth.getMonth() -
+    displayedMonth.getMonth()
+  const navigationName = monthOffset > 0 ? 'Next page' : 'Previous page'
+  for (let pageOffset = 0; pageOffset < Math.abs(monthOffset); pageOffset += 1) {
+    await calendar.getByRole('button', { name: navigationName, exact: true }).click()
+  }
+  await expect(heading).toHaveText(targetHeading)
 }
 
 async function createUser(page: Page, userDraft: UserDraft): Promise<void> {
@@ -246,19 +281,43 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
   await page.goto('/form-workbench')
   await expect(page.getByRole('heading', { name: 'Form Workbench' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   const titleField = page.getByLabel('Request title')
   await expect(titleField).toHaveAttribute('aria-invalid', 'true')
   await expect(titleField).toBeFocused()
 
   await titleField.fill('Browser verified customer rollout')
-  await page.getByLabel('Category').selectOption('customer')
+  await selectWorkbenchOption(page, 'Category', 'Customer delivery')
   await page.getByLabel('Budget').fill('1250')
   await page.getByRole('checkbox', { name: 'Operations' }).check()
-  await page.getByLabel('Province / municipality').selectOption('zhejiang')
-  await expect(page.getByLabel('City')).toBeEnabled()
-  await page.getByLabel('City').selectOption('hangzhou')
-  await page.getByLabel('Publish date and time').fill('2026-08-01T10:30')
+  await selectWorkbenchOption(page, 'Province / municipality', 'Zhejiang')
+  await expect(page.getByRole('combobox', { name: 'City', exact: true })).toBeEnabled()
+  await selectWorkbenchOption(page, 'City', 'Hangzhou')
+
+  // AI modified: DateTimePicker is exercised through its calendar/time draft before confirmation.
+  const publishAtTrigger = page.getByRole('button', {
+    name: 'Publish date and time',
+    exact: true,
+  })
+  await publishAtTrigger.click()
+  const publishAtPopover = page.getByRole('dialog').filter({
+    has: page.getByRole('textbox', { name: 'Publish date and time', exact: true }),
+  })
+  const publishAtCalendar = publishAtPopover.locator('[data-slot="calendar"]')
+  const calendarHeading = publishAtCalendar.locator('[data-slot="calendar-heading"]')
+  await expect(publishAtPopover).toBeVisible()
+  await showCalendarMonth(publishAtCalendar, calendarHeading, new Date(2026, 7, 1), 'August 2026')
+  await publishAtCalendar
+    .getByRole('button', { name: 'Saturday, August 1, 2026', exact: true })
+    .click()
+  await publishAtPopover
+    .getByRole('textbox', { name: 'Publish date and time', exact: true })
+    .fill('10:30')
+  await publishAtPopover.getByRole('button', { name: 'Confirm', exact: true }).click()
+  await expect(publishAtTrigger).toContainText(/Aug 1, 2026.*10:30 AM/)
+  await expect(page.locator('input[type="hidden"][name="publishAt"]')).toHaveValue(
+    '2026-08-01T10:30',
+  )
   await page.getByLabel('Delivery address').fill('88 Browser Verification Road, Hangzhou')
 
   await page.getByRole('button', { name: 'Save draft' }).click()
@@ -276,14 +335,33 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
       requestUrl.searchParams.get('title') === 'Browser verified customer rollout'
     )
   })
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   expect((await titleAvailabilityRequest).status()).toBe(200)
   await expect(page.getByRole('heading', { name: 'Content and files' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Select active dates' }).click()
-  await page.getByLabel('Start date').fill('2026-08-01')
-  await page.getByLabel('End date').fill('2026-08-15')
-  await page.getByRole('button', { name: 'Confirm', exact: true }).click()
+  // AI modified: DateRangePicker now follows the visible range-calendar selection contract.
+  const activeRangeTrigger = page.getByRole('button', { name: 'Active date range', exact: true })
+  await activeRangeTrigger.click()
+  const activeRangePopover = page.getByRole('dialog').filter({
+    has: page.locator('[data-slot="range-calendar"]'),
+  })
+  const activeRangeCalendar = activeRangePopover.locator('[data-slot="range-calendar"]')
+  const activeRangeHeading = activeRangeCalendar.locator('[data-slot="range-calendar-heading"]')
+  await expect(activeRangePopover).toBeVisible()
+  await showCalendarMonth(
+    activeRangeCalendar,
+    activeRangeHeading,
+    new Date(2026, 7, 1),
+    'August 2026',
+  )
+  await activeRangeCalendar
+    .getByRole('button', { name: 'Saturday, August 1, 2026', exact: true })
+    .click()
+  await activeRangeCalendar
+    .getByRole('button', { name: 'Saturday, August 15, 2026', exact: true })
+    .click()
+  await activeRangePopover.getByRole('button', { name: 'Confirm', exact: true }).click()
+  await expect(activeRangeTrigger).toContainText('Aug 1, 2026 – Aug 15, 2026')
 
   const supportingFileChooser = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: /Add supporting documents/ }).click()
@@ -302,7 +380,7 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
   await page
     .getByLabel('Markdown notes')
     .fill('## Browser verification\n\nShip the validated customer rollout.')
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Review and submit' })).toBeVisible()
   await expect(page.locator('main')).toContainText('Browser verified customer rollout')
   await expect(page.locator('main')).toContainText('Customer delivery')
@@ -358,10 +436,10 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
       requestUrl.searchParams.get('title') === 'Browser verified customer rollout recovered'
     )
   })
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   expect((await recoveredTitleAvailability).status()).toBe(200)
   await expect(page.getByRole('heading', { name: 'Content and files' })).toBeVisible()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Review and submit' })).toBeVisible()
 
   const submissionRequest = page.waitForRequest((request) => {
