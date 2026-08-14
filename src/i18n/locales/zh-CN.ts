@@ -1679,6 +1679,7 @@ export default {
       uploadPartial: '已上传 {uploaded} 个文件；{failed} 个失败文件仍保留在选择列表中。',
       deleteSuccess: '文件已删除',
       search: '搜索文件名',
+      total: '共 {total} 个文件',
       preview: '预览图片',
       previewDescription: '通过鉴权加载图片预览，非图片内容不会嵌入页面。',
       download: '下载文件',

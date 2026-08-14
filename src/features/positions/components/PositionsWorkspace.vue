@@ -1,19 +1,12 @@
 <script setup lang="ts">
+import type { SearchFormField } from '@/components/admin'
 import type { PositionInput, PositionListFilters, PositionRecord } from '@/features/positions/types'
-import { Plus, Search } from '@lucide/vue'
-import { computed, ref, shallowRef } from 'vue'
+import { Plus } from '@lucide/vue'
+import { computed, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { PageHeader } from '@/components/admin'
+import { PageHeader, SearchForm } from '@/components/admin'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { usePositionManagement } from '@/features/positions/composables/usePositionManagement'
 import { POSITION_STATUSES } from '@/features/positions/types'
 import { appAbility } from '@/lib/ability'
@@ -22,10 +15,30 @@ import PositionFormDialog from './PositionFormDialog.vue'
 import PositionsTable from './PositionsTable.vue'
 
 const { t } = useI18n()
-const filters = ref<PositionListFilters>({ keyword: '', status: 'all' })
+const defaultFilters: PositionListFilters = { keyword: '', status: 'all' }
+const searchFilters = shallowRef<PositionListFilters>({ ...defaultFilters })
+const appliedFilters = shallowRef<PositionListFilters>({ ...defaultFilters })
 const isFormOpen = shallowRef(false)
 const selectedPosition = shallowRef<PositionRecord>()
 const canManage = computed(() => appAbility.can('update', 'Settings'))
+const filterFields = computed<readonly SearchFormField<PositionListFilters>[]>(() => [
+  {
+    name: 'keyword',
+    type: 'search',
+    label: t('positions.search'),
+    placeholder: t('positions.search'),
+    inputMode: 'search',
+  },
+  {
+    name: 'status',
+    type: 'select',
+    label: t('positions.status'),
+    options: [
+      { label: t('positions.allStatuses'), value: 'all' },
+      ...POSITION_STATUSES.map((status) => ({ label: t(`positions.${status}`), value: status })),
+    ],
+  },
+])
 const {
   positions,
   total,
@@ -35,7 +48,7 @@ const {
   isDeleting,
   savePosition,
   deletePosition,
-} = usePositionManagement(filters)
+} = usePositionManagement(appliedFilters)
 
 function getErrorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : t('errors.networkError')
@@ -49,6 +62,11 @@ function createPosition(): void {
 function editPosition(position: PositionRecord): void {
   selectedPosition.value = position
   isFormOpen.value = true
+}
+
+function applyFilters(filters: PositionListFilters): void {
+  // AI modified: only submitted snapshots become query keys, avoiding a request for every keystroke.
+  appliedFilters.value = { ...filters }
 }
 
 async function save(input: PositionInput): Promise<void> {
@@ -82,30 +100,20 @@ async function remove(position: PositionRecord): Promise<void> {
       </template>
     </PageHeader>
 
-    <div
-      class="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center"
+    <SearchForm
+      v-model="searchFilters"
+      :fields="filterFields"
+      :default-values="defaultFilters"
+      :search-label="t('common.search')"
+      :reset-label="t('common.reset')"
+      :is-searching="isLoading"
+      @search="applyFilters"
+      @reset="applyFilters"
     >
-      <label class="relative min-w-0 flex-1">
-        <Search class="absolute left-3 top-2.5 size-4 text-muted-foreground" aria-hidden="true" />
-        <span class="sr-only">{{ t('positions.search') }}</span>
-        <Input v-model="filters.keyword" class="pl-9" :placeholder="t('positions.search')" />
-      </label>
-      <Select v-model="filters.status">
-        <!-- AI modified: the standalone status trigger needs a stable accessible name outside FormField. -->
-        <SelectTrigger class="w-full sm:w-44" :aria-label="t('positions.status')">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">
-            {{ t('positions.allStatuses') }}
-          </SelectItem>
-          <SelectItem v-for="status in POSITION_STATUSES" :key="status" :value="status">
-            {{ t(`positions.${status}`) }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
-      <span class="text-xs text-muted-foreground">{{ t('positions.total', { total }) }}</span>
-    </div>
+      <template #summary>
+        {{ t('positions.total', { total }) }}
+      </template>
+    </SearchForm>
 
     <!-- AI modified: async query failures are announced when they enter the DOM. -->
     <div

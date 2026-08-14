@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PaginationState, RowSelectionState, SortingState } from '@tanstack/vue-table'
-import type { ProTableDensity, ProTableEditCommit, ProTableLabels } from '@/components/pro-table'
+import type { ProTableDensity, ProTableEditCommit } from '@/components/pro-table'
 import type { AdminUser } from '@/features/users/types'
 import { FileUp, MoreHorizontal, Pencil, Printer, RefreshCw, Trash2 } from '@lucide/vue'
 import { createColumnHelper } from '@tanstack/vue-table'
@@ -100,36 +100,6 @@ const columns = computed(() => [
     : []),
 ])
 
-const labels = computed<ProTableLabels>(() => ({
-  columns: t('proTable.columns'),
-  density: t('proTable.density'),
-  densityCompact: t('proTable.densityCompact'),
-  densityStandard: t('proTable.densityStandard'),
-  densityComfortable: t('proTable.densityComfortable'),
-  fullscreen: t('proTable.fullscreen'),
-  exitFullscreen: t('proTable.exitFullscreen'),
-  pinLeft: t('proTable.pinLeft'),
-  pinRight: t('proTable.pinRight'),
-  unpin: t('proTable.unpin'),
-  moveColumnUp: t('proTable.moveColumnUp'),
-  moveColumnDown: t('proTable.moveColumnDown'),
-  columnMoved: t('proTable.columnMoved', {
-    column: '{column}',
-    position: '{position}',
-    total: '{total}',
-  }),
-  expand: t('proTable.expand'),
-  collapse: t('proTable.collapse'),
-  editCell: t('proTable.editCell'),
-  rowsPerPage: t('dataTable.rowsPerPage'),
-  pageOf: t('dataTable.pageOf', { current: '{current}', total: '{total}' }),
-  previousPage: t('dataTable.previousPage'),
-  nextPage: t('dataTable.nextPage'),
-  selectAll: t('dataTable.selectAll'),
-  selectRow: t('dataTable.selectRow'),
-  actions: t('common.actions'),
-}))
-
 const exportColumns = computed(() => [
   // AI modified: canonical headers make exported user CSV files directly re-importable.
   { label: 'name', getValue: (user: AdminUser) => user.name },
@@ -210,7 +180,6 @@ function printUsers(): void {
       :columns="columns"
       :data="users"
       :row-count="total"
-      :labels="labels"
       :is-loading="isLoading"
       :empty-message="t('users.noResults')"
       :page-size-options="[5, 10, 20, 50]"

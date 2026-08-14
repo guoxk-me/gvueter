@@ -4,21 +4,14 @@ import type {
   SystemParameterListFilters,
   SystemParameterRecord,
 } from '../types'
-import { ArrowLeft, Plus, Search } from '@lucide/vue'
-import { computed, ref, shallowRef } from 'vue'
+import type { SearchFormField } from '@/components/admin'
+import { ArrowLeft, Plus } from '@lucide/vue'
+import { computed, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { Callout, PageHeader } from '@/components/admin'
+import { Callout, PageHeader, SearchForm } from '@/components/admin'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { canAccess } from '@/lib/ability'
 import { ApiError } from '@/lib/http'
 import { useSystemParameterManagement } from '../composables/useSystemParameterManagement'
@@ -27,13 +20,36 @@ import SystemParameterFormDialog from './SystemParameterFormDialog.vue'
 import SystemParametersTable from './SystemParametersTable.vue'
 
 const { t } = useI18n()
-const filters = ref<SystemParameterListFilters>({ keyword: '', status: 'all' })
+const defaultFilters: SystemParameterListFilters = { keyword: '', status: 'all' }
+const searchFilters = shallowRef<SystemParameterListFilters>({ ...defaultFilters })
+const appliedFilters = shallowRef<SystemParameterListFilters>({ ...defaultFilters })
 const isFormOpen = shallowRef(false)
 const selectedParameter = shallowRef<SystemParameterRecord>()
 const canCreate = computed(() => canAccess('create', 'Settings'))
 const canUpdate = computed(() => canAccess('update', 'Settings'))
 const canDelete = computed(() => canAccess('delete', 'Settings'))
 const canManage = computed(() => canCreate.value || canUpdate.value || canDelete.value)
+const filterFields = computed<readonly SearchFormField<SystemParameterListFilters>[]>(() => [
+  {
+    name: 'keyword',
+    type: 'search',
+    label: t('systemParameters.search'),
+    placeholder: t('systemParameters.search'),
+    inputMode: 'search',
+  },
+  {
+    name: 'status',
+    type: 'select',
+    label: t('systemParameters.status'),
+    options: [
+      { label: t('systemParameters.allStatuses'), value: 'all' },
+      ...SYSTEM_PARAMETER_STATUSES.map((status) => ({
+        label: t(`systemParameters.${status}`),
+        value: status,
+      })),
+    ],
+  },
+])
 const {
   parameters,
   total,
@@ -43,7 +59,7 @@ const {
   isDeleting,
   saveParameter,
   deleteParameter,
-} = useSystemParameterManagement(filters)
+} = useSystemParameterManagement(appliedFilters)
 
 function getErrorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : t('errors.networkError')
@@ -57,6 +73,11 @@ function createParameter(): void {
 function editParameter(parameter: SystemParameterRecord): void {
   selectedParameter.value = parameter
   isFormOpen.value = true
+}
+
+function applyFilters(filters: SystemParameterListFilters): void {
+  // AI modified: submitted filter snapshots prevent one server request per edited character.
+  appliedFilters.value = { ...filters }
 }
 
 async function save(input: SystemParameterInput): Promise<void> {
@@ -105,36 +126,20 @@ async function remove(parameter: SystemParameterRecord): Promise<void> {
       :description="t('systemParameters.readOnlyDescription')"
     />
 
-    <div
-      class="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center"
+    <SearchForm
+      v-model="searchFilters"
+      :fields="filterFields"
+      :default-values="defaultFilters"
+      :search-label="t('common.search')"
+      :reset-label="t('common.reset')"
+      :is-searching="isLoading"
+      @search="applyFilters"
+      @reset="applyFilters"
     >
-      <label class="relative min-w-0 flex-1">
-        <Search class="absolute top-2.5 left-3 size-4 text-muted-foreground" aria-hidden="true" />
-        <span class="sr-only">{{ t('systemParameters.search') }}</span>
-        <Input v-model="filters.keyword" class="pl-9" :placeholder="t('systemParameters.search')" />
-      </label>
-      <Select v-model="filters.status">
-        <!-- AI modified: the standalone status trigger needs a stable accessible name outside FormField. -->
-        <SelectTrigger class="w-full sm:w-44" :aria-label="t('systemParameters.status')">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">
-            {{ t('systemParameters.allStatuses') }}
-          </SelectItem>
-          <SelectItem
-            v-for="parameterStatus in SYSTEM_PARAMETER_STATUSES"
-            :key="parameterStatus"
-            :value="parameterStatus"
-          >
-            {{ t(`systemParameters.${parameterStatus}`) }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
-      <span class="text-xs text-muted-foreground">
+      <template #summary>
         {{ t('systemParameters.total', { total }) }}
-      </span>
-    </div>
+      </template>
+    </SearchForm>
 
     <div
       v-if="queryError"

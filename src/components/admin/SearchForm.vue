@@ -33,6 +33,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
+  summary?: () => unknown
   actions?: () => unknown
 }>()
 
@@ -72,8 +73,10 @@ function submitSearch(): void {
 }
 
 function resetSearch(): void {
-  values.value = { ...props.defaultValues }
-  emit('reset', { ...values.value })
+  // AI modified: model and reset listeners receive isolated defaults despite controlled-prop timing.
+  const defaultSnapshot = { ...props.defaultValues }
+  values.value = { ...defaultSnapshot }
+  emit('reset', defaultSnapshot)
 }
 </script>
 
@@ -117,7 +120,11 @@ function resetSearch(): void {
       </div>
     </div>
 
+    <!-- AI modified: result context stays reusable without coupling the filter form to a table or request. -->
     <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
+      <div v-if="$slots.summary" class="mr-auto text-sm text-muted-foreground">
+        <slot name="summary" />
+      </div>
       <slot name="actions" />
       <Button type="button" variant="outline" :disabled="isSearching" @click="resetSearch">
         <RotateCcw class="mr-2 size-4" aria-hidden="true" />

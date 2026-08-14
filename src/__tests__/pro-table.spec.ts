@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vite-plus/test'
 import { nextTick } from 'vue'
 import SearchForm from '@/components/admin/SearchForm.vue'
 import ProTable from '@/components/pro-table/ProTable.vue'
+import { Select } from '@/components/ui/select'
 import UserTable from '@/features/users/components/UserTable.vue'
 import { maskEmail } from '@/features/users/user-privacy'
 import { i18n, setLocale } from '@/i18n'
@@ -80,6 +81,7 @@ function mountTable(
       ...overrides,
     },
     slots,
+    global: { plugins: [i18n] },
   })
 }
 
@@ -113,6 +115,34 @@ async function selectPageSize(label: string, pageSize: number): Promise<void> {
 }
 
 describe('ProTable public behavior', () => {
+  it('uses localized default labels and omits an empty lightweight toolbar', () => {
+    setLocale('en-US')
+    const wrapper = mountTable({ labels: undefined })
+
+    wrapper.get('button[aria-label="Next page"]')
+    expect(wrapper.get('[data-testid="pro-table"]').element.firstElementChild).toBe(
+      wrapper.get('[data-testid="pro-table-viewport"]').element,
+    )
+
+    wrapper.unmount()
+  })
+
+  it('shows the lightweight toolbar for each independent control and extension slot', () => {
+    const densityTable = mountTable({ enableDensity: true })
+    densityTable.get(`button[aria-label="${labels.density}"]`)
+    densityTable.unmount()
+
+    const fullscreenTable = mountTable({ enableFullscreen: true })
+    fullscreenTable.get(`button[aria-label="${labels.fullscreen}"]`)
+    fullscreenTable.unmount()
+
+    for (const slotName of ['toolbar-leading', 'toolbar-export', 'toolbar-print']) {
+      const slotTable = mountTable({}, { [slotName]: `<span>${slotName}</span>` })
+      expect(slotTable.text()).toContain(slotName)
+      slotTable.unmount()
+    }
+  })
+
   it('uses column text behavior and declared minima for header and cell layout', () => {
     const wrapper = mountTable()
     const nameHeader = wrapper.findAll('th').find((header) => header.text().includes('Name'))
@@ -540,7 +570,7 @@ describe('ProTable public behavior', () => {
     expect(emptyTable.findAll('[data-row-id]')).toHaveLength(0)
   })
 
-  it('expands tree rows through the virtualized row model', async () => {
+  it('combines virtualized tree details with page-level row selection', async () => {
     const treeRows: TestRow[] = [
       {
         id: 10,
@@ -548,23 +578,41 @@ describe('ProTable public behavior', () => {
         email: 'parent@example.com',
         children: [{ id: 11, name: 'Child', email: 'child@example.com' }],
       },
+      { id: 12, name: 'Sibling', email: 'sibling@example.com' },
     ]
-    const wrapper = mountTable({
-      data: treeRows,
-      enableExpanding: true,
-      enableVirtualization: true,
-      virtualHeight: 180,
-      getSubRows: (row: TestRow) => row.children,
-    })
+    const wrapper = mountTable(
+      {
+        data: treeRows,
+        enableExpanding: true,
+        enableRowSelection: true,
+        enableVirtualization: true,
+        selectedRowIds: { 12: true },
+        virtualHeight: 180,
+        getSubRows: (row: TestRow) => row.children,
+      },
+      {
+        'expanded-row': '<span data-testid="expanded-detail">Parent details</span>',
+      },
+    )
 
     expect(wrapper.find('[data-testid="pro-table-viewport"]').attributes('style')).toContain(
       '180px',
     )
+
+    let checkboxElements = wrapper.findAll('[data-slot="checkbox"]')
+    expect(checkboxElements[0]!.attributes('data-state')).toBe('indeterminate')
+
+    await wrapper.setProps({ selectedRowIds: { 10: true, 11: true, 12: true } })
+    await nextTick()
+    checkboxElements = wrapper.findAll('[data-slot="checkbox"]')
+    expect(checkboxElements[0]!.attributes('data-state')).toBe('checked')
+
     await wrapper.find(`button[aria-label="${labels.expand}"]`).trigger('click')
     await nextTick()
 
     expect(wrapper.find('[data-row-id="10"]').exists()).toBe(true)
     expect(wrapper.find('[data-row-id="11"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="expanded-detail"]').text()).toBe('Parent details')
   })
 })
 
@@ -578,17 +626,125 @@ describe('SearchForm public behavior', () => {
         searchLabel: 'Search',
         resetLabel: 'Reset',
       },
+      slots: { summary: '<span>24 matching records</span>' },
     })
 
+    expect(wrapper.text()).toContain('24 matching records')
     await wrapper.find('input').setValue('alice')
     await wrapper.find('form').trigger('submit')
-    expect(wrapper.emitted('search')?.[0]?.[0]).toEqual({ keyword: 'alice' })
+    const searchSnapshot = wrapper.emitted('search')?.[0]?.[0]
+    expect(searchSnapshot).toEqual({ keyword: 'alice' })
+    expect(searchSnapshot).not.toBe(wrapper.emitted('update:modelValue')?.[0]?.[0])
 
     await wrapper
       .findAll('button')
       .find((button) => button.text() === 'Reset')!
       .trigger('click')
-    expect(wrapper.emitted('reset')?.[0]?.[0]).toEqual({ keyword: '' })
+    const resetSnapshot = wrapper.emitted('reset')?.[0]?.[0]
+    const modelUpdates = wrapper.emitted('update:modelValue') ?? []
+    expect(resetSnapshot).toEqual({ keyword: '' })
+    expect(resetSnapshot).not.toBe(modelUpdates[modelUpdates.length - 1]?.[0])
+  })
+
+  it('supports typed number and select values while ignoring unsupported select payloads', async () => {
+    // AI modified: cover the reusable field contract instead of relying on individual management pages.
+    const wrapper = mount(
+      SearchForm<{
+        count: number | undefined
+        emptyCategory: string | undefined
+        optionalText: string | undefined
+        status: string
+      }>,
+      {
+        props: {
+          modelValue: {
+            count: 2,
+            emptyCategory: undefined,
+            optionalText: undefined,
+            status: 'all',
+          },
+          fields: [
+            { name: 'count', type: 'number', label: 'Count' },
+            {
+              name: 'status',
+              type: 'select',
+              label: 'Status',
+              options: [{ label: 'Active', value: 'active' }],
+            },
+            { name: 'emptyCategory', type: 'select', label: 'Empty category' },
+            { name: 'optionalText', type: 'text', label: 'Optional text' },
+          ],
+          defaultValues: {
+            count: undefined,
+            emptyCategory: '',
+            optionalText: undefined,
+            status: 'all',
+          },
+          searchLabel: 'Search',
+          resetLabel: 'Reset',
+        },
+      },
+    )
+
+    const inputs = wrapper.findAll('input')
+    const lastModelValue = (): unknown => {
+      const updates = wrapper.emitted('update:modelValue') ?? []
+      return updates[updates.length - 1]?.[0]
+    }
+    expect(inputs[0]?.element.value).toBe('2')
+    expect(inputs[1]?.element.value).toBe('')
+
+    await inputs[0]!.setValue('7')
+    expect(lastModelValue()).toMatchObject({ count: 7 })
+    await inputs[0]!.setValue('')
+    expect(lastModelValue()).toMatchObject({ count: undefined })
+    await inputs[1]!.setValue('notes')
+    expect(lastModelValue()).toMatchObject({
+      optionalText: 'notes',
+    })
+
+    const statusSelect = wrapper.findAllComponents(Select)[0]!
+    statusSelect.vm.$emit('update:modelValue', 'active')
+    await nextTick()
+    expect(lastModelValue()).toMatchObject({ status: 'active' })
+
+    statusSelect.vm.$emit('update:modelValue', 2)
+    await nextTick()
+    expect(lastModelValue()).toMatchObject({ status: '2' })
+
+    statusSelect.vm.$emit('update:modelValue', 3n)
+    await nextTick()
+    expect(lastModelValue()).toMatchObject({ status: '3' })
+
+    const updateCount = wrapper.emitted('update:modelValue')?.length
+    statusSelect.vm.$emit('update:modelValue', true)
+    await nextTick()
+    expect(wrapper.emitted('update:modelValue')).toHaveLength(updateCount ?? 0)
+  })
+
+  it('disables both actions while searching and keeps custom actions separate from submit', async () => {
+    const wrapper = mount(SearchForm<{ keyword: string }>, {
+      props: {
+        modelValue: { keyword: '' },
+        fields: [{ name: 'keyword', type: 'search', label: 'Keyword' }],
+        defaultValues: { keyword: '' },
+        searchLabel: 'Search',
+        resetLabel: 'Reset',
+        isSearching: true,
+      },
+      slots: {
+        actions: '<button type="button" data-testid="extra-action">Export</button>',
+      },
+    })
+
+    const actionButtons = wrapper
+      .findAll('button')
+      .filter((button) => button.text() === 'Reset' || button.text() === 'Search')
+    expect(actionButtons).toHaveLength(2)
+    expect(actionButtons.every((button) => button.attributes('disabled') !== undefined)).toBe(true)
+
+    await wrapper.get('[data-testid="extra-action"]').trigger('click')
+    expect(wrapper.emitted('search')).toBeUndefined()
   })
 })
 

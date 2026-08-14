@@ -2074,7 +2074,7 @@ export const adminComponentCatalog = [
     contract: {
       props: ['fields', 'defaultValues', 'searchLabel', 'resetLabel', 'isSearching'],
       events: ['search', 'reset', 'update:modelValue'],
-      slots: ['actions'],
+      slots: ['summary', 'actions'],
       models: ['modelValue'],
     },
     states: ['idle', 'editing', 'searching', 'submitted', 'reset'],
@@ -2090,11 +2090,19 @@ export const adminComponentCatalog = [
       locations: [
         'src/__tests__/pro-table.spec.ts',
         'src/__tests__/accessibility-contracts.spec.ts',
+        'src/__tests__/workspace-filter-accessibility.spec.ts',
+        'src/__tests__/file-panel.spec.ts',
       ],
       coverage:
         'Immutable submission, restoration of defaults, and unique label-control relationships are asserted.',
     },
-    businessUsages: ['UsersPage query area', 'MonitoringPage filter bar'],
+    businessUsages: [
+      'UsersPage query area',
+      'MonitoringPage filter bar',
+      'PositionsWorkspace',
+      'SystemParametersWorkspace',
+      'FilePanel',
+    ],
     release: {
       version: '0.0.0',
       migrationNote:
@@ -2624,7 +2632,7 @@ export const tableComponentCatalog = [
       props: [
         'columns',
         'data',
-        'labels',
+        'labels (optional overrides)',
         'emptyMessage',
         'isLoading',
         'rowCount',
@@ -2701,11 +2709,11 @@ export const tableComponentCatalog = [
     },
     demoLocations: ['src/features/component-gallery/table/TableExamplesModule.vue'],
     tests: {
-      locations: ['src/__tests__/pro-table.spec.ts'],
+      locations: ['src/__tests__/pro-table.spec.ts', 'src/__tests__/file-panel.spec.ts'],
       coverage:
         'Client/server pagination, sorting, filtering state, selection policy, editing, expansion, virtualization, column controls, loading, and empty states are asserted.',
     },
-    businessUsages: ['UserTable', 'SystemParametersTable'],
+    businessUsages: ['UserTable', 'SystemParametersTable', 'FilePanel'],
     release: {
       version: '0.0.0',
       migrationNote:

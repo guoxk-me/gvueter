@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import type { FileUploadEntry, FileUploadRejection } from '@/components/admin'
+import type { PaginationState } from '@tanstack/vue-table'
+import type { FileUploadEntry, FileUploadRejection, SearchFormField } from '@/components/admin'
 import type {
   ContentFileListFilters,
   ContentFileRecord,
 } from '@/features/content-admin/types/files'
-import { Download, Eye, Search, Trash2, UploadCloud } from '@lucide/vue'
+import { Download, Eye, Trash2, UploadCloud } from '@lucide/vue'
+import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -12,21 +14,12 @@ import {
   ConfirmAction,
   Dialog,
   isUploadFileTypeAllowed,
-  Pagination,
+  SearchForm,
   StatusTag,
   Upload,
 } from '@/components/admin'
+import { ProTable } from '@/components/pro-table'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { useFileManagement } from '@/features/content-admin/composables/useFileManagement'
 import { isSafeImagePreview } from '@/features/content-admin/content-admin-rules'
 import {
@@ -42,8 +35,21 @@ defineProps<{
   canUpload: boolean
   canDelete: boolean
 }>()
+
+interface ContentFileSearchFilters extends Record<string, string> {
+  keyword: string
+}
+
 const { locale, t } = useI18n()
-const filters = ref<ContentFileListFilters>({ keyword: '', page: 1, pageSize: 10 })
+const defaultSearchFilters: ContentFileSearchFilters = { keyword: '' }
+const searchFilters = shallowRef<ContentFileSearchFilters>({ ...defaultSearchFilters })
+const appliedSearchFilters = shallowRef<ContentFileSearchFilters>({ ...defaultSearchFilters })
+const pagination = shallowRef<PaginationState>({ pageIndex: 0, pageSize: 10 })
+const listFilters = computed<ContentFileListFilters>(() => ({
+  keyword: appliedSearchFilters.value.keyword,
+  page: pagination.value.pageIndex + 1,
+  pageSize: pagination.value.pageSize,
+}))
 const uploadEntries = ref<FileUploadEntry[]>([])
 const isPreviewOpen = shallowRef(false)
 const previewUrl = shallowRef('')
@@ -58,7 +64,7 @@ const {
   uploadFiles,
   deleteFile,
   downloadFile,
-} = useFileManagement(filters)
+} = useFileManagement(listFilters)
 const {
   policy: uploadPolicy,
   queryError: uploadPolicyError,
@@ -96,6 +102,75 @@ const uploadDescription = computed(() => {
     extensions: policy.allowedExtensions.map((extension) => `.${extension}`).join(', '),
   })
 })
+// AI modified: a failed page has no authoritative total and must not force pagination back to page one.
+const tableRowCount = computed(() => (queryError.value ? undefined : total.value))
+const searchFields = computed<readonly SearchFormField<ContentFileSearchFilters>[]>(() => [
+  {
+    name: 'keyword',
+    type: 'search',
+    label: t('contentAdmin.files.search'),
+    placeholder: t('contentAdmin.files.search'),
+    inputMode: 'search',
+  },
+])
+const columnHelper = createColumnHelper<ContentFileRecord>()
+const columns = computed(() => [
+  columnHelper.accessor('name', {
+    header: t('contentAdmin.files.fields.name'),
+    size: 360,
+    enableSorting: false,
+    meta: {
+      label: t('contentAdmin.files.fields.name'),
+      textBehavior: 'wrap',
+      minWidth: 280,
+    },
+  }),
+  columnHelper.accessor('mimeType', {
+    header: t('contentAdmin.files.fields.type'),
+    size: 220,
+    enableSorting: false,
+    meta: {
+      label: t('contentAdmin.files.fields.type'),
+      textBehavior: 'nowrap',
+      minWidth: 180,
+    },
+  }),
+  columnHelper.accessor('size', {
+    header: t('contentAdmin.files.fields.size'),
+    size: 120,
+    enableSorting: false,
+    meta: {
+      label: t('contentAdmin.files.fields.size'),
+      textBehavior: 'nowrap',
+      minWidth: 112,
+    },
+  }),
+  columnHelper.accessor('uploadedBy', {
+    header: t('contentAdmin.files.fields.uploadedBy'),
+    size: 180,
+    enableSorting: false,
+    meta: {
+      label: t('contentAdmin.files.fields.uploadedBy'),
+      textBehavior: 'wrap',
+      minWidth: 160,
+    },
+  }),
+  columnHelper.display({
+    id: 'actions',
+    header: t('common.actions'),
+    size: 132,
+    enableSorting: false,
+    enableHiding: false,
+    enablePinning: false,
+    meta: {
+      label: t('common.actions'),
+      cellClass: 'justify-end',
+      headerClass: 'justify-end',
+      textBehavior: 'nowrap',
+      minWidth: 120,
+    },
+  }),
+])
 
 onBeforeUnmount(() => revokePreviewUrl())
 
@@ -117,9 +192,10 @@ function getContentFileSize(bytes: number): string {
   return getFileSizeLabel(bytes, { locale: locale.value })
 }
 
-function updateKeyword(keyword: string | number): void {
-  filters.value.keyword = String(keyword)
-  filters.value.page = 1
+function applySearch(filters: ContentFileSearchFilters): void {
+  // AI modified: the server query receives only submitted filters and always restarts at page one.
+  appliedSearchFilters.value = { ...filters }
+  pagination.value = { ...pagination.value, pageIndex: 0 }
 }
 
 function isFileAllowedByCurrentPolicy(file: File): boolean {
@@ -174,7 +250,7 @@ async function submitFiles(): Promise<void> {
       return
     }
 
-    filters.value.page = 1
+    pagination.value = { ...pagination.value, pageIndex: 0 }
     if (uploadOutcome.failedFiles.length > 0) {
       // AI modified: keep failed files selected and disclose both sides of a partial upload.
       toast.warning(
@@ -280,16 +356,20 @@ async function previewFile(file: ContentFileRecord): Promise<void> {
       </div>
     </div>
 
-    <label class="relative block max-w-md">
-      <Search class="absolute left-3 top-2.5 size-4 text-muted-foreground" aria-hidden="true" />
-      <span class="sr-only">{{ t('contentAdmin.files.search') }}</span>
-      <Input
-        :model-value="filters.keyword"
-        class="pl-9"
-        :placeholder="t('contentAdmin.files.search')"
-        @update:model-value="updateKeyword"
-      />
-    </label>
+    <SearchForm
+      v-model="searchFilters"
+      :fields="searchFields"
+      :default-values="defaultSearchFilters"
+      :search-label="t('common.search')"
+      :reset-label="t('common.reset')"
+      :is-searching="isLoading"
+      @search="applySearch"
+      @reset="applySearch"
+    >
+      <template #summary>
+        {{ t('contentAdmin.files.total', { total }) }}
+      </template>
+    </SearchForm>
 
     <p
       v-if="queryError"
@@ -298,98 +378,85 @@ async function previewFile(file: ContentFileRecord): Promise<void> {
     >
       {{ getErrorMessage(queryError) }}
     </p>
-    <div class="overflow-hidden rounded-lg border border-border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{{ t('contentAdmin.files.fields.name') }}</TableHead>
-            <TableHead>{{ t('contentAdmin.files.fields.type') }}</TableHead>
-            <TableHead>{{ t('contentAdmin.files.fields.size') }}</TableHead>
-            <TableHead>{{ t('contentAdmin.files.fields.uploadedBy') }}</TableHead>
-            <TableHead class="text-right">
-              {{ t('common.actions') }}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <template v-if="isLoading">
-            <TableRow v-for="index in 3" :key="index">
-              <TableCell v-for="column in 5" :key="column">
-                <Skeleton class="h-5" />
-              </TableCell>
-            </TableRow>
-          </template>
-          <template v-else-if="files.length">
-            <TableRow v-for="file in files" :key="file.id">
-              <TableCell>
-                <p class="font-medium">
-                  {{ file.name }}
-                </p>
-                <p class="text-xs text-muted-foreground">
-                  {{ getFileUploadedAt(file.uploadedAt) }}
-                </p>
-              </TableCell>
-              <TableCell
-                ><StatusTag :label="file.mimeType" tone="neutral" :dot="false"
-              /></TableCell>
-              <TableCell>{{ getContentFileSize(file.size) }}</TableCell>
-              <TableCell>{{ file.uploadedBy }}</TableCell>
-              <TableCell>
-                <div class="flex justify-end gap-1">
-                  <Button
-                    v-if="isSafeImagePreview(file)"
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    :aria-label="t('contentAdmin.files.preview')"
-                    @click="previewFile(file)"
-                  >
-                    <Eye class="size-4" aria-hidden="true" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    :aria-label="t('contentAdmin.files.download')"
-                    @click="saveDownload(file)"
-                  >
-                    <Download class="size-4" aria-hidden="true" />
-                  </Button>
-                  <ConfirmAction
-                    v-if="canDelete"
-                    :title="t('contentAdmin.files.deleteTitle')"
-                    :description="t('contentAdmin.files.deleteDescription', { name: file.name })"
-                    :trigger-label="t('common.delete')"
-                    :confirm-label="t('common.delete')"
-                    :cancel-label="t('common.cancel')"
-                    confirm-variant="destructive"
-                    :is-pending="isDeleting"
-                    @confirm="removeFile(file)"
-                  >
-                    <template #trigger>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        :aria-label="t('common.delete')"
-                      >
-                        <Trash2 class="size-4 text-destructive" aria-hidden="true" />
-                      </Button>
-                    </template>
-                  </ConfirmAction>
-                </div>
-              </TableCell>
-            </TableRow>
-          </template>
-          <TableRow v-else>
-            <TableCell :colspan="5" class="h-24 text-center text-muted-foreground">
-              {{ t('contentAdmin.files.empty') }}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </div>
-    <Pagination v-model:page="filters.page" v-model:page-size="filters.pageSize" :total="total" />
+    <!-- AI modified: one server-table contract now owns loading, empty, row layout, and pagination. -->
+    <ProTable
+      v-model:pagination="pagination"
+      :columns="columns"
+      :data="files"
+      :row-count="tableRowCount"
+      :is-loading="isLoading"
+      :empty-message="t('contentAdmin.files.empty')"
+      :page-size-options="[10, 20, 50, 100]"
+      :get-row-id="(file) => file.id"
+      :get-row-label="(file) => file.name"
+      :enable-column-controls="false"
+      :enable-column-ordering="false"
+      :enable-column-pinning="false"
+      :enable-density="false"
+      :enable-fullscreen="false"
+      manual-pagination
+    >
+      <template #cell="{ cell, row }">
+        <div v-if="cell.column.id === 'name'" class="min-w-0">
+          <p class="break-words font-medium">
+            {{ row.original.name }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {{ getFileUploadedAt(row.original.uploadedAt) }}
+          </p>
+        </div>
+        <StatusTag
+          v-else-if="cell.column.id === 'mimeType'"
+          :label="row.original.mimeType"
+          tone="neutral"
+          :dot="false"
+        />
+        <span v-else-if="cell.column.id === 'size'">
+          {{ getContentFileSize(row.original.size) }}
+        </span>
+        <span v-else-if="cell.column.id === 'uploadedBy'">
+          {{ row.original.uploadedBy }}
+        </span>
+        <div v-else-if="cell.column.id === 'actions'" class="flex w-full justify-end gap-1">
+          <Button
+            v-if="isSafeImagePreview(row.original)"
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            :aria-label="t('contentAdmin.files.preview')"
+            @click="previewFile(row.original)"
+          >
+            <Eye class="size-4" aria-hidden="true" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            :aria-label="t('contentAdmin.files.download')"
+            @click="saveDownload(row.original)"
+          >
+            <Download class="size-4" aria-hidden="true" />
+          </Button>
+          <ConfirmAction
+            v-if="canDelete"
+            :title="t('contentAdmin.files.deleteTitle')"
+            :description="t('contentAdmin.files.deleteDescription', { name: row.original.name })"
+            :trigger-label="t('common.delete')"
+            :confirm-label="t('common.delete')"
+            :cancel-label="t('common.cancel')"
+            confirm-variant="destructive"
+            :is-pending="isDeleting"
+            @confirm="removeFile(row.original)"
+          >
+            <template #trigger>
+              <Button type="button" variant="ghost" size="icon-sm" :aria-label="t('common.delete')">
+                <Trash2 class="size-4 text-destructive" aria-hidden="true" />
+              </Button>
+            </template>
+          </ConfirmAction>
+        </div>
+      </template>
+    </ProTable>
 
     <Dialog
       v-model:open="isPreviewOpen"

@@ -1762,6 +1762,7 @@ export default {
       uploadPartial: '{uploaded} file(s) uploaded; {failed} failed and remain selected.',
       deleteSuccess: 'File deleted',
       search: 'Search file names',
+      total: '{total} files',
       preview: 'Preview image',
       previewDescription: 'Authenticated image preview. Non-image content is never embedded.',
       download: 'Download file',

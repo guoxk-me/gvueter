@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SystemParameterRecord } from '../types'
-import type { ProTableLabels } from '@/components/pro-table'
 import { Pencil, Trash2 } from '@lucide/vue'
 import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
@@ -70,36 +69,6 @@ const columns = computed(() => [
       ]
     : []),
 ])
-const labels = computed<ProTableLabels>(() => ({
-  columns: t('proTable.columns'),
-  density: t('proTable.density'),
-  densityCompact: t('proTable.densityCompact'),
-  densityStandard: t('proTable.densityStandard'),
-  densityComfortable: t('proTable.densityComfortable'),
-  fullscreen: t('proTable.fullscreen'),
-  exitFullscreen: t('proTable.exitFullscreen'),
-  pinLeft: t('proTable.pinLeft'),
-  pinRight: t('proTable.pinRight'),
-  unpin: t('proTable.unpin'),
-  moveColumnUp: t('proTable.moveColumnUp'),
-  moveColumnDown: t('proTable.moveColumnDown'),
-  columnMoved: t('proTable.columnMoved', {
-    column: '{column}',
-    position: '{position}',
-    total: '{total}',
-  }),
-  expand: t('proTable.expand'),
-  collapse: t('proTable.collapse'),
-  editCell: t('proTable.editCell'),
-  rowsPerPage: t('dataTable.rowsPerPage'),
-  pageOf: t('dataTable.pageOf', { current: '{current}', total: '{total}' }),
-  previousPage: t('dataTable.previousPage'),
-  nextPage: t('dataTable.nextPage'),
-  selectAll: t('dataTable.selectAll'),
-  selectRow: t('dataTable.selectRow'),
-  actions: t('common.actions'),
-}))
-
 function getUpdatedAtLabel(parameter: SystemParameterRecord): string {
   // AI modified: parameter timestamps use explicit locale and business timezone options.
   return getDateTimeLabel(parameter.updatedAt, {
@@ -115,7 +84,6 @@ function getUpdatedAtLabel(parameter: SystemParameterRecord): string {
   <ProTable
     :columns="columns"
     :data="parameters"
-    :labels="labels"
     :is-loading="isLoading"
     :empty-message="t('systemParameters.empty')"
     :page-size-options="[10, 20, 50]"

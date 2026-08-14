@@ -176,7 +176,9 @@ test('completes department and position CRUD through their management workspaces
       requestUrl.searchParams.get('keyword') === positionCode
     )
   })
-  await page.getByRole('textbox', { name: 'Search position name or code' }).fill(positionCode)
+  await page.getByRole('searchbox', { name: 'Search position name or code' }).fill(positionCode)
+  // AI modified: management filters apply as an explicit snapshot instead of issuing one request per keystroke.
+  await page.getByRole('button', { name: 'Search', exact: true }).click()
   expect((await filteredPositionRequest).status()).toBe(200)
   const filteredPositionRow = page.locator('tbody tr').filter({ hasText: updatedPositionName })
   await expect(filteredPositionRow).toHaveCount(1)

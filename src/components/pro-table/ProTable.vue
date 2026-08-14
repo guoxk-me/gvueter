@@ -36,6 +36,7 @@ import {
 } from '@tanstack/vue-table'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { computed, nextTick, onMounted, onUnmounted, shallowRef, useTemplateRef, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   getAcceptedPageSize,
   getAllowedPageSizes,
@@ -60,7 +61,7 @@ const props = withDefaults(
   defineProps<{
     columns: ProTableColumnDef<TData>[]
     data: TData[]
-    labels: ProTableLabels
+    labels?: Partial<ProTableLabels>
     emptyMessage: string
     isLoading?: boolean
     rowCount?: number
@@ -121,6 +122,51 @@ const slots = defineSlots<{
   'toolbar-export'?: () => unknown
   'toolbar-print'?: () => unknown
 }>()
+
+const { t } = useI18n()
+// AI modified: common admin copy now lives in ProTable so simple server tables do not repeat the full label contract.
+const resolvedLabels = computed<ProTableLabels>(() => ({
+  columns: t('proTable.columns'),
+  density: t('proTable.density'),
+  densityCompact: t('proTable.densityCompact'),
+  densityStandard: t('proTable.densityStandard'),
+  densityComfortable: t('proTable.densityComfortable'),
+  fullscreen: t('proTable.fullscreen'),
+  exitFullscreen: t('proTable.exitFullscreen'),
+  pinLeft: t('proTable.pinLeft'),
+  pinRight: t('proTable.pinRight'),
+  unpin: t('proTable.unpin'),
+  moveColumnUp: t('proTable.moveColumnUp'),
+  moveColumnDown: t('proTable.moveColumnDown'),
+  columnMoved: t('proTable.columnMoved', {
+    column: '{column}',
+    position: '{position}',
+    total: '{total}',
+  }),
+  expand: t('proTable.expand'),
+  collapse: t('proTable.collapse'),
+  editCell: t('proTable.editCell'),
+  rowsPerPage: t('dataTable.rowsPerPage'),
+  pageOf: t('dataTable.pageOf', { current: '{current}', total: '{total}' }),
+  previousPage: t('dataTable.previousPage'),
+  nextPage: t('dataTable.nextPage'),
+  selectAll: t('dataTable.selectAll'),
+  selectRow: t('dataTable.selectRow'),
+  actions: t('common.actions'),
+  ...props.labels,
+}))
+const hasToolbar = computed(
+  () =>
+    props.enableColumnControls ||
+    props.enableDensity ||
+    props.enableFullscreen ||
+    Boolean(
+      slots['toolbar-leading'] ||
+      slots['toolbar-import'] ||
+      slots['toolbar-export'] ||
+      slots['toolbar-print'],
+    ),
+)
 
 const pagination = defineModel<PaginationState>('pagination', {
   default: () => ({ pageIndex: 0, pageSize: 10 }),
@@ -315,10 +361,14 @@ const tableMinWidth = computed(
   () => getTableSizeForState(reactiveTableState.value) + leadingColumnCount.value * 44,
 )
 const paginationRowCount = computed(() => getPaginationRowCountForState(reactiveTableState.value))
+// AI modified: an omitted server total is unknown, so transient failures cannot masquerade as an empty result.
+const isManualPageCountUnknown = computed(
+  () => props.manualPagination && (props.isLoading || props.rowCount === undefined),
+)
 const pageCount = computed(() => {
   const knownPageCount = getTablePageCount(paginationRowCount.value, pagination.value.pageSize)
-  // AI modified: loading server pages keep the restored page reachable until the authoritative total arrives.
-  return props.manualPagination && props.isLoading
+  // AI modified: server pages remain reachable until an authoritative total arrives.
+  return isManualPageCountUnknown.value
     ? Math.max(knownPageCount, pagination.value.pageIndex + 1)
     : knownPageCount
 })
@@ -333,7 +383,14 @@ function applyPaginationChange(requestedPagination: PaginationState): void {
     pageSize: nextPageSize,
   }
   const nextPageCount = getTablePageCount(paginationRowCount.value, nextPageSize)
-  const nextPagination = getClampedPagination(requestedState, nextPageCount)
+  const nextPagination = isManualPageCountUnknown.value
+    ? {
+        ...requestedState,
+        pageIndex: Number.isSafeInteger(requestedState.pageIndex)
+          ? Math.max(requestedState.pageIndex, 0)
+          : 0,
+      }
+    : getClampedPagination(requestedState, nextPageCount)
   if (
     nextPagination.pageIndex === pagination.value.pageIndex &&
     nextPagination.pageSize === pagination.value.pageSize
@@ -364,19 +421,18 @@ watch(
       pageIndex: safePageSize === pagination.value.pageSize ? pagination.value.pageIndex : 0,
       pageSize: safePageSize,
     }
-    // AI modified: a loading server total is unknown, so URL-restored pages wait for the response before max clamping.
-    const safePagination =
-      props.manualPagination && props.isLoading
-        ? {
-            ...requestedPagination,
-            pageIndex: Number.isSafeInteger(requestedPagination.pageIndex)
-              ? Math.max(requestedPagination.pageIndex, 0)
-              : 0,
-          }
-        : getClampedPagination(
-            requestedPagination,
-            getTablePageCount(paginationRowCount.value, safePageSize),
-          )
+    // AI modified: unknown server totals keep URL-restored pages stable until a response can clamp them.
+    const safePagination = isManualPageCountUnknown.value
+      ? {
+          ...requestedPagination,
+          pageIndex: Number.isSafeInteger(requestedPagination.pageIndex)
+            ? Math.max(requestedPagination.pageIndex, 0)
+            : 0,
+        }
+      : getClampedPagination(
+          requestedPagination,
+          getTablePageCount(paginationRowCount.value, safePageSize),
+        )
 
     if (
       safePagination.pageIndex === pagination.value.pageIndex &&
@@ -513,7 +569,7 @@ function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 
 function getRowSelectionLabel(row: Row<TData>): string {
   // AI modified: row selection names include a stable business identifier when one is supplied.
   const readableRowLabel = props.getRowLabel?.(row.original).trim() || row.id
-  return `${props.labels.selectRow}: ${readableRowLabel}`
+  return `${resolvedLabels.value.selectRow}: ${readableRowLabel}`
 }
 
 function beginCellEdit(cell: Cell<TData, unknown>, event: MouseEvent | KeyboardEvent): void {
@@ -601,9 +657,11 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
     :class="{ 'fixed inset-0 z-50 flex flex-col rounded-none': isFullscreen }"
     data-testid="pro-table"
   >
+    <!-- AI modified: lightweight tables no longer render an empty toolbar when every control and slot is disabled. -->
     <ProTableToolbar
+      v-if="hasToolbar"
       :table="table"
-      :labels="labels"
+      :labels="resolvedLabels"
       :density="density"
       :column-order="columnOrder"
       :is-fullscreen="isFullscreen"
@@ -659,7 +717,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                       ? 'indeterminate'
                       : false
                 "
-                :aria-label="labels.selectAll"
+                :aria-label="resolvedLabels.selectAll"
                 @update:model-value="updateAllRowSelection"
               />
             </th>
@@ -768,7 +826,11 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  :aria-label="renderedRow.row.getIsExpanded() ? labels.collapse : labels.expand"
+                  :aria-label="
+                    renderedRow.row.getIsExpanded()
+                      ? resolvedLabels.collapse
+                      : resolvedLabels.expand
+                  "
                   @click="renderedRow.row.toggleExpanded()"
                 >
                   <ChevronRight
@@ -787,7 +849,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                   TABLE_COLUMN_TEXT_CLASSES[cell.column.columnDef.meta?.textBehavior ?? 'wrap'],
                 ]"
                 :style="getColumnStyle(cell.column)"
-                :title="cell.column.columnDef.meta?.editable ? labels.editCell : undefined"
+                :title="cell.column.columnDef.meta?.editable ? resolvedLabels.editCell : undefined"
                 :tabindex="cell.column.columnDef.meta?.editable ? 0 : undefined"
                 :aria-keyshortcuts="cell.column.columnDef.meta?.editable ? 'Enter F2' : undefined"
                 @dblclick="beginCellEdit(cell, $event)"
@@ -825,7 +887,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
     <ProTablePagination
       :pagination="pagination"
       :page-count="pageCount"
-      :labels="labels"
+      :labels="resolvedLabels"
       :page-size-options="allowedPageSizes"
       @update:pagination="applyPaginationChange"
     />
