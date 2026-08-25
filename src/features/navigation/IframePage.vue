@@ -21,11 +21,13 @@ const iframeTitle = computed(() =>
   route.meta.titleKey ? t(route.meta.titleKey) : (route.meta.title ?? 'Embedded page'),
 )
 const iframeSource = computed(() => {
-  if (!iframeUrl.value) return t('nav.iframePage.unknownSource')
+  if (!iframeUrl.value)
+    return t('nav.iframePage.unknownSource')
 
   try {
     return new URL(iframeUrl.value, window.location.origin).origin
-  } catch {
+  }
+  catch {
     return t('nav.iframePage.unknownSource')
   }
 })
@@ -38,7 +40,8 @@ const frameStatusLabel = computed(() => t(`nav.iframePage.states.${frameState.va
 let loadTimeout: ReturnType<typeof setTimeout> | null = null
 
 function clearLoadTimeout(): void {
-  if (loadTimeout === null) return
+  if (loadTimeout === null)
+    return
 
   clearTimeout(loadTimeout)
   loadTimeout = null
@@ -55,7 +58,8 @@ function beginFrameLoad(): void {
 
   // AI modified: iframe error events are not reliable across browsers, so loading always has a timeout fallback.
   loadTimeout = setTimeout(() => {
-    if (frameState.value === 'loading') frameState.value = 'timeout'
+    if (frameState.value === 'loading')
+      frameState.value = 'timeout'
     loadTimeout = null
   }, IFRAME_LOAD_TIMEOUT_MS)
 }
@@ -67,7 +71,8 @@ function refreshFrame(): void {
 }
 
 function markFrameReady(): void {
-  if (!iframeUrl.value) return
+  if (!iframeUrl.value)
+    return
 
   clearLoadTimeout()
   frameState.value = 'ready'

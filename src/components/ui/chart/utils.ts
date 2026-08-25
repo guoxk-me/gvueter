@@ -10,7 +10,8 @@ function serializeKey(value: unknown): string {
   let nextReference = 0
 
   function serialize(candidate: unknown): string {
-    if (candidate === null) return 'null'
+    if (candidate === null)
+      return 'null'
 
     switch (typeof candidate) {
       case 'undefined':
@@ -20,8 +21,10 @@ function serializeKey(value: unknown): string {
       case 'bigint':
         return `bigint:${candidate.toString()}`
       case 'number':
-        if (Number.isNaN(candidate)) return 'number:NaN'
-        if (Object.is(candidate, -0)) return 'number:-0'
+        if (Number.isNaN(candidate))
+          return 'number:NaN'
+        if (Object.is(candidate, -0))
+          return 'number:-0'
         return `number:${candidate}`
       case 'string':
         return `string:${JSON.stringify(candidate)}`
@@ -31,7 +34,8 @@ function serializeKey(value: unknown): string {
         return `function:${candidate.name}`
       case 'object': {
         const existingReference = references.get(candidate)
-        if (existingReference !== undefined) return `reference:${existingReference}`
+        if (existingReference !== undefined)
+          return `reference:${existingReference}`
 
         const reference = nextReference
         nextReference += 1
@@ -72,7 +76,8 @@ export function componentToString<P extends Record<string, unknown> = Record<str
   component: Component,
   props?: P,
 ) {
-  if (!isClient) return
+  if (!isClient)
+    return
 
   const cache = new Map<string, string>()
 
@@ -97,7 +102,8 @@ export function componentToString<P extends Record<string, unknown> = Record<str
     cache.set(serializedKey, content)
     if (cache.size > MAX_TOOLTIP_CACHE_ENTRIES) {
       const oldestKey = cache.keys().next().value
-      if (oldestKey !== undefined) cache.delete(oldestKey)
+      if (oldestKey !== undefined)
+        cache.delete(oldestKey)
     }
     return content
   }

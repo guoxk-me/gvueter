@@ -38,7 +38,8 @@ function getRoleColor(entry: RoleDistributionEntry): string {
 }
 
 function displayRole(roleIndex: number | Date): string {
-  if (typeof roleIndex !== 'number') return ''
+  if (typeof roleIndex !== 'number')
+    return ''
   const role = props.entries[roleIndex]?.role
   return role ? t(`dashboard.roles.${role}`) : ''
 }

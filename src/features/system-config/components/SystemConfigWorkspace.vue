@@ -38,7 +38,8 @@ async function saveSystemConfig(input: SystemConfigInput): Promise<void> {
   try {
     await saveConfig(input)
     toast.success(t('systemConfig.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

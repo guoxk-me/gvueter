@@ -260,16 +260,17 @@ const monitoringLogSeeds: readonly MonitoringLogSeed[] = [
   },
 ]
 
-let onlineSessions = initialOnlineSessions.map((session) => ({ ...session }))
-let scheduledJobs = initialScheduledJobs.map((job) => ({ ...job }))
-let caches = initialCaches.map((cache) => ({ ...cache }))
+let onlineSessions = initialOnlineSessions.map(session => ({ ...session }))
+let scheduledJobs = initialScheduledJobs.map(job => ({ ...job }))
+let caches = initialCaches.map(cache => ({ ...cache }))
 
 function getUser(userId: number | undefined): MockUser | undefined {
-  return userId === undefined ? undefined : mockUsers.find((user) => user.id === userId)
+  return userId === undefined ? undefined : mockUsers.find(user => user.id === userId)
 }
 
 function getIdentity(user: MockUser | undefined, isOperator: boolean) {
-  if (!user) return { actorName: 'system', actorIdentifier: 'system' }
+  if (!user)
+    return { actorName: 'system', actorIdentifier: 'system' }
 
   return {
     actorName: isOperator ? user.name : maskDisplayName(user.name),
@@ -284,10 +285,11 @@ function getVisibleIpAddress(ipAddress: string, isOperator: boolean): string {
 function getOnlineSessions(currentUser: MockUser, keyword: string): OnlineSession[] {
   const isOperator = currentUser.role === 'admin'
   return onlineSessions
-    .filter((session) => isOperator || session.userId === currentUser.id)
+    .filter(session => isOperator || session.userId === currentUser.id)
     .flatMap((session) => {
       const user = getUser(session.userId)
-      if (!user) return []
+      if (!user)
+        return []
       const identity = getIdentity(user, isOperator)
       return [
         {
@@ -318,10 +320,11 @@ function getOnlineSessions(currentUser: MockUser, keyword: string): OnlineSessio
 function getLoginLogs(currentUser: MockUser): MonitoringLog[] {
   const isOperator = currentUser.role === 'admin'
   return getMockLoginActivities()
-    .filter((activity) => isOperator || activity.userId === currentUser.id)
+    .filter(activity => isOperator || activity.userId === currentUser.id)
     .flatMap((activity, activityIndex) => {
       const user = getUser(activity.userId)
-      if (!user) return []
+      if (!user)
+        return []
       const identity = getIdentity(user, isOperator)
       const ipAddress = `10.42.${activity.userId}.${20 + activityIndex}`
       return [
@@ -361,12 +364,12 @@ function getSeedLogs(currentUser: MockUser): MonitoringLog[] {
 
 function getVisibleMonitoringLogs(currentUser: MockUser): MonitoringLog[] {
   const canReadAuditLogs = getRolePermissions(currentUser.role).some(
-    (permission) => permission.action === 'read' && permission.subject === 'AuditLog',
+    permission => permission.action === 'read' && permission.subject === 'AuditLog',
   )
 
   // AI modified: operation-event summaries remain behind AuditLog even inside Monitoring data.
   return [...getLoginLogs(currentUser), ...getSeedLogs(currentUser)].filter(
-    (log) => log.kind !== 'operation' || canReadAuditLogs,
+    log => log.kind !== 'operation' || canReadAuditLogs,
   )
 }
 
@@ -381,8 +384,8 @@ function getFilters(request: Request): MonitoringFilters {
         ? (requestedKind as MonitoringFilters['logKind'])
         : 'all',
     severity:
-      requestedSeverity === 'all' ||
-      MONITORING_LOG_SEVERITIES.includes(requestedSeverity as MonitoringLogSeverity)
+      requestedSeverity === 'all'
+      || MONITORING_LOG_SEVERITIES.includes(requestedSeverity as MonitoringLogSeverity)
         ? (requestedSeverity as MonitoringFilters['severity'])
         : 'all',
   }
@@ -395,8 +398,8 @@ function getMonitoringOverview(
   const visibleSessions = getOnlineSessions(currentUser, filters.keyword)
   const visibleLogs = getVisibleMonitoringLogs(currentUser)
   const logs = visibleLogs
-    .filter((log) => filters.logKind === 'all' || log.kind === filters.logKind)
-    .filter((log) => filters.severity === 'all' || log.severity === filters.severity)
+    .filter(log => filters.logKind === 'all' || log.kind === filters.logKind)
+    .filter(log => filters.severity === 'all' || log.severity === filters.severity)
     .filter((log) => {
       const searchableText = [
         log.actorName,
@@ -417,16 +420,16 @@ function getMonitoringOverview(
     accessLevel: currentUser.role === 'admin' ? 'operator' : 'observer',
     summary: {
       onlineSessionCount: visibleSessions.length,
-      degradedServiceCount: serviceHealthSeeds.filter((service) => service.status !== 'healthy')
+      degradedServiceCount: serviceHealthSeeds.filter(service => service.status !== 'healthy')
         .length,
-      failedJobCount: scheduledJobs.filter((job) => job.status === 'failed').length,
-      recentErrorCount: visibleLogs.filter((log) => log.severity === 'error').length,
+      failedJobCount: scheduledJobs.filter(job => job.status === 'failed').length,
+      recentErrorCount: visibleLogs.filter(log => log.severity === 'error').length,
     },
     onlineSessions: visibleSessions,
     logs,
-    services: serviceHealthSeeds.map((service) => ({ ...service })),
-    jobs: scheduledJobs.map((job) => ({ ...job })),
-    caches: caches.map((cache) => ({ ...cache })),
+    services: serviceHealthSeeds.map(service => ({ ...service })),
+    jobs: scheduledJobs.map(job => ({ ...job })),
+    caches: caches.map(cache => ({ ...cache })),
   }
 }
 
@@ -435,14 +438,15 @@ function getOperationFailure(message: string, code: string, status: number) {
 }
 
 export function resetMockMonitoring(): void {
-  onlineSessions = initialOnlineSessions.map((session) => ({ ...session }))
-  scheduledJobs = initialScheduledJobs.map((job) => ({ ...job }))
-  caches = initialCaches.map((cache) => ({ ...cache }))
+  onlineSessions = initialOnlineSessions.map(session => ({ ...session }))
+  scheduledJobs = initialScheduledJobs.map(job => ({ ...job }))
+  caches = initialCaches.map(cache => ({ ...cache }))
 }
 
 export const monitoringOverviewHandler = http.get('/api/monitoring/overview', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Monitoring')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<MonitoringOverview>>(
     {
@@ -458,10 +462,12 @@ export const terminateSessionHandler = http.post<{ sessionId: string }>(
   '/api/monitoring/sessions/:sessionId/terminate',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Monitoring')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
-    const sessionIndex = onlineSessions.findIndex((session) => session.id === params.sessionId)
-    if (sessionIndex < 0) return getOperationFailure('会话不存在或已下线', 'SESSION_NOT_FOUND', 404)
+    const sessionIndex = onlineSessions.findIndex(session => session.id === params.sessionId)
+    if (sessionIndex < 0)
+      return getOperationFailure('会话不存在或已下线', 'SESSION_NOT_FOUND', 404)
 
     const terminatedSession = onlineSessions[sessionIndex]
     if (!terminatedSession)
@@ -477,10 +483,12 @@ export const runScheduledJobHandler = http.post<{ jobId: string }>(
   '/api/monitoring/jobs/:jobId/run',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Monitoring')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
-    const job = scheduledJobs.find((candidate) => candidate.id === params.jobId)
-    if (!job) return getOperationFailure('定时任务不存在', 'JOB_NOT_FOUND', 404)
+    const job = scheduledJobs.find(candidate => candidate.id === params.jobId)
+    if (!job)
+      return getOperationFailure('定时任务不存在', 'JOB_NOT_FOUND', 404)
 
     const executedAt = new Date()
     job.status = 'idle'
@@ -500,10 +508,12 @@ export const clearNamedCacheHandler = http.post<{ cacheName: string }>(
   '/api/monitoring/caches/:cacheName/clear',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Monitoring')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
-    const cache = caches.find((candidate) => candidate.name === params.cacheName)
-    if (!cache) return getOperationFailure('缓存不存在', 'CACHE_NOT_FOUND', 404)
+    const cache = caches.find(candidate => candidate.name === params.cacheName)
+    if (!cache)
+      return getOperationFailure('缓存不存在', 'CACHE_NOT_FOUND', 404)
 
     cache.entryCount = 0
     cache.sizeBytes = 0

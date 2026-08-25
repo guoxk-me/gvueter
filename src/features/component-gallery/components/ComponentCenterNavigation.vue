@@ -19,7 +19,7 @@ const { t } = useI18n()
 
 const moduleSummaries = computed<ComponentModuleSummary[]>(() =>
   componentCenterModules.map((definition: ComponentCenterModuleDefinition) => {
-    const moduleComponents = componentCatalog.filter((component) =>
+    const moduleComponents = componentCatalog.filter(component =>
       definition.catalogModules.includes(component.module),
     )
 
@@ -27,10 +27,10 @@ const moduleSummaries = computed<ComponentModuleSummary[]>(() =>
       definition,
       componentCount: moduleComponents.length,
       missingDemoCount: moduleComponents.filter(
-        (component) => component.availability.demo === 'missing',
+        component => component.availability.demo === 'missing',
       ).length,
       enhancementCount: moduleComponents.filter(
-        (component) => component.availability.enhancement !== 'none',
+        component => component.availability.enhancement !== 'none',
       ).length,
     }
   }),

@@ -151,19 +151,19 @@ const datePresets = computed<readonly DateRangePreset[]>(() => [
 ])
 const draftStatus = computed<ExampleStatus>({
   get: () => draftFilters.value.status,
-  set: (status) => updateDraft({ ...draftFilters.value, status }),
+  set: status => updateDraft({ ...draftFilters.value, status }),
 })
 const draftRegion = computed<ExampleRegion>({
   get: () => draftFilters.value.region,
-  set: (region) => updateDraft({ ...draftFilters.value, region }),
+  set: region => updateDraft({ ...draftFilters.value, region }),
 })
 const draftSkills = computed<string[]>({
   get: () => draftFilters.value.skills,
-  set: (skills) => updateDraft({ ...draftFilters.value, skills }),
+  set: skills => updateDraft({ ...draftFilters.value, skills }),
 })
 const draftDateRange = computed<DateRangeValue | null>({
   get: () => draftFilters.value.dateRange,
-  set: (dateRange) => updateDraft({ ...draftFilters.value, dateRange }),
+  set: dateRange => updateDraft({ ...draftFilters.value, dateRange }),
 })
 const appliedTags = computed<AppliedFilterTag[]>(() => {
   const filters = appliedFilters.value
@@ -175,14 +175,15 @@ const appliedTags = computed<AppliedFilterTag[]>(() => {
   if (filters.skills.length > 0) {
     tags.push({
       key: 'skills',
-      label: `${copy.value.skills}: ${filters.skills.map((skill) => copy.value.skillsValues[skill as keyof typeof copy.value.skillsValues] ?? skill).join(', ')}`,
+      label: `${copy.value.skills}: ${filters.skills.map(skill => copy.value.skillsValues[skill as keyof typeof copy.value.skillsValues] ?? skill).join(', ')}`,
     })
   }
-  if (filters.dateRange)
+  if (filters.dateRange) {
     tags.push({
       key: 'dateRange',
       label: `${copy.value.dateRange}: ${filters.dateRange.start} – ${filters.dateRange.end}`,
     })
+  }
   return tags
 })
 
@@ -196,7 +197,8 @@ function readSelectValue(event: Event): string | undefined {
 
 function chooseStatus(event: Event): void {
   const status = readSelectValue(event)
-  if (status === 'active' || status === 'all' || status === 'paused') draftStatus.value = status
+  if (status === 'active' || status === 'all' || status === 'paused')
+    draftStatus.value = status
 }
 
 function chooseRegion(event: Event): void {
@@ -218,8 +220,8 @@ async function resetFilters(): Promise<void> {
 function saveScheme(): void {
   const saveOutcome = saveCurrentScheme()
   // AI modified: feedback distinguishes durable browser storage from the in-memory fallback.
-  statusMessage.value =
-    saveOutcome === 'saved'
+  statusMessage.value
+    = saveOutcome === 'saved'
       ? copy.value.saveSuccess
       : saveOutcome === 'memory-only'
         ? copy.value.saveMemoryOnly
@@ -333,8 +335,7 @@ function saveScheme(): void {
           :aria-label="`${copy.removeFilter}: ${tag.label}`"
           @click="removeAppliedFilter(tag.key)"
         >
-          <span class="truncate">{{ tag.label }}</span
-          ><span class="ml-1" aria-hidden="true">×</span>
+          <span class="truncate">{{ tag.label }}</span><span class="ml-1" aria-hidden="true">×</span>
         </button>
       </div>
       <p v-else class="text-xs text-muted-foreground">
@@ -381,16 +382,14 @@ function saveScheme(): void {
                 variant="outline"
                 :aria-label="`${copy.useScheme}: ${scheme.name}`"
                 @click="applyScheme(scheme)"
-                >{{ copy.useScheme }}</Button
-              >
+              >{{ copy.useScheme }}</Button>
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
                 :aria-label="`${copy.deleteScheme}: ${scheme.name}`"
                 @click="removeScheme(scheme.id)"
-                >{{ copy.deleteScheme }}</Button
-              >
+              >{{ copy.deleteScheme }}</Button>
             </span>
           </li>
         </ul>
@@ -409,8 +408,7 @@ function saveScheme(): void {
         <code
           data-testid="selection-filter-url"
           class="block max-w-full break-all rounded bg-background p-3 text-xs"
-          >{{ route.fullPath }}</code
-        >
+        >{{ route.fullPath }}</code>
       </section>
     </div>
 

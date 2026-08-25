@@ -12,17 +12,17 @@ import { canAccess } from '@/lib/ability'
 
 const { t } = useI18n()
 const selectedRoleKey = shallowRef<RoleDefinition['key']>('admin')
-const { isLoading, isSaving, queryError, roles, saveRolePolicy, scopeDepartments } =
-  useRoleManagement()
+const { isLoading, isSaving, queryError, roles, saveRolePolicy, scopeDepartments }
+  = useRoleManagement()
 
-const selectedRole = computed(() => roles.value.find((role) => role.key === selectedRoleKey.value))
+const selectedRole = computed(() => roles.value.find(role => role.key === selectedRoleKey.value))
 const canEditRoles = computed(() => canAccess('update', 'RolePolicy'))
 const errorMessage = computed(() => (queryError.value ? getErrorMessage(queryError.value) : null))
 
 watch(
   roles,
   (availableRoles) => {
-    if (!availableRoles.some((role) => role.key === selectedRoleKey.value)) {
+    if (!availableRoles.some(role => role.key === selectedRoleKey.value)) {
       selectedRoleKey.value = availableRoles[0]?.key ?? 'admin'
     }
   },
@@ -38,12 +38,14 @@ function selectRole(roleKey: RoleDefinition['key']): void {
 }
 
 async function savePolicy(input: UpdateRolePolicyInput): Promise<void> {
-  if (!selectedRole.value) return
+  if (!selectedRole.value)
+    return
 
   try {
     await saveRolePolicy({ roleKey: selectedRole.value.key, input })
     toast.success(t('roles.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

@@ -29,17 +29,17 @@ const expandedNodeIds = defineModel<readonly string[]>('expandedNodeIds', {
   default: () => [...DEFAULT_TABLE_TREE_EXPANDED_NODE_IDS],
 })
 const expanded = computed<ExpandedState>({
-  get: () => Object.fromEntries(expandedNodeIds.value.map((nodeId) => [nodeId, true])),
+  get: () => Object.fromEntries(expandedNodeIds.value.map(nodeId => [nodeId, true])),
   set: (nextExpanded) => {
     // AI modified: only expandable fixture IDs leave the table as shareable list state.
-    expandedNodeIds.value =
-      nextExpanded === true
+    expandedNodeIds.value
+      = nextExpanded === true
         ? [...TABLE_TREE_EXPANDABLE_NODE_IDS]
         : Object.entries(nextExpanded)
             .filter(
               ([nodeId, isExpanded]) =>
-                isExpanded &&
-                TABLE_TREE_EXPANDABLE_NODE_IDS.includes(
+                isExpanded
+                && TABLE_TREE_EXPANDABLE_NODE_IDS.includes(
                   nodeId as (typeof TABLE_TREE_EXPANDABLE_NODE_IDS)[number],
                 ),
             )
@@ -48,12 +48,13 @@ const expanded = computed<ExpandedState>({
 })
 const treeRows = shallowRef<TableWorkOrder[]>(
   TABLE_TREE_WORK_ORDERS.map((row) => {
-    if (row.id === 'program-identity') return { ...row, children: undefined }
+    if (row.id === 'program-identity')
+      return { ...row, children: undefined }
     return {
       ...row,
-      children: row.children?.map((child) => ({
+      children: row.children?.map(child => ({
         ...child,
-        children: child.children?.map((grandchild) => ({ ...grandchild })),
+        children: child.children?.map(grandchild => ({ ...grandchild })),
       })),
     }
   }),
@@ -89,11 +90,13 @@ function isAsyncBranchExpanded(nextExpanded: ExpandedState): boolean {
 }
 
 function loadIdentityChildren(): void {
-  if (asyncBranchState.value === 'loading' || asyncBranchState.value === 'loaded') return
+  if (asyncBranchState.value === 'loading' || asyncBranchState.value === 'loaded')
+    return
 
   loadAttempt += 1
   asyncBranchState.value = 'loading'
-  if (loadTimer) globalThis.clearTimeout(loadTimer)
+  if (loadTimer)
+    globalThis.clearTimeout(loadTimer)
 
   // AI modified: the first deterministic failure makes retry and recovery observable without a flaky backend.
   loadTimer = globalThis.setTimeout(() => {
@@ -102,13 +105,13 @@ function loadIdentityChildren(): void {
       return
     }
 
-    const identitySource = TABLE_TREE_WORK_ORDERS.find((row) => row.id === 'program-identity')
-    const loadedChildren =
-      identitySource?.children?.map((child) => ({
+    const identitySource = TABLE_TREE_WORK_ORDERS.find(row => row.id === 'program-identity')
+    const loadedChildren
+      = identitySource?.children?.map(child => ({
         ...child,
-        children: child.children?.map((grandchild) => ({ ...grandchild })),
+        children: child.children?.map(grandchild => ({ ...grandchild })),
       })) ?? []
-    treeRows.value = treeRows.value.map((row) =>
+    treeRows.value = treeRows.value.map(row =>
       row.id === 'program-identity' ? { ...row, children: loadedChildren } : row,
     )
     asyncBranchState.value = 'loaded'
@@ -125,7 +128,8 @@ watch(
 )
 
 onUnmounted(() => {
-  if (loadTimer) globalThis.clearTimeout(loadTimer)
+  if (loadTimer)
+    globalThis.clearTimeout(loadTimer)
 })
 </script>
 

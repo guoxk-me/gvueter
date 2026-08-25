@@ -22,7 +22,8 @@ export const useNotificationStore = defineStore(
 
     function bindPrincipal(nextPrincipalId: string | null): void {
       if (principalId.value === nextPrincipalId) {
-        if (nextPrincipalId === null) resetProjection()
+        if (nextPrincipalId === null)
+          resetProjection()
         return
       }
 
@@ -33,7 +34,7 @@ export const useNotificationStore = defineStore(
 
     function syncNotifications(notifications: readonly NotificationReadProjection[]): void {
       unreadCount.value = notifications.filter(
-        (notification) =>
+        notification =>
           !notification.isRead && !readNotificationIds.value.includes(notification.id),
       ).length
     }
@@ -49,7 +50,8 @@ export const useNotificationStore = defineStore(
     }
 
     function markRead(notificationId: string): void {
-      if (readNotificationIds.value.includes(notificationId)) return
+      if (readNotificationIds.value.includes(notificationId))
+        return
 
       // AI modified: only cross-page read state is persisted; message payloads remain query-owned.
       readNotificationIds.value.push(notificationId)
@@ -58,7 +60,7 @@ export const useNotificationStore = defineStore(
 
     function markAllRead(notificationIds: readonly string[]): void {
       const newlyReadCount = notificationIds.filter(
-        (notificationId) => !readNotificationIds.value.includes(notificationId),
+        notificationId => !readNotificationIds.value.includes(notificationId),
       ).length
       readNotificationIds.value = Array.from(
         new Set([...readNotificationIds.value, ...notificationIds]),

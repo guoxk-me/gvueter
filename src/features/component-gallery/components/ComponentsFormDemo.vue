@@ -44,7 +44,7 @@ const articleContent = shallowRef(
 const projectTags = shallowRef(['growth', 'priority'])
 const seatCount = shallowRef<number | null>(12)
 const passwordValue = shallowRef('change-me')
-type UserSearchPreviewValues = SearchFormValues & { keyword: string; status: string }
+type UserSearchPreviewValues = SearchFormValues & { keyword: string, status: string }
 const defaultUserSearch: UserSearchPreviewValues = { keyword: '', status: 'all' }
 const userSearch = shallowRef<UserSearchPreviewValues>({ ...defaultUserSearch })
 const appliedUserSearch = shallowRef<UserSearchPreviewValues>({ ...defaultUserSearch })
@@ -68,7 +68,8 @@ const userSearchFields = computed<readonly SearchFormField<UserSearchPreviewValu
 ])
 
 function updateRole(value: AcceptableValue): void {
-  if (value === 'admin' || value === 'editor' || value === 'viewer') draftProfile.role = value
+  if (value === 'admin' || value === 'editor' || value === 'viewer')
+    draftProfile.role = value
 }
 
 function updateUpdates(value: boolean | 'indeterminate'): void {
@@ -77,7 +78,8 @@ function updateUpdates(value: boolean | 'indeterminate'): void {
 
 function handleRejectedFiles(rejections: FileUploadRejection[]): void {
   const firstRejection = rejections[0]
-  if (!firstRejection) return
+  if (!firstRejection)
+    return
 
   const messageKey = `components.upload.${firstRejection.reason}`
   toast.error(t(messageKey, { count: rejections.length }))
@@ -89,7 +91,8 @@ function saveDraft(): void {
 
 function handleRejectedTags(rejections: TagInputRejection[]): void {
   const firstRejection = rejections[0]
-  if (!firstRejection) return
+  if (!firstRejection)
+    return
 
   if (firstRejection.reason === 'duplicate') {
     toast.error(t('components.form.tagDuplicate'))
@@ -161,7 +164,9 @@ function applyUserSearch(values: UserSearchPreviewValues): void {
           <Textarea id="component-demo-summary" v-model="draftProfile.summary" />
         </div>
       </div>
-      <template #usage> &lt;Input v-model="profile.name" /&gt; </template>
+      <template #usage>
+        &lt;Input v-model="profile.name" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -179,7 +184,9 @@ function applyUserSearch(values: UserSearchPreviewValues): void {
         :remove-label="t('components.upload.remove')"
         @rejected="handleRejectedFiles"
       />
-      <template #usage> &lt;FileUpload v-model="attachments" accept="image/*,.pdf" /&gt; </template>
+      <template #usage>
+        &lt;FileUpload v-model="attachments" accept="image/*,.pdf" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -241,7 +248,9 @@ function applyUserSearch(values: UserSearchPreviewValues): void {
           {{ t('components.form.saveDraft') }}
         </Button>
       </div>
-      <template #usage> &lt;RichTextEditor v-model="articleContent" /&gt; </template>
+      <template #usage>
+        &lt;RichTextEditor v-model="articleContent" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard

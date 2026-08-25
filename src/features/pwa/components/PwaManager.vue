@@ -21,8 +21,10 @@ const {
 } = usePwaLifecycle()
 
 const promptMode = computed<'install' | 'update' | undefined>(() => {
-  if (canUpdate.value) return 'update'
-  if (canInstall.value) return 'install'
+  if (canUpdate.value)
+    return 'update'
+  if (canInstall.value)
+    return 'install'
   return undefined
 })
 const promptTitle = computed(() =>
@@ -45,16 +47,19 @@ async function acceptPrompt(): Promise<void> {
   }
 
   const outcome = await installApplication()
-  if (outcome === 'accepted') toast.success(t('pwa.installAccepted'))
+  if (outcome === 'accepted')
+    toast.success(t('pwa.installAccepted'))
 }
 
 function dismissPrompt(): void {
-  if (promptMode.value === 'update') dismissUpdate()
+  if (promptMode.value === 'update')
+    dismissUpdate()
   else dismissInstall()
 }
 
 watch(offlineReady, (isReady) => {
-  if (!isReady) return
+  if (!isReady)
+    return
   toast.success(t('pwa.offlineReady'))
   offlineReady.value = false
 })
@@ -83,8 +88,12 @@ watch(offlineReady, (isReady) => {
         </div>
 
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold text-foreground">{{ promptTitle }}</p>
-          <p class="mt-1 text-xs leading-5 text-muted-foreground">{{ promptDescription }}</p>
+          <p class="text-sm font-semibold text-foreground">
+            {{ promptTitle }}
+          </p>
+          <p class="mt-1 text-xs leading-5 text-muted-foreground">
+            {{ promptDescription }}
+          </p>
           <div class="mt-3 flex flex-wrap gap-2">
             <Button size="sm" :disabled="isBusy" @click="acceptPrompt">
               {{ isBusy ? t('common.loading') : primaryLabel }}

@@ -71,7 +71,7 @@ const teams = computed<readonly DependentOption[]>(() =>
     { value: 'payments', label: copy.value.names.payments, parentValue: 'commerce' },
     { value: 'frontend', label: copy.value.names.frontend, parentValue: 'platform' },
     { value: 'security', label: copy.value.names.security, parentValue: 'platform' },
-  ].filter((team) => team.parentValue === organizationId.value),
+  ].filter(team => team.parentValue === organizationId.value),
 )
 const members = computed<readonly DependentOption[]>(() =>
   [
@@ -79,12 +79,13 @@ const members = computed<readonly DependentOption[]>(() =>
     { value: 'ethan', label: copy.value.names.ethan, parentValue: 'payments' },
     { value: 'iris', label: copy.value.names.iris, parentValue: 'security' },
     { value: 'henry', label: copy.value.names.henry, parentValue: 'frontend' },
-  ].filter((member) => member.parentValue === teamId.value),
+  ].filter(member => member.parentValue === teamId.value),
 )
 
 function chooseOrganization(event: Event): void {
   const select = event.currentTarget
-  if (!(select instanceof HTMLSelectElement)) return
+  if (!(select instanceof HTMLSelectElement))
+    return
 
   // AI modified: an upstream change clears every dependent ID before new options are exposed.
   organizationId.value = select.value
@@ -94,7 +95,8 @@ function chooseOrganization(event: Event): void {
 
 function chooseTeam(event: Event): void {
   const select = event.currentTarget
-  if (!(select instanceof HTMLSelectElement)) return
+  if (!(select instanceof HTMLSelectElement))
+    return
 
   teamId.value = select.value
   memberId.value = ''

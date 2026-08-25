@@ -7,9 +7,10 @@ import PrimitiveShowcase from './components/PrimitiveShowcase.vue'
 defineOptions({ name: 'PrimitiveExamplesPage' })
 
 const primitiveDefinition = componentCenterModules.find(
-  (componentModule) => componentModule.id === 'primitives',
+  componentModule => componentModule.id === 'primitives',
 )
-if (!primitiveDefinition) throw new Error('Missing primitive component-center definition')
+if (!primitiveDefinition)
+  throw new Error('Missing primitive component-center definition')
 </script>
 
 <template>

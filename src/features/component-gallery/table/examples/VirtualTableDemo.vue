@@ -18,7 +18,8 @@ const pagination = shallowRef<PaginationState>({ pageIndex: 0, pageSize: 1000 })
 // AI modified: unique stable IDs make virtual row recycling observable and safe under sorting.
 const virtualRows: TableWorkOrder[] = Array.from({ length: 1000 }, (_, index) => {
   const sourceRow = TABLE_WORK_ORDERS[index % TABLE_WORK_ORDERS.length]
-  if (!sourceRow) throw new Error('Virtual table fixtures require at least one source row.')
+  if (!sourceRow)
+    throw new Error('Virtual table fixtures require at least one source row.')
   return {
     ...sourceRow,
     id: `VIRTUAL-${String(index + 1).padStart(4, '0')}`,

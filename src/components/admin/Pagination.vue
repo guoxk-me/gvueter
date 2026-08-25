@@ -49,19 +49,22 @@ const pageCount = computed(() =>
 )
 
 watch(pageCount, (availablePages) => {
-  if (page.value > availablePages) changePage(availablePages)
+  if (page.value > availablePages)
+    changePage(availablePages)
 })
 
 function changePage(nextPage: number): void {
   const availablePage = Math.min(Math.max(nextPage, 1), pageCount.value)
-  if (availablePage === page.value) return
+  if (availablePage === page.value)
+    return
 
   page.value = availablePage
   emit('change', { page: page.value, pageSize: pageSize.value })
 }
 
 function changePageSize(nextPageSize: AcceptableValue): void {
-  if (typeof nextPageSize !== 'string') return
+  if (typeof nextPageSize !== 'string')
+    return
 
   const selectedPageSize = Number(nextPageSize)
   if (!props.pageSizeOptions.includes(selectedPageSize) || selectedPageSize === pageSize.value)

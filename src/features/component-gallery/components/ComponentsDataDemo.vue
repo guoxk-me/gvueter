@@ -149,9 +149,10 @@ function getConversionRate(point: ConversionPoint): number {
 }
 
 function displayConversionDay(day: number | Date): string {
-  if (typeof day !== 'number') return ''
+  if (typeof day !== 'number')
+    return ''
 
-  const point = conversionTrend.find((candidate) => candidate.day === day)
+  const point = conversionTrend.find(candidate => candidate.day === day)
   return point
     ? getDateTimeLabel(Date.UTC(2026, 6, point.day + 5), {
         locale: locale.value,
@@ -215,7 +216,9 @@ function displayConversionRate(rate: number | Date): string {
           <ChartTooltip />
         </VisXYContainer>
       </ChartContainer>
-      <template #usage> &lt;VisLine :data="trend" :x="getDay" :y="getRate" /&gt; </template>
+      <template #usage>
+        &lt;VisLine :data="trend" :x="getDay" :y="getRate" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <div class="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
@@ -230,7 +233,9 @@ function displayConversionRate(rate: number | Date): string {
           :default-page-size="5"
           :page-size-options="[5, 10]"
         />
-        <template #usage> &lt;DataTable :columns="columns" :data="orders" /&gt; </template>
+        <template #usage>
+          &lt;DataTable :columns="columns" :data="orders" /&gt;
+        </template>
       </ComponentDemoCard>
 
       <ComponentDemoCard
@@ -243,15 +248,25 @@ function displayConversionRate(rate: number | Date): string {
               <AvatarFallback>AC</AvatarFallback>
             </Avatar>
             <div>
-              <p class="text-sm font-medium">Avery Chen</p>
-              <p class="text-xs text-muted-foreground">avery@example.com</p>
+              <p class="text-sm font-medium">
+                Avery Chen
+              </p>
+              <p class="text-xs text-muted-foreground">
+                avery@example.com
+              </p>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
             <Badge>Paid</Badge>
-            <Badge variant="secondary"> Processing </Badge>
-            <Badge variant="destructive"> Refunded </Badge>
-            <Badge variant="outline"> Draft </Badge>
+            <Badge variant="secondary">
+              Processing
+            </Badge>
+            <Badge variant="destructive">
+              Refunded
+            </Badge>
+            <Badge variant="outline">
+              Draft
+            </Badge>
           </div>
           <div
             class="rounded-md border border-border bg-muted/20 p-3 text-sm text-muted-foreground"

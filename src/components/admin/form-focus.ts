@@ -12,7 +12,8 @@ const FOCUSABLE_CONTROL_SELECTOR = [
 
 export function focusFirstInvalidControl(formElement: HTMLFormElement | null): void {
   const invalidOwner = formElement?.querySelector<HTMLElement>(INVALID_OWNER_SELECTOR)
-  if (!invalidOwner) return
+  if (!invalidOwner)
+    return
 
   // AI modified: composite editors expose invalid state on a group, so focus its first operable child.
   const focusTarget = invalidOwner.matches(FOCUSABLE_CONTROL_SELECTOR)

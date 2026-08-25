@@ -41,8 +41,10 @@ const columns = computed(() => [
 ])
 
 function statusVariant(status: TableWorkOrder['status']): 'default' | 'destructive' | 'secondary' {
-  if (status === 'open') return 'default'
-  if (status === 'blocked') return 'destructive'
+  if (status === 'open')
+    return 'default'
+  if (status === 'blocked')
+    return 'destructive'
   return 'secondary'
 }
 </script>

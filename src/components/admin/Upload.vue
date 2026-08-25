@@ -36,7 +36,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  content?: (props: { openFileDialog: () => void; isOverDropZone: boolean }) => unknown
+  content?: (props: { openFileDialog: () => void, isOverDropZone: boolean }) => unknown
 }>()
 
 const entries = defineModel<FileUploadEntry[]>({ default: () => [] })

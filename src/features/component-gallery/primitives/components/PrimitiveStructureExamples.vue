@@ -62,7 +62,8 @@ const currentPage = shallowRef(1)
 const validatedWorkspaceName = shallowRef('')
 
 const selectedActionLabel = computed(() => {
-  if (!selectedAction.value) return ''
+  if (!selectedAction.value)
+    return ''
 
   const actionLabels: Record<PrimitiveAction, string> = {
     delete: props.copy.structure.deleteAction,
@@ -88,7 +89,8 @@ function requireWorkspaceName(fieldValue: unknown): true | string {
 
 function validateWorkspace(submittedFields: Record<string, unknown>): void {
   const workspaceName = submittedFields.workspaceName
-  if (typeof workspaceName !== 'string') return
+  if (typeof workspaceName !== 'string')
+    return
 
   // AI modified: the visible result demonstrates Form's public submit contract without adding business persistence.
   validatedWorkspaceName.value = workspaceName.trim()
@@ -272,9 +274,7 @@ function validateWorkspace(submittedFields: Record<string, unknown>): void {
             :key="activityEntry"
             class="flex min-w-0 gap-3"
           >
-            <span class="font-mono text-xs font-semibold text-primary"
-              >0{{ activityIndex + 1 }}</span
-            >
+            <span class="font-mono text-xs font-semibold text-primary">0{{ activityIndex + 1 }}</span>
             <span class="min-w-0 break-words text-muted-foreground">{{ activityEntry }}</span>
           </li>
         </ol>

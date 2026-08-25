@@ -68,14 +68,20 @@ const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 
 function getTargetIssueMessage(issue: ManagedMenuTargetIssue): string {
-  if (issue === 'EMPTY_URL') return t('menus.targetUrlRequired')
-  if (issue === 'PATH_REQUIRED') return t('menus.pathRequired')
-  if (issue === 'ROUTE_NAME_REQUIRED') return t('menus.routeNameRequired')
+  if (issue === 'EMPTY_URL')
+    return t('menus.targetUrlRequired')
+  if (issue === 'PATH_REQUIRED')
+    return t('menus.pathRequired')
+  if (issue === 'ROUTE_NAME_REQUIRED')
+    return t('menus.routeNameRequired')
   if (issue === 'COMPONENT_REQUIRED' || issue === 'IFRAME_COMPONENT_REQUIRED')
     return t('menus.componentKeyRequired')
-  if (issue === 'INVALID_PATH') return t('menus.pathInvalid')
-  if (issue === 'INVALID_ROUTE_NAME') return t('menus.routeNameInvalid')
-  if (issue === 'UNKNOWN_COMPONENT') return t('menus.componentKeyUnknown')
+  if (issue === 'INVALID_PATH')
+    return t('menus.pathInvalid')
+  if (issue === 'INVALID_ROUTE_NAME')
+    return t('menus.routeNameInvalid')
+  if (issue === 'UNKNOWN_COMPONENT')
+    return t('menus.componentKeyUnknown')
   if (issue === 'ROUTE_FIELD_NOT_ALLOWED' || issue === 'TARGET_URL_NOT_ALLOWED_FOR_MENU')
     return t('menus.targetFieldsConflict')
   return t('menus.targetUrlNotAllowed')
@@ -83,15 +89,16 @@ function getTargetIssueMessage(issue: ManagedMenuTargetIssue): string {
 
 const isEditing = computed(() => Boolean(props.menu))
 const hasChildren = computed(() =>
-  Boolean(props.menu && props.menus.some((menu) => menu.parentId === props.menu?.id)),
+  Boolean(props.menu && props.menus.some(menu => menu.parentId === props.menu?.id)),
 )
 const parentOptions = computed(() => {
   const unavailableMenuIds = props.menu
     ? getManagedMenuDescendantIds(props.menus, props.menu.id)
     : new Set<string>()
-  if (props.menu) unavailableMenuIds.add(props.menu.id)
+  if (props.menu)
+    unavailableMenuIds.add(props.menu.id)
   return props.menus.filter(
-    (menu) => !unavailableMenuIds.has(menu.id) && canManagedMenuHaveChildren(menu),
+    menu => !unavailableMenuIds.has(menu.id) && canManagedMenuHaveChildren(menu),
   )
 })
 // AI modified: hierarchy placement is validated before save so a valid leaf route cannot become an unsafe parent.
@@ -118,12 +125,12 @@ const formSchema = computed(() =>
         order: z.coerce.number().int().min(0),
       })
       .refine(
-        (values) => (values.abilityAction === 'none') === (values.abilitySubject === 'none'),
+        values => (values.abilityAction === 'none') === (values.abilitySubject === 'none'),
         { path: ['abilityAction'], message: t('menus.abilityPairRequired') },
       )
       .superRefine((values, context) => {
         const parentId = values.parentId === 'root' ? null : values.parentId
-        const parentMenu = parentId ? props.menus.find((menu) => menu.id === parentId) : undefined
+        const parentMenu = parentId ? props.menus.find(menu => menu.id === parentId) : undefined
         if (parentId && (!parentMenu || !canManagedMenuHaveChildren(parentMenu))) {
           context.addIssue({
             code: 'custom',
@@ -146,11 +153,11 @@ const formSchema = computed(() =>
           })
         }
 
-        const isGroupTarget =
-          values.kind === 'menu' &&
-          !values.path.trim() &&
-          !values.routeName.trim() &&
-          values.componentKey === 'none'
+        const isGroupTarget
+          = values.kind === 'menu'
+            && !values.path.trim()
+            && !values.routeName.trim()
+            && values.componentKey === 'none'
         if (hasChildren.value && !isGroupTarget) {
           context.addIssue({
             code: 'custom',
@@ -192,7 +199,7 @@ const selectedParentId = computed(() =>
   values.parentId && values.parentId !== 'root' ? values.parentId : null,
 )
 const hierarchyPreview = computed(() => [
-  ...getManagedMenuAncestors(props.menus, selectedParentId.value).map((menu) => ({
+  ...getManagedMenuAncestors(props.menus, selectedParentId.value).map(menu => ({
     key: menu.id,
     label: t(menu.titleKey),
   })),
@@ -216,11 +223,13 @@ watch(
     // AI modified: switching target kinds clears hidden incompatible fields before validation and save.
     if (kind === 'menu') {
       setFieldValue('targetUrl', '')
-    } else if (kind === 'external') {
+    }
+    else if (kind === 'external') {
       setFieldValue('path', '')
       setFieldValue('routeName', '')
       setFieldValue('componentKey', 'none')
-    } else {
+    }
+    else {
       setFieldValue('componentKey', 'iframe')
     }
   },
@@ -229,7 +238,8 @@ watch(
 watch(
   [open, () => props.menu],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     resetForm({
       values: {
@@ -406,12 +416,13 @@ const submitMenu = handleSubmit((formValues) => {
     <FormField v-if="values.kind !== 'menu'" v-slot="{ componentField }" name="targetUrl">
       <FormItem>
         <FormLabel>{{ t('menus.targetUrl') }}</FormLabel>
-        <FormControl
-          ><Input
+        <FormControl>
+          <Input
             v-bind="componentField"
             :disabled="isSaving"
             placeholder="https://example.com/help"
-        /></FormControl>
+          />
+        </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>
@@ -503,9 +514,9 @@ const submitMenu = handleSubmit((formValues) => {
     <FormField v-slot="{ componentField }" name="permissionIdentifier">
       <FormItem>
         <FormLabel>{{ t('menus.permissionIdentifier') }}</FormLabel>
-        <FormControl
-          ><Input v-bind="componentField" :disabled="isSaving" placeholder="system:menu:update"
-        /></FormControl>
+        <FormControl>
+          <Input v-bind="componentField" :disabled="isSaving" placeholder="system:menu:update" />
+        </FormControl>
         <p class="text-xs text-muted-foreground">
           {{ t('menus.permissionIdentifierHint') }}
         </p>
@@ -516,9 +527,9 @@ const submitMenu = handleSubmit((formValues) => {
       <FormField v-slot="{ componentField }" name="order">
         <FormItem>
           <FormLabel>{{ t('menus.order') }}</FormLabel>
-          <FormControl
-            ><Input v-bind="componentField" type="number" min="0" :disabled="isSaving"
-          /></FormControl>
+          <FormControl>
+            <Input v-bind="componentField" type="number" min="0" :disabled="isSaving" />
+          </FormControl>
           <FormMessage />
         </FormItem>
       </FormField>

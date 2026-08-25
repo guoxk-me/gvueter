@@ -12,27 +12,27 @@ import { evaluateNavigationUrl, navigationAllowedOrigins } from './navigation-ur
 import { BACKEND_MENU_KINDS, MAX_NAVIGATION_DEPTH, MAX_NAVIGATION_NODES } from './types'
 
 const navigationComponents = {
-  dashboard: () => import('@/pages/admin/DashboardPage.vue'),
+  'dashboard': () => import('@/pages/admin/DashboardPage.vue'),
   'message-center': () => import('@/pages/admin/MessageCenterPage.vue'),
-  components: () => import('@/pages/admin/ComponentsPage.vue'),
+  'components': () => import('@/pages/admin/ComponentsPage.vue'),
   'form-workbench': () => import('@/pages/admin/FormWorkbenchPage.vue'),
   'content-admin': () => import('@/pages/admin/ContentAdminPage.vue'),
   // AI modified: audit readers receive a dedicated allow-listed route without Content access.
   'audit-logs': () => import('@/pages/admin/AuditLogsPage.vue'),
-  users: () => import('@/pages/admin/UsersPage.vue'),
-  roles: () => import('@/pages/admin/RolesPage.vue'),
-  departments: () => import('@/pages/admin/DepartmentsPage.vue'),
-  positions: () => import('@/pages/admin/PositionsPage.vue'),
-  menus: () => import('@/pages/admin/MenusPage.vue'),
-  dictionaries: () => import('@/pages/admin/DictionariesPage.vue'),
+  'users': () => import('@/pages/admin/UsersPage.vue'),
+  'roles': () => import('@/pages/admin/RolesPage.vue'),
+  'departments': () => import('@/pages/admin/DepartmentsPage.vue'),
+  'positions': () => import('@/pages/admin/PositionsPage.vue'),
+  'menus': () => import('@/pages/admin/MenusPage.vue'),
+  'dictionaries': () => import('@/pages/admin/DictionariesPage.vue'),
   // AI modified: backend menus can select this page only through the fixed local registry.
   'system-config': () => import('@/pages/admin/SystemConfigPage.vue'),
   'system-parameters': () => import('@/pages/admin/SystemParametersPage.vue'),
   // AI modified: monitoring remains backend-driven without accepting arbitrary import paths.
-  monitoring: () => import('@/pages/admin/MonitoringPage.vue'),
-  profile: () => import('@/pages/account/ProfilePage.vue'),
+  'monitoring': () => import('@/pages/admin/MonitoringPage.vue'),
+  'profile': () => import('@/pages/account/ProfilePage.vue'),
   'change-password': () => import('@/pages/account/ChangePasswordPage.vue'),
-  iframe: IframePage,
+  'iframe': IframePage,
 } as const
 
 export type NavigationComponentKey = keyof typeof navigationComponents
@@ -54,7 +54,7 @@ const navigationSubjects = new Set<AppSubject>([
 interface NavigationTreeContext {
   ability: AppAbility
   parentPath: string
-  breadcrumbs: Array<{ labelKey: string; to?: string }>
+  breadcrumbs: Array<{ labelKey: string, to?: string }>
   routeNames: Set<string>
   routePaths: Set<string>
   deniedPaths: Set<string>
@@ -76,7 +76,8 @@ function isNavigationComponentKey(componentKey: string): componentKey is Navigat
 function getAbilityRequirement(
   requirement: NavigationAbilityRequirement | undefined,
 ): NavigationAbilityRequirement | undefined {
-  if (!requirement) return undefined
+  if (!requirement)
+    return undefined
 
   if (!navigationActions.has(requirement.action) || !navigationSubjects.has(requirement.subject))
     return undefined
@@ -89,7 +90,8 @@ function hasValidAbilityContract(requirement: NavigationAbilityRequirement | und
 }
 
 function getPermissionIdentifier(permissionIdentifier: string | undefined): string | undefined {
-  if (!permissionIdentifier) return undefined
+  if (!permissionIdentifier)
+    return undefined
   return /^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){2,}$/.test(permissionIdentifier)
     ? permissionIdentifier
     : undefined
@@ -118,31 +120,33 @@ function isOptionalOrder(value: unknown): value is number | undefined {
 }
 
 function isBackendMenuNode(value: unknown): value is BackendMenuNode {
-  if (typeof value !== 'object' || value === null) return false
+  if (typeof value !== 'object' || value === null)
+    return false
 
   const candidate = value as Record<string, unknown>
   return (
-    typeof candidate.id === 'string' &&
-    typeof candidate.titleKey === 'string' &&
-    typeof candidate.kind === 'string' &&
-    navigationMenuKinds.has(candidate.kind) &&
-    isOptionalString(candidate.path) &&
-    isOptionalString(candidate.routeName) &&
-    isOptionalString(candidate.componentKey) &&
-    isOptionalString(candidate.icon) &&
-    isOptionalString(candidate.externalUrl) &&
-    isOptionalString(candidate.iframeUrl) &&
-    isOptionalBoolean(candidate.hidden) &&
-    isOptionalOrder(candidate.order) &&
-    isOptionalBoolean(candidate.keepAlive) &&
-    isOptionalString(candidate.cacheKey) &&
-    isOptionalString(candidate.permissionIdentifier) &&
-    (candidate.children === undefined || Array.isArray(candidate.children))
+    typeof candidate.id === 'string'
+    && typeof candidate.titleKey === 'string'
+    && typeof candidate.kind === 'string'
+    && navigationMenuKinds.has(candidate.kind)
+    && isOptionalString(candidate.path)
+    && isOptionalString(candidate.routeName)
+    && isOptionalString(candidate.componentKey)
+    && isOptionalString(candidate.icon)
+    && isOptionalString(candidate.externalUrl)
+    && isOptionalString(candidate.iframeUrl)
+    && isOptionalBoolean(candidate.hidden)
+    && isOptionalOrder(candidate.order)
+    && isOptionalBoolean(candidate.keepAlive)
+    && isOptionalString(candidate.cacheKey)
+    && isOptionalString(candidate.permissionIdentifier)
+    && (candidate.children === undefined || Array.isArray(candidate.children))
   )
 }
 
 function getNavigationComponent(componentKey: string | undefined) {
-  if (!componentKey || !isNavigationComponentKey(componentKey)) return undefined
+  if (!componentKey || !isNavigationComponentKey(componentKey))
+    return undefined
 
   return navigationComponents[componentKey]
 }
@@ -152,7 +156,7 @@ function addProtectedPaths(
   parentPath: string,
   deniedPaths: Set<string>,
 ): void {
-  const pendingNodes: Array<{ node: BackendMenuNode; parentPath: string }> = [
+  const pendingNodes: Array<{ node: BackendMenuNode, parentPath: string }> = [
     { node: backendNode, parentPath },
   ]
   const visitedNodes = new WeakSet<BackendMenuNode>()
@@ -160,7 +164,8 @@ function addProtectedPaths(
 
   while (pendingNodes.length > 0 && remainingNodes > 0) {
     const current = pendingNodes.pop()
-    if (!current || visitedNodes.has(current.node)) continue
+    if (!current || visitedNodes.has(current.node))
+      continue
     visitedNodes.add(current.node)
     remainingNodes -= 1
 
@@ -192,24 +197,26 @@ function resolveNavigationBranch(
     .map((backendNode, sourceIndex) => ({ backendNode, sourceIndex }))
     .sort(
       (leftNode, rightNode) =>
-        (leftNode.backendNode.order ?? 0) - (rightNode.backendNode.order ?? 0) ||
-        leftNode.sourceIndex - rightNode.sourceIndex,
+        (leftNode.backendNode.order ?? 0) - (rightNode.backendNode.order ?? 0)
+        || leftNode.sourceIndex - rightNode.sourceIndex,
     )
 
   for (const { backendNode } of orderedNodes) {
-    if (context.nodeBudget.remaining <= 0) break
+    if (context.nodeBudget.remaining <= 0)
+      break
     // AI modified: one response cannot register the same menu twice or recurse through a cyclic object graph.
-    if (context.visitedNodes.has(backendNode) || context.menuIds.has(backendNode.id)) continue
+    if (context.visitedNodes.has(backendNode) || context.menuIds.has(backendNode.id))
+      continue
     context.visitedNodes.add(backendNode)
     context.menuIds.add(backendNode.id)
     context.nodeBudget.remaining -= 1
 
     const permissionIdentifier = getPermissionIdentifier(backendNode.permissionIdentifier)
     if (
-      !backendNode.id ||
-      !backendNode.titleKey ||
-      !hasValidAbilityContract(backendNode.requiredAbility) ||
-      (backendNode.permissionIdentifier !== undefined && !permissionIdentifier)
+      !backendNode.id
+      || !backendNode.titleKey
+      || !hasValidAbilityContract(backendNode.requiredAbility)
+      || (backendNode.permissionIdentifier !== undefined && !permissionIdentifier)
     ) {
       continue
     }
@@ -221,8 +228,8 @@ function resolveNavigationBranch(
     }
 
     const fullPath = getNavigationRoutePath(backendNode.path, context.parentPath)
-    const breadcrumb =
-      backendNode.kind === 'menu' && fullPath
+    const breadcrumb
+      = backendNode.kind === 'menu' && fullPath
         ? { labelKey: backendNode.titleKey, to: fullPath }
         : { labelKey: backendNode.titleKey }
     const childBranch = resolveNavigationBranch(backendNode.children ?? [], {
@@ -235,21 +242,25 @@ function resolveNavigationBranch(
     let href: string | undefined
     if (backendNode.kind === 'external') {
       href = getSafeHttpUrl(backendNode.externalUrl)
-      if (!href) continue
+      if (!href)
+        continue
     }
 
     let routeCandidate: NavigationRouteCandidate | undefined
     if (backendNode.kind === 'menu' || backendNode.kind === 'iframe') {
       const component = getNavigationComponent(backendNode.componentKey)
       const routeName = backendNode.routeName?.trim()
-      const iframeUrl =
-        backendNode.kind === 'iframe' ? getSafeHttpUrl(backendNode.iframeUrl) : undefined
+      const iframeUrl
+        = backendNode.kind === 'iframe' ? getSafeHttpUrl(backendNode.iframeUrl) : undefined
       const isLeaf = childBranch.menus.length === 0
 
       if (isLeaf) {
-        if (!fullPath || !isNavigationRouteName(routeName) || !component) continue
-        if (backendNode.kind === 'iframe' && !iframeUrl) continue
-        if (context.routeNames.has(routeName) || context.routePaths.has(fullPath)) continue
+        if (!fullPath || !isNavigationRouteName(routeName) || !component)
+          continue
+        if (backendNode.kind === 'iframe' && !iframeUrl)
+          continue
+        if (context.routeNames.has(routeName) || context.routePaths.has(fullPath))
+          continue
 
         context.routeNames.add(routeName)
         context.routePaths.add(fullPath)
@@ -287,7 +298,8 @@ function resolveNavigationBranch(
     }
 
     const hasDestination = Boolean(routeCandidate || href)
-    if (!hasDestination && childBranch.menus.length === 0) continue
+    if (!hasDestination && childBranch.menus.length === 0)
+      continue
 
     menus.push({
       id: backendNode.id,
@@ -306,7 +318,8 @@ function resolveNavigationBranch(
       children: childBranch.menus,
     })
 
-    if (routeCandidate) routes.push(routeCandidate)
+    if (routeCandidate)
+      routes.push(routeCandidate)
     routes.push(...childBranch.routes)
   }
 

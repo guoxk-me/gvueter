@@ -41,7 +41,8 @@ async function submitDialog(): Promise<void> {
   emit('submit')
   await nextTick()
 
-  if (invalidFocusTimer !== undefined) window.clearTimeout(invalidFocusTimer)
+  if (invalidFocusTimer !== undefined)
+    window.clearTimeout(invalidFocusTimer)
 
   // AI modified: the shared form boundary waits for schema errors to render before moving focus.
   invalidFocusTimer = window.setTimeout(focusFirstInvalidControl, 0, formElement.value)
@@ -53,7 +54,8 @@ function closeDialog(): void {
 }
 
 onBeforeUnmount(() => {
-  if (invalidFocusTimer !== undefined) window.clearTimeout(invalidFocusTimer)
+  if (invalidFocusTimer !== undefined)
+    window.clearTimeout(invalidFocusTimer)
 })
 </script>
 

@@ -38,7 +38,7 @@ const initialSystemParameters: SystemParameterRecord[] = [
   },
 ]
 
-const systemParameters = initialSystemParameters.map((parameter) => ({ ...parameter }))
+const systemParameters = initialSystemParameters.map(parameter => ({ ...parameter }))
 let nextSystemParameterId = 4
 const MAX_MOCK_SYSTEM_PARAMETERS = 200
 
@@ -49,7 +49,7 @@ function copySystemParameter(parameter: SystemParameterRecord): SystemParameterR
 function findSystemParameter(
   parameterId: string | readonly string[],
 ): SystemParameterRecord | undefined {
-  return systemParameters.find((parameter) => parameter.id === String(parameterId))
+  return systemParameters.find(parameter => parameter.id === String(parameterId))
 }
 
 function getDuplicateSystemParameterResponse(): Response {
@@ -63,30 +63,31 @@ export function resetMockSystemParameters(): void {
   systemParameters.splice(
     0,
     systemParameters.length,
-    ...initialSystemParameters.map((parameter) => ({ ...parameter })),
+    ...initialSystemParameters.map(parameter => ({ ...parameter })),
   )
   nextSystemParameterId = 4
 }
 
 export const listSystemParametersHandler = http.get('/api/system-parameters', ({ request }) => {
   const authorization = authorizeMockPermission(request, 'read', 'Settings')
-  if (!authorization.isAuthenticated) return authorization.response
+  if (!authorization.isAuthenticated)
+    return authorization.response
 
   const url = new URL(request.url)
   const keyword = url.searchParams.get('keyword')?.trim().toLowerCase() ?? ''
   const requestedStatus = url.searchParams.get('status')
   const status: SystemParameterStatus | undefined = SYSTEM_PARAMETER_STATUSES.find(
-    (parameterStatus) => parameterStatus === requestedStatus,
+    parameterStatus => parameterStatus === requestedStatus,
   )
   const items = systemParameters
     .filter(
-      (parameter) =>
-        !keyword ||
-        parameter.key.toLowerCase().includes(keyword) ||
-        parameter.value.toLowerCase().includes(keyword) ||
-        parameter.description.toLowerCase().includes(keyword),
+      parameter =>
+        !keyword
+        || parameter.key.toLowerCase().includes(keyword)
+        || parameter.value.toLowerCase().includes(keyword)
+        || parameter.description.toLowerCase().includes(keyword),
     )
-    .filter((parameter) => !status || parameter.status === status)
+    .filter(parameter => !status || parameter.status === status)
     .sort((leftParameter, rightParameter) => leftParameter.key.localeCompare(rightParameter.key))
     .map(copySystemParameter)
 
@@ -101,15 +102,17 @@ export const createSystemParameterHandler = http.post<never, SystemParameterInpu
   '/api/system-parameters',
   async ({ request }) => {
     const authorization = authorizeMockPermission(request, 'create', 'Settings')
-    if (!authorization.isAuthenticated) return authorization.response
+    if (!authorization.isAuthenticated)
+      return authorization.response
 
     const requestBody = await readMockJsonBody(request, SYSTEM_PARAMETER_INPUT_SCHEMA, {
       code: 'INVALID_SYSTEM_PARAMETER',
       message: '系统参数信息无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
-    if (systemParameters.some((parameter) => parameter.key === input.key))
+    if (systemParameters.some(parameter => parameter.key === input.key))
       return getDuplicateSystemParameterResponse()
     if (systemParameters.length >= MAX_MOCK_SYSTEM_PARAMETERS) {
       // AI modified: the mutable registry remains compatible with its bounded response schema.
@@ -142,7 +145,8 @@ export const updateSystemParameterHandler = http.put<{ parameterId: string }, Sy
   '/api/system-parameters/:parameterId',
   async ({ params, request }) => {
     const authorization = authorizeMockPermission(request, 'update', 'Settings')
-    if (!authorization.isAuthenticated) return authorization.response
+    if (!authorization.isAuthenticated)
+      return authorization.response
 
     const parameter = findSystemParameter(params.parameterId)
     if (!parameter) {
@@ -156,14 +160,16 @@ export const updateSystemParameterHandler = http.put<{ parameterId: string }, Sy
       code: 'INVALID_SYSTEM_PARAMETER',
       message: '系统参数信息无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     if (
       systemParameters.some(
-        (candidate) => candidate.id !== parameter.id && candidate.key === input.key,
+        candidate => candidate.id !== parameter.id && candidate.key === input.key,
       )
-    )
+    ) {
       return getDuplicateSystemParameterResponse()
+    }
 
     Object.assign(parameter, input, { updatedAt: new Date().toISOString() })
     return HttpResponse.json<ApiResponse<SystemParameterRecord>>({
@@ -178,7 +184,8 @@ export const deleteSystemParameterHandler = http.delete<{ parameterId: string }>
   '/api/system-parameters/:parameterId',
   ({ params, request }) => {
     const authorization = authorizeMockPermission(request, 'delete', 'Settings')
-    if (!authorization.isAuthenticated) return authorization.response
+    if (!authorization.isAuthenticated)
+      return authorization.response
 
     const parameter = findSystemParameter(params.parameterId)
     if (!parameter) {

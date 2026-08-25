@@ -43,11 +43,11 @@ export function useNotificationReadMutations(options: UseNotificationReadMutatio
       // AI modified: server-confirmed read state is projected into every notification surface.
       queryClient.setQueriesData<MessageCenterResponse>(
         { queryKey: messageCenterQueryKeyRoot },
-        (cachedResponse) =>
+        cachedResponse =>
           cachedResponse
             ? {
                 ...cachedResponse,
-                items: cachedResponse.items.map((item) =>
+                items: cachedResponse.items.map(item =>
                   item.id === response.item.id ? response.item : item,
                 ),
                 unreadCount: response.unreadCount,
@@ -76,11 +76,11 @@ export function useNotificationReadMutations(options: UseNotificationReadMutatio
       const markedIds = new Set(response.markedIds)
       queryClient.setQueriesData<MessageCenterResponse>(
         { queryKey: messageCenterQueryKeyRoot },
-        (cachedResponse) =>
+        cachedResponse =>
           cachedResponse
             ? {
                 ...cachedResponse,
-                items: cachedResponse.items.map((item) =>
+                items: cachedResponse.items.map(item =>
                   markedIds.has(item.id) ? { ...item, isRead: true } : item,
                 ),
                 unreadCount: response.unreadCount,
@@ -121,7 +121,8 @@ export function useMessageCenter(filters: MaybeRefOrGetter<MessageCenterFilters>
   watch(
     () => messageCenterQuery.data.value?.unreadCount,
     (unreadCount) => {
-      if (unreadCount !== undefined) notificationStore.syncUnreadCount(unreadCount)
+      if (unreadCount !== undefined)
+        notificationStore.syncUnreadCount(unreadCount)
     },
     { immediate: true },
   )

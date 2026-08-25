@@ -56,20 +56,21 @@ const usersQuery = useQuery({
 watch(
   () => usersQuery.data.value?.items,
   (users) => {
-    const matchingUser = users?.find((user) => user.id === selectedUserId.value)
-    if (matchingUser) selectedUser.value = matchingUser
+    const matchingUser = users?.find(user => user.id === selectedUserId.value)
+    if (matchingUser)
+      selectedUser.value = matchingUser
   },
   { immediate: true },
 )
 
 const userOptions = computed<SearchableSelectOption[]>(() => {
   const users = usersQuery.data.value?.items ?? []
-  const selectableUsers =
-    selectedUser.value && !users.some((user) => user.id === selectedUser.value?.id)
+  const selectableUsers
+    = selectedUser.value && !users.some(user => user.id === selectedUser.value?.id)
       ? [selectedUser.value, ...users]
       : users
 
-  return selectableUsers.map((user) => ({
+  return selectableUsers.map(user => ({
     value: String(user.id),
     label: user.name,
     keywords: [user.email, user.role],
@@ -83,7 +84,7 @@ const selectedUserKey = computed<string | null>({
     const userId = userKey === null ? undefined : Number(userKey)
     // AI modified: the selector exposes only a safe numeric identifier, never the remote user object.
     selectedUserId.value = userId === undefined || Number.isSafeInteger(userId) ? userId : undefined
-    selectedUser.value = usersQuery.data.value?.items.find((user) => user.id === userId)
+    selectedUser.value = usersQuery.data.value?.items.find(user => user.id === userId)
   },
 })
 </script>

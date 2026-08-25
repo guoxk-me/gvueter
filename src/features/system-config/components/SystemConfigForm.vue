@@ -35,10 +35,12 @@ const isConfirmationOpen = shallowRef(false)
 function isSafeHttpUrl(urlText: string): boolean {
   try {
     // AI modified: the form emits only canonical absolute HTTP(S) URLs accepted by the API.
-    if (!/^https?:\/\//.test(urlText)) return false
+    if (!/^https?:\/\//.test(urlText))
+      return false
     const url = new URL(urlText)
     return (url.protocol === 'http:' || url.protocol === 'https:') && !url.username && !url.password
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -75,7 +77,7 @@ const formSchema = computed(() =>
             .trim()
             .max(100)
             .refine(
-              (region) => !region || /^[a-z0-9][a-z0-9-]{0,99}$/.test(region),
+              region => !region || /^[a-z0-9][a-z0-9-]{0,99}$/.test(region),
               t('systemConfig.validation.region'),
             ),
           bucketName: z
@@ -83,12 +85,13 @@ const formSchema = computed(() =>
             .trim()
             .max(63)
             .refine((bucketName) => {
-              if (!bucketName) return true
+              if (!bucketName)
+                return true
               return (
-                bucketName.length >= 3 &&
-                /^[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(bucketName) &&
-                !bucketName.includes('..') &&
-                !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(bucketName)
+                bucketName.length >= 3
+                && /^[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(bucketName)
+                && !bucketName.includes('..')
+                && !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(bucketName)
               )
             }, t('systemConfig.validation.bucketName')),
           pathPrefix: z
@@ -96,7 +99,7 @@ const formSchema = computed(() =>
             .trim()
             .max(500)
             .refine(
-              (pathPrefix) =>
+              pathPrefix =>
                 !pathPrefix || /^(?:[a-z0-9][\w.-]*\/)*[a-z0-9][\w.-]*$/i.test(pathPrefix),
               t('systemConfig.validation.pathPrefix'),
             ),
@@ -106,7 +109,8 @@ const formSchema = computed(() =>
           accessKeySecret: z.string().max(4_096),
         })
         .superRefine((upload, context) => {
-          if (upload.provider !== 's3') return
+          if (upload.provider !== 's3')
+            return
 
           // AI modified: S3-only fields stay optional for local storage but must close the S3 contract.
           for (const field of ['endpointUrl', 'region', 'bucketName', 'accessKeyId'] as const) {
@@ -215,11 +219,16 @@ const submitConfig = handleSubmit(
 
     const firstInvalidGroup = Object.keys(errors)[0]?.split('.')[0]
     // AI modified: reveal the hidden configuration group that prevented the confirmed save.
-    if (firstInvalidGroup === 'site') activeSection.value = 'site'
-    else if (firstInvalidGroup === 'upload') activeSection.value = 'upload'
-    else if (firstInvalidGroup === 'sms') activeSection.value = 'sms'
-    else if (firstInvalidGroup === 'email') activeSection.value = 'email'
-    else if (firstInvalidGroup === 'thirdParty') activeSection.value = 'third-party'
+    if (firstInvalidGroup === 'site')
+      activeSection.value = 'site'
+    else if (firstInvalidGroup === 'upload')
+      activeSection.value = 'upload'
+    else if (firstInvalidGroup === 'sms')
+      activeSection.value = 'sms'
+    else if (firstInvalidGroup === 'email')
+      activeSection.value = 'email'
+    else if (firstInvalidGroup === 'thirdParty')
+      activeSection.value = 'third-party'
   },
 )
 </script>

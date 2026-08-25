@@ -9,7 +9,8 @@ export function hasRichTextContent(html: string): boolean {
     html
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
-      .trim().length > 0
+      .trim()
+      .length > 0
   )
 }
 

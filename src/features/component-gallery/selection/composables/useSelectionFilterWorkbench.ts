@@ -101,9 +101,10 @@ export function useSelectionFilterWorkbench() {
 
   function saveCurrentScheme(): 'memory-only' | 'missing-name' | 'saved' {
     const requestedName = schemeName.value.trim().slice(0, 60)
-    if (!requestedName) return 'missing-name'
+    if (!requestedName)
+      return 'missing-name'
 
-    const existingScheme = savedSchemes.value.find((scheme) => scheme.name === requestedName)
+    const existingScheme = savedSchemes.value.find(scheme => scheme.name === requestedName)
     const savedScheme: FilterScheme = {
       id: existingScheme?.id ?? `selection-scheme-${Date.now()}`,
       name: requestedName,
@@ -113,14 +114,14 @@ export function useSelectionFilterWorkbench() {
         dateRange: draftFilters.value.dateRange ? { ...draftFilters.value.dateRange } : null,
       },
     }
-    const remainingSchemes = savedSchemes.value.filter((scheme) => scheme.id !== savedScheme.id)
+    const remainingSchemes = savedSchemes.value.filter(scheme => scheme.id !== savedScheme.id)
     const isPersisted = persistSavedSchemes([...remainingSchemes, savedScheme])
     schemeName.value = ''
     return isPersisted ? 'saved' : 'memory-only'
   }
 
   function removeScheme(schemeId: string): void {
-    persistSavedSchemes(savedSchemes.value.filter((scheme) => scheme.id !== schemeId))
+    persistSavedSchemes(savedSchemes.value.filter(scheme => scheme.id !== schemeId))
   }
 
   async function removeAppliedFilter(
@@ -136,8 +137,10 @@ export function useSelectionFilterWorkbench() {
             ? { ...appliedFilters.value.dateRange }
             : null,
     }
-    if (filterKey === 'status') nextFilters.status = 'all'
-    if (filterKey === 'region') nextFilters.region = 'all'
+    if (filterKey === 'status')
+      nextFilters.status = 'all'
+    if (filterKey === 'region')
+      nextFilters.region = 'all'
 
     setDraftFilters(nextFilters)
     await applyFilters(nextFilters)

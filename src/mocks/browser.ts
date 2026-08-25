@@ -11,19 +11,21 @@ function isMockWorkerRegistration(
   absoluteWorkerUrl: string,
 ): boolean {
   return [registration.active, registration.installing, registration.waiting].some(
-    (registeredWorker) => registeredWorker?.scriptURL === absoluteWorkerUrl,
+    registeredWorker => registeredWorker?.scriptURL === absoluteWorkerUrl,
   )
 }
 
 async function discardUncontrolledMockRegistrations(): Promise<void> {
-  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator))
+    return
 
   const absoluteWorkerUrl = new URL(MOCK_SERVICE_WORKER_URL, window.location.href).href
   const controller = navigator.serviceWorker.controller
-  if (controller?.scriptURL === absoluteWorkerUrl && controller.state !== 'redundant') return
+  if (controller?.scriptURL === absoluteWorkerUrl && controller.state !== 'redundant')
+    return
 
   const registrations = await navigator.serviceWorker.getRegistrations()
-  const mockRegistrations = registrations.filter((registration) =>
+  const mockRegistrations = registrations.filter(registration =>
     isMockWorkerRegistration(registration, absoluteWorkerUrl),
   )
 
@@ -32,7 +34,8 @@ async function discardUncontrolledMockRegistrations(): Promise<void> {
     mockRegistrations.map(async (registration) => {
       try {
         await registration.unregister()
-      } catch {
+      }
+      catch {
         // A concurrently removed registration is already in the desired state.
       }
     }),

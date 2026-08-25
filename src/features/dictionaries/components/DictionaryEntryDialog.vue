@@ -47,7 +47,8 @@ const { handleSubmit, resetForm } = useForm<DictionaryEntryInput>({
 watch(
   [open, () => props.dictionaryEntry],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     // AI modified: each open starts from the selected entry or a deterministic semantic-token default.
     resetForm({

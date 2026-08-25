@@ -53,39 +53,42 @@ const lanes = computed<BoardLane[]>(() => [
   { id: 'done', title: copy.value.done },
 ])
 const cardsByLane = ref<Record<BoardLaneId, BoardCard[]>>({
-  backlog: [
+  'backlog': [
     { id: 'card-access-review', title: 'Review access request' },
     { id: 'card-copy-audit', title: 'Confirm audit copy' },
     { id: 'card-export-policy', title: 'Approve export policy' },
   ],
   'in-progress': [{ id: 'card-release', title: 'Prepare release notes' }],
-  done: [{ id: 'card-verify', title: 'Verify recovery path' }],
+  'done': [{ id: 'card-verify', title: 'Verify recovery path' }],
 })
 const draggedCardId = ref<string>()
 const announcement = ref('')
 
 function findCard(
   cardId: string,
-): { laneId: BoardLaneId; index: number; card: BoardCard } | undefined {
+): { laneId: BoardLaneId, index: number, card: BoardCard } | undefined {
   for (const lane of lanes.value) {
-    const index = cardsByLane.value[lane.id].findIndex((card) => card.id === cardId)
+    const index = cardsByLane.value[lane.id].findIndex(card => card.id === cardId)
     const card = cardsByLane.value[lane.id][index]
-    if (index >= 0 && card) return { laneId: lane.id, index, card }
+    if (index >= 0 && card)
+      return { laneId: lane.id, index, card }
   }
   return undefined
 }
 
 function reportMove(card: BoardCard, laneId: BoardLaneId, position: number): void {
-  const laneTitle = lanes.value.find((lane) => lane.id === laneId)?.title ?? laneId
+  const laneTitle = lanes.value.find(lane => lane.id === laneId)?.title ?? laneId
   announcement.value = `${copy.value.moved} ${card.title} ${copy.value.to} ${laneTitle}, ${copy.value.position} ${position + 1}`
 }
 
 function moveWithinLane(cardId: string, offset: -1 | 1): void {
   const location = findCard(cardId)
-  if (!location) return
+  if (!location)
+    return
   const cards = cardsByLane.value[location.laneId]
   const requestedIndex = location.index + offset
-  if (requestedIndex < 0 || requestedIndex >= cards.length) return
+  if (requestedIndex < 0 || requestedIndex >= cards.length)
+    return
   cards.splice(location.index, 1)
   cards.splice(requestedIndex, 0, location.card)
   reportMove(location.card, location.laneId, requestedIndex)
@@ -93,10 +96,12 @@ function moveWithinLane(cardId: string, offset: -1 | 1): void {
 
 function moveAcrossLanes(cardId: string, offset: -1 | 1): void {
   const location = findCard(cardId)
-  if (!location) return
-  const sourceLaneIndex = lanes.value.findIndex((lane) => lane.id === location.laneId)
+  if (!location)
+    return
+  const sourceLaneIndex = lanes.value.findIndex(lane => lane.id === location.laneId)
   const targetLane = lanes.value[sourceLaneIndex + offset]
-  if (!targetLane) return
+  if (!targetLane)
+    return
   cardsByLane.value[location.laneId].splice(location.index, 1)
   cardsByLane.value[targetLane.id].push(location.card)
   reportMove(location.card, targetLane.id, cardsByLane.value[targetLane.id].length - 1)
@@ -105,7 +110,8 @@ function moveAcrossLanes(cardId: string, offset: -1 | 1): void {
 function startDragging(cardId: string, event: DragEvent): void {
   draggedCardId.value = cardId
   event.dataTransfer?.setData('text/plain', cardId)
-  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+  if (event.dataTransfer)
+    event.dataTransfer.effectAllowed = 'move'
 }
 
 function finishDragging(): void {
@@ -114,15 +120,17 @@ function finishDragging(): void {
 
 function dropAt(laneId: BoardLaneId, targetIndex?: number): void {
   const cardId = draggedCardId.value
-  if (!cardId) return
+  if (!cardId)
+    return
   const location = findCard(cardId)
-  if (!location) return
+  if (!location)
+    return
 
   cardsByLane.value[location.laneId].splice(location.index, 1)
   const targetCards = cardsByLane.value[laneId]
   const requestedIndex = targetIndex ?? targetCards.length
-  const insertionIndex =
-    location.laneId === laneId && location.index < requestedIndex
+  const insertionIndex
+    = location.laneId === laneId && location.index < requestedIndex
       ? Math.max(requestedIndex - 1, 0)
       : Math.min(requestedIndex, targetCards.length)
   targetCards.splice(insertionIndex, 0, location.card)
@@ -131,11 +139,16 @@ function dropAt(laneId: BoardLaneId, targetIndex?: number): void {
 }
 
 function handleCardKeydown(cardId: string, event: KeyboardEvent): void {
-  if (!event.altKey) return
-  if (event.key === 'ArrowUp') moveWithinLane(cardId, -1)
-  else if (event.key === 'ArrowDown') moveWithinLane(cardId, 1)
-  else if (event.key === 'ArrowLeft') moveAcrossLanes(cardId, -1)
-  else if (event.key === 'ArrowRight') moveAcrossLanes(cardId, 1)
+  if (!event.altKey)
+    return
+  if (event.key === 'ArrowUp')
+    moveWithinLane(cardId, -1)
+  else if (event.key === 'ArrowDown')
+    moveWithinLane(cardId, 1)
+  else if (event.key === 'ArrowLeft')
+    moveAcrossLanes(cardId, -1)
+  else if (event.key === 'ArrowRight')
+    moveAcrossLanes(cardId, 1)
   else return
   event.preventDefault()
 }

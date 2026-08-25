@@ -26,14 +26,16 @@ async function getFiles(directory) {
 }
 
 function getExecutableSource(filePath, source) {
-  if (!filePath.endsWith('.vue')) return source
+  if (!filePath.endsWith('.vue'))
+    return source
   return [...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
-    .map((match) => match[1])
+    .map(match => match[1])
     .join('\n')
 }
 
 function hasResponseSchema(optionsArgument) {
-  if (!optionsArgument || !ts.isObjectLiteralExpression(optionsArgument)) return false
+  if (!optionsArgument || !ts.isObjectLiteralExpression(optionsArgument))
+    return false
   return optionsArgument.properties.some((property) => {
     if (!ts.isPropertyAssignment(property) && !ts.isShorthandPropertyAssignment(property))
       return false
@@ -47,11 +49,11 @@ function getLineLocation(sourceFile, node) {
 }
 
 const sourceFiles = (await getFiles(sourceRoot)).filter(
-  (filePath) =>
-    (filePath.endsWith('.ts') || filePath.endsWith('.vue')) &&
-    !filePath.endsWith('.d.ts') &&
-    !filePath.includes('/__tests__/') &&
-    !filePath.includes('/mocks/'),
+  filePath =>
+    (filePath.endsWith('.ts') || filePath.endsWith('.vue'))
+    && !filePath.endsWith('.d.ts')
+    && !filePath.includes('/__tests__/')
+    && !filePath.includes('/mocks/'),
 )
 const violations = []
 let validatedCallCount = 0
@@ -69,14 +71,15 @@ for (const filePath of sourceFiles) {
 
   for (const statement of sourceFile.statements) {
     if (
-      !ts.isImportDeclaration(statement) ||
-      !ts.isStringLiteral(statement.moduleSpecifier) ||
-      statement.moduleSpecifier.text !== '@/lib/http'
+      !ts.isImportDeclaration(statement)
+      || !ts.isStringLiteral(statement.moduleSpecifier)
+      || statement.moduleSpecifier.text !== '@/lib/http'
     ) {
       continue
     }
     const bindings = statement.importClause?.namedBindings
-    if (!bindings || !ts.isNamedImports(bindings)) continue
+    if (!bindings || !ts.isNamedImports(bindings))
+      continue
 
     for (const binding of bindings.elements) {
       const importedName = binding.propertyName?.text ?? binding.name.text
@@ -96,7 +99,8 @@ for (const filePath of sourceFiles) {
       const importedName = importedFunctions.get(node.expression.text)
       if (importedName) {
         const optionsIndex = contractOptionIndexByFunction.get(importedName)
-        if (optionsIndex === undefined) return
+        if (optionsIndex === undefined)
+          return
         validatedCallCount += 1
         if (!hasResponseSchema(node.arguments[optionsIndex])) {
           violations.push(

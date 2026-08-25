@@ -97,16 +97,16 @@ const evidenceLocations = computed<string[]>(() =>
 
 const importCode = computed(() => {
   if (
-    !props.entry.sourcePath ||
-    props.entry.maturity === 'planned' ||
-    !/^[A-Z][A-Za-z0-9]*$/.test(props.entry.displayName)
+    !props.entry.sourcePath
+    || props.entry.maturity === 'planned'
+    || !/^[A-Z][A-Za-z0-9]*$/.test(props.entry.displayName)
   ) {
     return null
   }
 
   const sourceImport = props.entry.sourcePath.replace(/^src\//, '@/').replace(/\.vue$/, '')
-  const importStatement =
-    props.entry.kind === 'ui-primitive'
+  const importStatement
+    = props.entry.kind === 'ui-primitive'
       ? `import { ${props.entry.displayName} } from '${sourceImport}'`
       : `import ${props.entry.displayName} from '${sourceImport}'`
 
@@ -218,8 +218,7 @@ const importCode = computed(() => {
                   :key="contractValue"
                   class="max-w-full break-all rounded bg-muted px-1.5 py-0.5 text-xs"
                   translate="no"
-                  >{{ contractValue }}</code
-                >
+                >{{ contractValue }}</code>
                 <span
                   v-if="contractSection.values.length === 0"
                   class="text-xs text-muted-foreground"
@@ -355,7 +354,9 @@ const importCode = computed(() => {
                 <h4 class="text-xs font-medium text-muted-foreground">
                   {{ t('components.center.sections.release') }}
                 </h4>
-                <Badge variant="outline" translate="no"> v{{ entry.release.version }} </Badge>
+                <Badge variant="outline" translate="no">
+                  v{{ entry.release.version }}
+                </Badge>
               </div>
               <p class="text-sm" lang="en">
                 {{ entry.release.migrationNote }}

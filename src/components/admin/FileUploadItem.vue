@@ -21,7 +21,8 @@ const file = toRef(props.entry, 'file')
 const previewUrl = useObjectUrl(file)
 const isImage = computed(() => props.entry.file.type.startsWith('image/'))
 const fileIcon = computed<Component>(() => {
-  if (isImage.value) return FileImage
+  if (isImage.value)
+    return FileImage
   if (props.entry.file.type.includes('pdf') || props.entry.file.type.includes('text'))
     return FileText
   return File
@@ -37,7 +38,7 @@ const fileSize = computed(() => getFileSizeLabel(props.entry.file.size, { locale
       :src="previewUrl"
       :alt="entry.file.name"
       class="size-10 shrink-0 rounded object-cover"
-    />
+    >
     <div
       v-else
       class="flex size-10 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"

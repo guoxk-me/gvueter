@@ -29,11 +29,12 @@ const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
 const listboxId = `${useId()}-listbox`
 
 const selectedOptions = computed(() =>
-  props.options.filter((option) => selectedValues.value.includes(option.value)),
+  props.options.filter(option => selectedValues.value.includes(option.value)),
 )
 const visibleOptions = computed(() => {
   const requestedText = query.value.trim().toLocaleLowerCase()
-  if (!requestedText) return props.options
+  if (!requestedText)
+    return props.options
 
   return props.options.filter((option) => {
     const searchableText = `${option.label} ${option.description ?? ''}`.toLocaleLowerCase()
@@ -41,17 +42,20 @@ const visibleOptions = computed(() => {
   })
 })
 const activeOptionId = computed(() => {
-  if (!isOpen.value || highlightedIndex.value < 0) return undefined
+  if (!isOpen.value || highlightedIndex.value < 0)
+    return undefined
 
   const highlightedOption = visibleOptions.value[highlightedIndex.value]
-  if (!highlightedOption || highlightedOption.disabled) return undefined
+  if (!highlightedOption || highlightedOption.disabled)
+    return undefined
   return getOptionId(highlightedOption)
 })
 
 watch(isOpen, async (isNowOpen) => {
   if (isNowOpen) {
     await nextTick()
-    if (!isOpen.value) return
+    if (!isOpen.value)
+      return
 
     // AI modified: keep DOM focus on the searchable combobox while the active option owns listbox state.
     highlightOption(getOpeningHighlightIndex())
@@ -73,16 +77,17 @@ watch(visibleOptions, () => {
 })
 
 function toggleOption(option: SelectionOption): void {
-  if (option.disabled) return
+  if (option.disabled)
+    return
 
   // AI modified: multi-select updates are immutable so parent forms receive one predictable v-model event.
   selectedValues.value = selectedValues.value.includes(option.value)
-    ? selectedValues.value.filter((value) => value !== option.value)
+    ? selectedValues.value.filter(value => value !== option.value)
     : [...selectedValues.value, option.value]
 }
 
 function removeOption(optionValue: string): void {
-  selectedValues.value = selectedValues.value.filter((value) => value !== optionValue)
+  selectedValues.value = selectedValues.value.filter(value => value !== optionValue)
 }
 
 function clearSelection(): void {
@@ -91,27 +96,28 @@ function clearSelection(): void {
 }
 
 function getOptionId(option: SelectionOption): string {
-  const encodedValue =
-    Array.from(option.value, (character) => character.codePointAt(0)?.toString(16) ?? '').join(
+  const encodedValue
+    = Array.from(option.value, character => character.codePointAt(0)?.toString(16) ?? '').join(
       '-',
     ) || 'empty'
   return `${listboxId}-option-${encodedValue}`
 }
 
 function getFirstEnabledIndex(): number {
-  return visibleOptions.value.findIndex((option) => !option.disabled)
+  return visibleOptions.value.findIndex(option => !option.disabled)
 }
 
 function getLastEnabledIndex(): number {
   for (let optionIndex = visibleOptions.value.length - 1; optionIndex >= 0; optionIndex -= 1) {
-    if (!visibleOptions.value[optionIndex]?.disabled) return optionIndex
+    if (!visibleOptions.value[optionIndex]?.disabled)
+      return optionIndex
   }
   return -1
 }
 
 function getOpeningHighlightIndex(): number {
   const selectedIndex = visibleOptions.value.findIndex(
-    (option) => selectedValues.value.includes(option.value) && !option.disabled,
+    option => selectedValues.value.includes(option.value) && !option.disabled,
   )
   return selectedIndex >= 0 ? selectedIndex : getFirstEnabledIndex()
 }
@@ -119,7 +125,8 @@ function getOpeningHighlightIndex(): number {
 function highlightOption(optionIndex: number): void {
   highlightedIndex.value = optionIndex
   const option = visibleOptions.value[optionIndex]
-  if (!option) return
+  if (!option)
+    return
 
   void nextTick(() => {
     document.getElementById(getOptionId(option))?.scrollIntoView?.({ block: 'nearest' })
@@ -128,10 +135,11 @@ function highlightOption(optionIndex: number): void {
 
 function moveHighlight(direction: 1 | -1): void {
   const optionCount = visibleOptions.value.length
-  if (optionCount === 0) return
+  if (optionCount === 0)
+    return
 
-  let candidateIndex =
-    highlightedIndex.value >= 0 ? highlightedIndex.value : direction === 1 ? -1 : 0
+  let candidateIndex
+    = highlightedIndex.value >= 0 ? highlightedIndex.value : direction === 1 ? -1 : 0
   for (let attempt = 0; attempt < optionCount; attempt += 1) {
     candidateIndex = (candidateIndex + direction + optionCount) % optionCount
     if (!visibleOptions.value[candidateIndex]?.disabled) {
@@ -143,7 +151,8 @@ function moveHighlight(direction: 1 | -1): void {
 
 function toggleHighlightedOption(): void {
   const highlightedOption = visibleOptions.value[highlightedIndex.value]
-  if (highlightedOption) toggleOption(highlightedOption)
+  if (highlightedOption)
+    toggleOption(highlightedOption)
 }
 
 function handleSearchKeydown(event: KeyboardEvent): void {
@@ -178,7 +187,8 @@ function handleSearchKeydown(event: KeyboardEvent): void {
     return
   }
 
-  if (event.key === 'Escape') isOpen.value = false
+  if (event.key === 'Escape')
+    isOpen.value = false
 }
 </script>
 
@@ -229,7 +239,7 @@ function handleSearchKeydown(event: KeyboardEvent): void {
             :placeholder="searchPlaceholder"
             class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent py-1 pr-3 pl-8 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
             @keydown="handleSearchKeydown"
-          />
+          >
         </div>
         <div
           v-if="visibleOptions.length"
@@ -273,8 +283,7 @@ function handleSearchKeydown(event: KeyboardEvent): void {
               <span
                 v-if="option.description"
                 class="block break-words text-xs text-muted-foreground"
-                >{{ option.description }}</span
-              >
+              >{{ option.description }}</span>
             </span>
           </button>
         </div>

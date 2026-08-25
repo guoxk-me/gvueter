@@ -86,20 +86,22 @@ const isUploadPolicyReady = computed(() => {
 })
 const isUploadDisabled = computed(
   () =>
-    isUploading.value ||
-    isUploadPolicyLoading.value ||
-    Boolean(uploadPolicyError.value) ||
-    !isUploadPolicyReady.value,
+    isUploading.value
+    || isUploadPolicyLoading.value
+    || Boolean(uploadPolicyError.value)
+    || !isUploadPolicyReady.value,
 )
 const uploadDescription = computed(() => {
-  if (isUploadPolicyLoading.value) return t('contentAdmin.files.uploadPolicyLoading')
-  if (uploadPolicyError.value) return t('contentAdmin.files.uploadPolicyUnavailable')
+  if (isUploadPolicyLoading.value)
+    return t('contentAdmin.files.uploadPolicyLoading')
+  if (uploadPolicyError.value)
+    return t('contentAdmin.files.uploadPolicyUnavailable')
   const policy = effectiveUploadPolicy.value
   if (!policy || policy.allowedExtensions.length === 0)
     return t('contentAdmin.files.uploadPolicyEmpty')
   return t('contentAdmin.files.uploadPolicyDescription', {
     size: getFileSizeLabel(policy.maxFileSizeBytes, { locale: locale.value }),
-    extensions: policy.allowedExtensions.map((extension) => `.${extension}`).join(', '),
+    extensions: policy.allowedExtensions.map(extension => `.${extension}`).join(', '),
   })
 })
 // AI modified: a failed page has no authoritative total and must not force pagination back to page one.
@@ -201,9 +203,9 @@ function applySearch(filters: ContentFileSearchFilters): void {
 function isFileAllowedByCurrentPolicy(file: File): boolean {
   const policy = effectiveUploadPolicy.value
   return Boolean(
-    policy &&
-    file.size <= policy.maxFileSizeBytes &&
-    isUploadFileTypeAllowed(file, {
+    policy
+    && file.size <= policy.maxFileSizeBytes
+    && isUploadFileTypeAllowed(file, {
       accept: uploadAccept.value,
       allowedExtensions: policy.allowedExtensions,
       allowedMimeTypes: allowedContentMimeTypes.value,
@@ -213,8 +215,9 @@ function isFileAllowedByCurrentPolicy(file: File): boolean {
 
 function reportUploadRejections(rejections: FileUploadRejection[]): void {
   const policy = effectiveUploadPolicy.value
-  if (!policy || rejections.length === 0) return
-  if (rejections.some((rejection) => rejection.reason === 'file-too-large')) {
+  if (!policy || rejections.length === 0)
+    return
+  if (rejections.some(rejection => rejection.reason === 'file-too-large')) {
     toast.error(
       t('contentAdmin.files.uploadTooLarge', {
         size: getFileSizeLabel(policy.maxFileSizeBytes, { locale: locale.value }),
@@ -222,7 +225,7 @@ function reportUploadRejections(rejections: FileUploadRejection[]): void {
     )
     return
   }
-  if (rejections.some((rejection) => rejection.reason === 'invalid-type')) {
+  if (rejections.some(rejection => rejection.reason === 'invalid-type')) {
     toast.error(t('contentAdmin.files.uploadTypeRejected'))
     return
   }
@@ -230,8 +233,9 @@ function reportUploadRejections(rejections: FileUploadRejection[]): void {
 }
 
 async function submitFiles(): Promise<void> {
-  if (isUploadDisabled.value || uploadEntries.value.length === 0) return
-  const validEntries = uploadEntries.value.filter((entry) =>
+  if (isUploadDisabled.value || uploadEntries.value.length === 0)
+    return
+  const validEntries = uploadEntries.value.filter(entry =>
     isFileAllowedByCurrentPolicy(entry.file),
   )
   if (validEntries.length !== uploadEntries.value.length) {
@@ -241,9 +245,9 @@ async function submitFiles(): Promise<void> {
     return
   }
   try {
-    const uploadOutcome = await uploadFiles(uploadEntries.value.map((entry) => entry.file))
+    const uploadOutcome = await uploadFiles(uploadEntries.value.map(entry => entry.file))
     const failedFiles = new Set(uploadOutcome.failedFiles)
-    uploadEntries.value = uploadEntries.value.filter((entry) => failedFiles.has(entry.file))
+    uploadEntries.value = uploadEntries.value.filter(entry => failedFiles.has(entry.file))
 
     if (uploadOutcome.uploadedFiles.length === 0) {
       toast.error(getErrorMessage(uploadOutcome.firstFailure))
@@ -259,8 +263,12 @@ async function submitFiles(): Promise<void> {
           failed: uploadOutcome.failedFiles.length,
         }),
       )
-    } else toast.success(t('contentAdmin.files.uploadSuccess'))
-  } catch (error: unknown) {
+    }
+    else {
+      toast.success(t('contentAdmin.files.uploadSuccess'))
+    }
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -269,7 +277,8 @@ async function removeFile(file: ContentFileRecord): Promise<void> {
   try {
     await deleteFile(file)
     toast.success(t('contentAdmin.files.deleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -283,18 +292,21 @@ async function saveDownload(file: ContentFileRecord): Promise<void> {
     anchor.download = downloadedFile.fileName ?? file.name
     anchor.click()
     URL.revokeObjectURL(objectUrl)
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
 
 function revokePreviewUrl(): void {
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  if (previewUrl.value)
+    URL.revokeObjectURL(previewUrl.value)
   previewUrl.value = ''
 }
 
 async function previewFile(file: ContentFileRecord): Promise<void> {
-  if (!isSafeImagePreview(file) || !file.previewUrl) return
+  if (!isSafeImagePreview(file) || !file.previewUrl)
+    return
   try {
     const preview = await download(file.previewUrl.replace(/^\/api/, ''))
     revokePreviewUrl()
@@ -302,7 +314,8 @@ async function previewFile(file: ContentFileRecord): Promise<void> {
     previewUrl.value = URL.createObjectURL(preview.blob)
     previewName.value = file.name
     isPreviewOpen.value = true
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -469,7 +482,7 @@ async function previewFile(file: ContentFileRecord): Promise<void> {
         :src="previewUrl"
         :alt="previewName"
         class="max-h-[65vh] w-full rounded-lg object-contain"
-      />
+      >
     </Dialog>
   </div>
 </template>

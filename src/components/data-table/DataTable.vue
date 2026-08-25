@@ -74,10 +74,10 @@ const paginationModel = defineModel<PaginationState>('pagination')
 const sortingModel = defineModel<SortingState>('sorting')
 const selectedRowIds = defineModel<RowSelectionState>('selectedRowIds', { default: () => ({}) })
 const allowedPageSizes = computed(() => getAllowedPageSizes(props.pageSizeOptions))
-const initialPageSize =
-  getAcceptedPageSize(props.defaultPageSize, allowedPageSizes.value) ??
-  allowedPageSizes.value[0] ??
-  10
+const initialPageSize
+  = getAcceptedPageSize(props.defaultPageSize, allowedPageSizes.value)
+    ?? allowedPageSizes.value[0]
+    ?? 10
 const internalPagination = shallowRef<PaginationState>({
   pageIndex: 0,
   pageSize: initialPageSize,
@@ -86,14 +86,16 @@ const internalSorting = shallowRef<SortingState>([])
 const pagination = computed<PaginationState>({
   get: () => paginationModel.value ?? internalPagination.value,
   set: (nextPagination) => {
-    if (paginationModel.value === undefined) internalPagination.value = nextPagination
+    if (paginationModel.value === undefined)
+      internalPagination.value = nextPagination
     else paginationModel.value = nextPagination
   },
 })
 const sorting = computed<SortingState>({
   get: () => sortingModel.value ?? internalSorting.value,
   set: (nextSorting) => {
-    if (sortingModel.value === undefined) internalSorting.value = nextSorting
+    if (sortingModel.value === undefined)
+      internalSorting.value = nextSorting
     else sortingModel.value = nextSorting
   },
 })
@@ -123,9 +125,9 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
-  enableRowSelection: (row) =>
+  enableRowSelection: row =>
     props.enableRowSelection && (props.getRowCanSelect?.(row.original) ?? true),
-  onPaginationChange: (updater) => applyPaginationChange(nextState(updater, pagination.value)),
+  onPaginationChange: updater => applyPaginationChange(nextState(updater, pagination.value)),
   onSortingChange: (updater) => {
     const nextSorting = nextState(updater, sorting.value)
     const previousPageIndex = pagination.value.pageIndex
@@ -138,7 +140,8 @@ const table = useVueTable({
       pagination: nextPagination,
       rowSelection: nextSelection,
     })
-    if (previousPageIndex !== 0) emit('paginationChange', nextPagination)
+    if (previousPageIndex !== 0)
+      emit('paginationChange', nextPagination)
     emit('sortingChange', nextSorting)
   },
   onRowSelectionChange: (updater) => {
@@ -151,7 +154,7 @@ const table = useVueTable({
 
 function syncTableState(state: Partial<TableState>): void {
   // AI modified: controlled updates also restore reactive option values materialized by object spread.
-  table.setOptions((previousOptions) => ({
+  table.setOptions(previousOptions => ({
     ...previousOptions,
     columns: props.columns,
     data: props.data,
@@ -160,7 +163,8 @@ function syncTableState(state: Partial<TableState>): void {
 }
 
 function clearSelectionForDataChange(): RowSelectionState {
-  if (Object.keys(selectedRowIds.value).length === 0) return selectedRowIds.value
+  if (Object.keys(selectedRowIds.value).length === 0)
+    return selectedRowIds.value
 
   // AI modified: filters, refreshes, sorting, and page-size changes clear stale selections.
   const nextSelection: RowSelectionState = {}
@@ -171,7 +175,8 @@ function clearSelectionForDataChange(): RowSelectionState {
 
 function applyPaginationChange(requestedPagination: PaginationState): void {
   const nextPageSize = getAcceptedPageSize(requestedPagination.pageSize, allowedPageSizes.value)
-  if (nextPageSize === undefined) return
+  if (nextPageSize === undefined)
+    return
 
   const isPageSizeChange = nextPageSize !== pagination.value.pageSize
   const nextPagination = getClampedPagination(
@@ -182,8 +187,8 @@ function applyPaginationChange(requestedPagination: PaginationState): void {
     getTablePageCount(props.data.length, nextPageSize),
   )
   if (
-    nextPagination.pageIndex === pagination.value.pageIndex &&
-    nextPagination.pageSize === pagination.value.pageSize
+    nextPagination.pageIndex === pagination.value.pageIndex
+    && nextPagination.pageSize === pagination.value.pageSize
   ) {
     return
   }
@@ -207,7 +212,7 @@ const rows = computed(() => getRowsForState(reactiveTableState.value, props.data
 const headerGroups = computed(() => getHeaderGroupsForState(reactiveTableState.value))
 const columnCount = computed(() => table.getAllLeafColumns().length)
 const totalColumnCount = computed(() => columnCount.value + (props.enableRowSelection ? 1 : 0))
-const canSelectRows = computed(() => rows.value.some((row) => row.getCanSelect()))
+const canSelectRows = computed(() => rows.value.some(row => row.getCanSelect()))
 
 function updateAllRowSelection(value: boolean | 'indeterminate'): void {
   table.toggleAllPageRowsSelected(value === true)
@@ -218,12 +223,15 @@ function updateRowSelection(row: Row<TData>, value: boolean | 'indeterminate'): 
 }
 
 function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 'none' | undefined {
-  if (!column.getCanSort()) return undefined
+  if (!column.getCanSort())
+    return undefined
 
   // AI modified: expose TanStack's visual sort state on the semantic column header.
   const sortDirection = column.getIsSorted()
-  if (sortDirection === 'asc') return 'ascending'
-  if (sortDirection === 'desc') return 'descending'
+  if (sortDirection === 'asc')
+    return 'ascending'
+  if (sortDirection === 'desc')
+    return 'descending'
   return 'none'
 }
 
@@ -249,10 +257,10 @@ watch([() => props.data, () => props.data.length], () => {
 watch(
   [allowedPageSizes, () => pagination.value.pageIndex, () => pagination.value.pageSize, pageCount],
   () => {
-    const safePageSize =
-      getAcceptedPageSize(pagination.value.pageSize, allowedPageSizes.value) ??
-      allowedPageSizes.value[0] ??
-      10
+    const safePageSize
+      = getAcceptedPageSize(pagination.value.pageSize, allowedPageSizes.value)
+        ?? allowedPageSizes.value[0]
+        ?? 10
     const safePagination = getClampedPagination(
       {
         pageIndex: safePageSize === pagination.value.pageSize ? pagination.value.pageIndex : 0,
@@ -261,8 +269,8 @@ watch(
       getTablePageCount(props.data.length, safePageSize),
     )
     if (
-      safePagination.pageIndex === pagination.value.pageIndex &&
-      safePagination.pageSize === pagination.value.pageSize
+      safePagination.pageIndex === pagination.value.pageIndex
+      && safePagination.pageSize === pagination.value.pageSize
     ) {
       return
     }

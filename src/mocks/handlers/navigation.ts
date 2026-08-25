@@ -114,8 +114,8 @@ export const navigationHandler = http.get<never, never, ApiResponse<BackendMenuR
   ({ request }) => {
     const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
     const userId = token ? parseUserIdFromToken(token) : null
-    const hasAuthenticatedUser =
-      userId !== null && mockUsers.some((mockUser) => mockUser.id === userId)
+    const hasAuthenticatedUser
+      = userId !== null && mockUsers.some(mockUser => mockUser.id === userId)
 
     if (!hasAuthenticatedUser) {
       return HttpResponse.json<ApiResponse<BackendMenuResponse | null>>(

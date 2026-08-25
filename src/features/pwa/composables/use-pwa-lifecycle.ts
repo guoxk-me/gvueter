@@ -35,9 +35,9 @@ export interface PwaLifecycle {
 function isStandaloneApplication(): boolean {
   const standaloneNavigator = navigator as NavigatorWithStandalone
   return (
-    (typeof window.matchMedia === 'function' &&
-      window.matchMedia('(display-mode: standalone)').matches) ||
-    standaloneNavigator.standalone === true
+    (typeof window.matchMedia === 'function'
+      && window.matchMedia('(display-mode: standalone)').matches)
+    || standaloneNavigator.standalone === true
   )
 }
 
@@ -54,8 +54,8 @@ export function usePwaLifecycle(): PwaLifecycle {
     immediate: true,
     onRegisteredSW: (_serviceWorkerUrl, registration) => {
       // AI modified: Workbox resolves registrations by scope and can otherwise hand us MSW's root worker.
-      serviceWorkerRegistration.value =
-        registration && isPwaWorkerRegistration(registration) ? registration : undefined
+      serviceWorkerRegistration.value
+        = registration && isPwaWorkerRegistration(registration) ? registration : undefined
     },
     onRegisterError: (failure: unknown) => {
       reportFrontendError('bootstrap', failure, {
@@ -70,7 +70,8 @@ export function usePwaLifecycle(): PwaLifecycle {
   const canUpdate = computed(() => needRefresh.value && !isUpdateDismissed.value)
 
   function receiveInstallPrompt(event: Event): void {
-    if (isInstalled.value) return
+    if (isInstalled.value)
+      return
     event.preventDefault()
     installPrompt.value = event as BeforeInstallPromptEvent
     isInstallDismissed.value = false
@@ -82,11 +83,13 @@ export function usePwaLifecycle(): PwaLifecycle {
   }
 
   async function checkForUpdate(): Promise<void> {
-    if (!navigator.onLine || document.visibilityState === 'hidden') return
+    if (!navigator.onLine || document.visibilityState === 'hidden')
+      return
 
     try {
       await serviceWorkerRegistration.value?.update()
-    } catch (failure: unknown) {
+    }
+    catch (failure: unknown) {
       reportFrontendError('bootstrap', failure, {
         lifecycleInfo: 'pwa-service-worker-update-check',
       })
@@ -94,7 +97,8 @@ export function usePwaLifecycle(): PwaLifecycle {
   }
 
   function checkVisibleApplication(): void {
-    if (document.visibilityState === 'visible') void checkForUpdate()
+    if (document.visibilityState === 'visible')
+      void checkForUpdate()
   }
 
   function dismissInstall(): void {
@@ -107,7 +111,8 @@ export function usePwaLifecycle(): PwaLifecycle {
 
   async function installApplication(): Promise<InstallChoice['outcome'] | undefined> {
     const prompt = installPrompt.value
-    if (!prompt || isInstalling.value) return undefined
+    if (!prompt || isInstalling.value)
+      return undefined
 
     isInstalling.value = true
     try {
@@ -115,24 +120,28 @@ export function usePwaLifecycle(): PwaLifecycle {
       const choice = await prompt.userChoice
       installPrompt.value = undefined
       return choice.outcome
-    } finally {
+    }
+    finally {
       isInstalling.value = false
     }
   }
 
   async function updateApplication(): Promise<void> {
-    if (isUpdating.value) return
+    if (isUpdating.value)
+      return
 
     isUpdating.value = true
     try {
       await updateServiceWorker(true)
-    } finally {
+    }
+    finally {
       isUpdating.value = false
     }
   }
 
   watch(needRefresh, (needsRefresh) => {
-    if (!needsRefresh) isUpdateDismissed.value = false
+    if (!needsRefresh)
+      isUpdateDismissed.value = false
   })
 
   onMounted(() => {

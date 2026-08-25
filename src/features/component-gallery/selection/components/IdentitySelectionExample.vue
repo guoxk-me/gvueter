@@ -125,7 +125,8 @@ const selectedSummary = computed(() =>
 )
 
 function choosePriority(nextPriority: AcceptableValue): void {
-  if (typeof nextPriority === 'string') priority.value = nextPriority
+  if (typeof nextPriority === 'string')
+    priority.value = nextPriority
 }
 </script>
 
@@ -192,7 +193,9 @@ function choosePriority(nextPriority: AcceptableValue): void {
     </fieldset>
 
     <fieldset class="min-w-0 space-y-4 rounded-lg border bg-muted/15 p-4">
-      <legend class="px-1 text-sm font-semibold">User · Role · Dict</legend>
+      <legend class="px-1 text-sm font-semibold">
+        User · Role · Dict
+      </legend>
       <div class="min-w-0 space-y-1.5">
         <p class="text-xs font-medium">
           {{ copy.user }}
@@ -225,8 +228,7 @@ function choosePriority(nextPriority: AcceptableValue): void {
       <pre
         data-testid="identity-selection-summary"
         class="mt-2 overflow-x-auto whitespace-pre-wrap break-words text-xs text-muted-foreground"
-        >{{ selectedSummary }}</pre
-      >
+      >{{ selectedSummary }}</pre>
     </div>
   </div>
 </template>

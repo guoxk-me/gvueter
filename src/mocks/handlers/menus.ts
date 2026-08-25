@@ -231,7 +231,7 @@ const initialManagedMenus: ManagedMenuRecord[] = [
   },
 ]
 
-const mockManagedMenus: ManagedMenuRecord[] = initialManagedMenus.map((menu) => ({
+const mockManagedMenus: ManagedMenuRecord[] = initialManagedMenus.map(menu => ({
   ...menu,
   requiredAbility: menu.requiredAbility ? { ...menu.requiredAbility } : undefined,
 }))
@@ -239,21 +239,21 @@ let nextManagedMenuId = 1
 const MAX_MOCK_MANAGED_MENUS = 500
 
 const menuPresentationByComponent: Partial<
-  Record<string, { icon: ManagedMenuIconKey; cacheKey: string }>
+  Record<string, { icon: ManagedMenuIconKey, cacheKey: string }>
 > = {
   'form-workbench': { icon: 'form-workbench', cacheKey: 'FormWorkbenchPage' },
   'content-admin': { icon: 'content-admin', cacheKey: 'ContentAdminPage' },
   // AI modified: the dedicated audit route participates in dynamic KeepAlive metadata.
   'audit-logs': { icon: 'content-admin', cacheKey: 'AuditLogsPage' },
-  users: { icon: 'users', cacheKey: 'UsersPage' },
-  roles: { icon: 'roles', cacheKey: 'RolesPage' },
-  departments: { icon: 'departments', cacheKey: 'DepartmentsPage' },
-  positions: { icon: 'positions', cacheKey: 'PositionsPage' },
-  menus: { icon: 'menus', cacheKey: 'MenusPage' },
-  dictionaries: { icon: 'dictionaries', cacheKey: 'DictionariesPage' },
+  'users': { icon: 'users', cacheKey: 'UsersPage' },
+  'roles': { icon: 'roles', cacheKey: 'RolesPage' },
+  'departments': { icon: 'departments', cacheKey: 'DepartmentsPage' },
+  'positions': { icon: 'positions', cacheKey: 'PositionsPage' },
+  'menus': { icon: 'menus', cacheKey: 'MenusPage' },
+  'dictionaries': { icon: 'dictionaries', cacheKey: 'DictionariesPage' },
   'system-config': { icon: 'system-config', cacheKey: 'SystemConfigPage' },
   'system-parameters': { icon: 'system-config', cacheKey: 'SystemParametersPage' },
-  monitoring: { icon: 'monitoring', cacheKey: 'MonitoringPage' },
+  'monitoring': { icon: 'monitoring', cacheKey: 'MonitoringPage' },
 }
 
 function copyManagedMenu(menu: ManagedMenuRecord): ManagedMenuRecord {
@@ -269,7 +269,7 @@ function copyManagedMenu(menu: ManagedMenuRecord): ManagedMenuRecord {
 
 function getManagedMenuNode(menu: ManagedMenuRecord): BackendMenuNode {
   const children = mockManagedMenus
-    .filter((candidate) => candidate.parentId === menu.id)
+    .filter(candidate => candidate.parentId === menu.id)
     .map(getManagedMenuNode)
   const presentation = menuPresentationByComponent[menu.componentKey]
 
@@ -296,11 +296,11 @@ function getManagedMenuNode(menu: ManagedMenuRecord): BackendMenuNode {
 /** Projects the editable backend records into the exact contract consumed by dynamic routing. */
 export function getManagedBackendMenus(): BackendMenuNode[] {
   // AI modified: navigation now reads the same mutable source as menu management.
-  return mockManagedMenus.filter((menu) => menu.parentId === null).map(getManagedMenuNode)
+  return mockManagedMenus.filter(menu => menu.parentId === null).map(getManagedMenuNode)
 }
 
 function getManagedMenu(menuId: string | readonly string[]): ManagedMenuRecord | undefined {
-  return mockManagedMenus.find((menu) => menu.id === String(menuId))
+  return mockManagedMenus.find(menu => menu.id === String(menuId))
 }
 
 function menuBranchContains(menuId: string, candidateId: string): boolean {
@@ -308,10 +308,12 @@ function menuBranchContains(menuId: string, candidateId: string): boolean {
   const visitedMenuIds = new Set<string>()
   while (pendingMenuIds.length > 0) {
     const parentId = pendingMenuIds.pop()
-    if (!parentId || visitedMenuIds.has(parentId)) continue
+    if (!parentId || visitedMenuIds.has(parentId))
+      continue
     visitedMenuIds.add(parentId)
-    for (const childMenu of mockManagedMenus.filter((menu) => menu.parentId === parentId)) {
-      if (childMenu.id === candidateId) return true
+    for (const childMenu of mockManagedMenus.filter(menu => menu.parentId === parentId)) {
+      if (childMenu.id === candidateId)
+        return true
       pendingMenuIds.push(childMenu.id)
     }
   }
@@ -347,13 +349,14 @@ function invalidMenuPlacementResponse(
 function getMenuPlacementResponse(input: ManagedMenuInput, menuId?: string) {
   if (input.parentId) {
     const parentMenu = getManagedMenu(input.parentId)
-    if (!parentMenu) return invalidMenuPlacementResponse({ parentId: 'MENU_PARENT_NOT_FOUND' })
+    if (!parentMenu)
+      return invalidMenuPlacementResponse({ parentId: 'MENU_PARENT_NOT_FOUND' })
     if (!canManagedMenuHaveChildren(parentMenu))
       return invalidMenuPlacementResponse({ parentId: 'MENU_PARENT_CANNOT_HAVE_CHILDREN' })
   }
 
   const hasOrderConflict = mockManagedMenus.some(
-    (menu) => menu.id !== menuId && menu.parentId === input.parentId && menu.order === input.order,
+    menu => menu.id !== menuId && menu.parentId === input.parentId && menu.order === input.order,
   )
   return hasOrderConflict
     ? invalidMenuPlacementResponse({ order: 'MENU_ORDER_CONFLICT' })
@@ -375,14 +378,15 @@ export function resetMockManagedMenus(): void {
   mockManagedMenus.splice(
     0,
     mockManagedMenus.length,
-    ...initialManagedMenus.map((menu) => copyManagedMenu(menu)),
+    ...initialManagedMenus.map(menu => copyManagedMenu(menu)),
   )
   nextManagedMenuId = 1
 }
 
 export const listManagedMenusHandler = http.get('/api/system-menus', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<ManagedMenuListResponse>>({
     code: 0,
@@ -396,18 +400,22 @@ export const createManagedMenuHandler = http.post<never, ManagedMenuInput>(
   async ({ request }) => {
     // AI modified: menu configuration honors the editable Settings action policy.
     const authentication = authorizeMockPermission(request, 'create', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, MANAGED_MENU_INPUT_SCHEMA, {
       code: 'INVALID_MENU',
       message: '菜单或权限标识契约无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const targetDecision = getMenuTargetDecision(input, request.url)
-    if (!targetDecision.isValid) return invalidMenuTargetResponse(targetDecision.fieldErrors)
+    if (!targetDecision.isValid)
+      return invalidMenuTargetResponse(targetDecision.fieldErrors)
     const placementResponse = getMenuPlacementResponse(input)
-    if (placementResponse) return placementResponse
+    if (placementResponse)
+      return placementResponse
     if (mockManagedMenus.length >= MAX_MOCK_MANAGED_MENUS) {
       // AI modified: menu creation cannot exceed the navigation and management response budgets.
       return HttpResponse.json<ApiResponse<null>>(
@@ -439,7 +447,8 @@ export const updateManagedMenuHandler = http.put<{ menuId: string }, ManagedMenu
   '/api/system-menus/:menuId',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const menu = getManagedMenu(params.menuId)
     if (!menu) {
@@ -453,20 +462,24 @@ export const updateManagedMenuHandler = http.put<{ menuId: string }, ManagedMenu
       code: 'INVALID_MENU',
       message: '菜单或权限标识契约无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const targetDecision = getMenuTargetDecision(input, request.url)
-    if (!targetDecision.isValid) return invalidMenuTargetResponse(targetDecision.fieldErrors)
+    if (!targetDecision.isValid)
+      return invalidMenuTargetResponse(targetDecision.fieldErrors)
     if (
-      input.parentId === menu.id ||
-      (input.parentId && menuBranchContains(menu.id, input.parentId))
-    )
+      input.parentId === menu.id
+      || (input.parentId && menuBranchContains(menu.id, input.parentId))
+    ) {
       return invalidMenuPlacementResponse({ parentId: 'MENU_CYCLE' }, 'MENU_CYCLE')
+    }
     const placementResponse = getMenuPlacementResponse(input, menu.id)
-    if (placementResponse) return placementResponse
-    const hasChildren = mockManagedMenus.some((candidate) => candidate.parentId === menu.id)
-    const remainsGroup =
-      input.kind === 'menu' && !input.path.trim() && !input.routeName.trim() && !input.componentKey
+    if (placementResponse)
+      return placementResponse
+    const hasChildren = mockManagedMenus.some(candidate => candidate.parentId === menu.id)
+    const remainsGroup
+      = input.kind === 'menu' && !input.path.trim() && !input.routeName.trim() && !input.componentKey
     if (hasChildren && !remainsGroup) {
       return invalidMenuPlacementResponse(
         { parentId: 'MENU_PARENT_TARGET_CONFLICT' },
@@ -495,7 +508,8 @@ export const deleteManagedMenuHandler = http.delete<{ menuId: string }>(
   '/api/system-menus/:menuId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const menu = getManagedMenu(params.menuId)
     if (!menu) {
@@ -504,7 +518,7 @@ export const deleteManagedMenuHandler = http.delete<{ menuId: string }>(
         { status: 404 },
       )
     }
-    if (mockManagedMenus.some((candidate) => candidate.parentId === menu.id)) {
+    if (mockManagedMenus.some(candidate => candidate.parentId === menu.id)) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'MENU_HAS_CHILDREN', message: '请先处理下级菜单', data: null },
         { status: 409 },

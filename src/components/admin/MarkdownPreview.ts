@@ -5,18 +5,22 @@ import { readMarkdown } from './markdown-content'
 
 function inlineChildren(nodes: readonly MarkdownInline[]): VNodeChild[] {
   return nodes.map((node) => {
-    if (node.kind === 'text') return node.text
-    if (node.kind === 'strong') return h('strong', inlineChildren(node.children))
-    if (node.kind === 'emphasis') return h('em', inlineChildren(node.children))
+    if (node.kind === 'text')
+      return node.text
+    if (node.kind === 'strong')
+      return h('strong', inlineChildren(node.children))
+    if (node.kind === 'emphasis')
+      return h('em', inlineChildren(node.children))
     if (node.kind === 'code')
       return h('code', { class: 'rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]' }, node.text)
     if (node.kind === 'image') {
-      if (!node.source)
+      if (!node.source) {
         return h(
           'span',
-          { class: 'text-muted-foreground', 'data-unsafe-image': '' },
+          { 'class': 'text-muted-foreground', 'data-unsafe-image': '' },
           `[Image blocked: ${node.alt}]`,
         )
+      }
       return h('img', {
         src: node.source,
         alt: node.alt,
@@ -24,12 +28,13 @@ function inlineChildren(nodes: readonly MarkdownInline[]): VNodeChild[] {
         class: 'my-3 max-w-full rounded-md border',
       })
     }
-    if (!node.href)
+    if (!node.href) {
       return h(
         'span',
-        { class: 'text-muted-foreground underline decoration-dotted', 'data-unsafe-link': '' },
+        { 'class': 'text-muted-foreground underline decoration-dotted', 'data-unsafe-link': '' },
         inlineChildren(node.children),
       )
+    }
     const isExternal = /^https?:/i.test(node.href)
     return h(
       'a',
@@ -45,12 +50,13 @@ function inlineChildren(nodes: readonly MarkdownInline[]): VNodeChild[] {
 }
 
 function blockNode(block: MarkdownBlock, index: number): VNode {
-  if (block.kind === 'heading')
+  if (block.kind === 'heading') {
     return h(
       `h${block.level}`,
       { key: index, class: 'mt-4 scroll-m-20 font-semibold first:mt-0' },
       inlineChildren(block.children),
     )
+  }
   if (block.kind === 'paragraph') {
     const lines = block.lines.flatMap((line, lineIndex) => [
       ...(lineIndex > 0 ? [h('br')] : []),
@@ -58,12 +64,13 @@ function blockNode(block: MarkdownBlock, index: number): VNode {
     ])
     return h('p', { key: index, class: 'my-3 break-words leading-6' }, lines)
   }
-  if (block.kind === 'quote')
+  if (block.kind === 'quote') {
     return h(
       'blockquote',
       { key: index, class: 'my-3 border-l-4 border-border pl-4 text-muted-foreground' },
       inlineChildren(block.children),
     )
+  }
   if (block.kind === 'code') {
     return h(
       'pre',
@@ -75,7 +82,8 @@ function blockNode(block: MarkdownBlock, index: number): VNode {
       [h('code', { 'data-language': block.language }, block.source)],
     )
   }
-  if (block.kind === 'separator') return h('hr', { key: index, class: 'my-4 border-border' })
+  if (block.kind === 'separator')
+    return h('hr', { key: index, class: 'my-4 border-border' })
   const listTag = block.ordered ? 'ol' : 'ul'
   return h(
     listTag,
@@ -99,7 +107,7 @@ export default defineComponent({
       h(
         'article',
         {
-          class:
+          'class':
             'min-h-48 min-w-0 break-words rounded-md border border-input bg-muted/20 px-4 py-3 text-sm text-foreground',
           'aria-label': props.label,
           'data-testid': 'markdown-preview',

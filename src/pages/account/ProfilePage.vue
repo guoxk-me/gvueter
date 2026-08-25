@@ -24,11 +24,13 @@ async function saveProfile(profile: ProfileInput) {
   try {
     await auth.updateProfile(profile)
     toast.success(t('account.profileSaved'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(t('common.error'), {
       description: error instanceof Error ? error.message : t('errors.serverError'),
     })
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }

@@ -22,8 +22,8 @@ const { t } = useI18n()
 const attrs = useAttrs()
 const challengeDescriptionId = useId()
 const inputDescriptionIds = computed(() => {
-  const formDescriptionIds =
-    typeof attrs['aria-describedby'] === 'string' ? attrs['aria-describedby'] : ''
+  const formDescriptionIds
+    = typeof attrs['aria-describedby'] === 'string' ? attrs['aria-describedby'] : ''
   return [formDescriptionIds, challengeDescriptionId].filter(Boolean).join(' ')
 })
 </script>

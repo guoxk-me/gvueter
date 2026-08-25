@@ -25,7 +25,8 @@ function findByteSequence(
         break
       }
     }
-    if (isMatch) return sourceIndex
+    if (isMatch)
+      return sourceIndex
   }
   return -1
 }
@@ -44,9 +45,9 @@ function getMultipartBoundary(contentType: string): string | undefined {
   const boundaryMatch = /(?:^|;)\s*boundary=(?:"([^"]+)"|([^;\s]+))/i.exec(contentType)
   const boundary = boundaryMatch?.[1] ?? boundaryMatch?.[2]
   if (
-    !boundary ||
-    boundary.length > MAX_MULTIPART_BOUNDARY_LENGTH ||
-    [...boundary].some((character) => character.charCodeAt(0) < 32)
+    !boundary
+    || boundary.length > MAX_MULTIPART_BOUNDARY_LENGTH
+    || [...boundary].some(character => character.charCodeAt(0) < 32)
   ) {
     return undefined
   }
@@ -54,28 +55,32 @@ function getMultipartBoundary(contentType: string): string | undefined {
 }
 
 function readPartHeaders(headerBytes: Uint8Array): Omit<MockMultipartPart, 'bytes'> | undefined {
-  if (headerBytes.byteLength > MAX_MULTIPART_HEADER_BYTES) return undefined
+  if (headerBytes.byteLength > MAX_MULTIPART_HEADER_BYTES)
+    return undefined
 
   let headerText = ''
   try {
     headerText = new TextDecoder('utf-8', { fatal: true }).decode(headerBytes)
-  } catch {
+  }
+  catch {
     return undefined
   }
   const headerLines = headerText.split('\r\n')
   const disposition = headerLines
-    .find((headerLine) => headerLine.toLocaleLowerCase().startsWith('content-disposition:'))
+    .find(headerLine => headerLine.toLocaleLowerCase().startsWith('content-disposition:'))
     ?.slice('content-disposition:'.length)
     .trim()
-  if (!disposition?.toLocaleLowerCase().startsWith('form-data;')) return undefined
+  if (!disposition?.toLocaleLowerCase().startsWith('form-data;'))
+    return undefined
 
   const name = /(?:^|;)\s*name="([^"]*)"/i.exec(disposition)?.[1]
   const fileName = /(?:^|;)\s*filename="([^"]*)"/i.exec(disposition)?.[1]
-  if (!name) return undefined
+  if (!name)
+    return undefined
 
-  const contentType =
-    headerLines
-      .find((headerLine) => headerLine.toLocaleLowerCase().startsWith('content-type:'))
+  const contentType
+    = headerLines
+      .find(headerLine => headerLine.toLocaleLowerCase().startsWith('content-type:'))
       ?.slice('content-type:'.length)
       .trim()
       .toLocaleLowerCase() ?? 'text/plain'
@@ -92,33 +97,41 @@ export function readMockMultipartParts(
   body: ArrayBuffer,
 ): MockMultipartPart[] | undefined {
   const boundary = getMultipartBoundary(contentType)
-  if (!boundary) return undefined
+  if (!boundary)
+    return undefined
 
   const bodyBytes = new Uint8Array(body)
   const boundaryBytes = new TextEncoder().encode(`--${boundary}`)
   const followingBoundaryBytes = new TextEncoder().encode(`\r\n--${boundary}`)
-  if (!hasBytesAt(bodyBytes, boundaryBytes, 0)) return undefined
+  if (!hasBytesAt(bodyBytes, boundaryBytes, 0))
+    return undefined
 
   const parts: MockMultipartPart[] = []
   let cursor = boundaryBytes.length
   while (cursor < bodyBytes.length) {
-    if (bodyBytes[cursor] === 45 && bodyBytes[cursor + 1] === 45) return parts
-    if (!hasBytesAt(bodyBytes, LINE_BREAK, cursor)) return undefined
+    if (bodyBytes[cursor] === 45 && bodyBytes[cursor + 1] === 45)
+      return parts
+    if (!hasBytesAt(bodyBytes, LINE_BREAK, cursor))
+      return undefined
     cursor += LINE_BREAK.length
 
     const headerEnd = findByteSequence(bodyBytes, HEADER_SEPARATOR, cursor)
-    if (headerEnd < 0) return undefined
+    if (headerEnd < 0)
+      return undefined
     const partHeaders = readPartHeaders(bodyBytes.slice(cursor, headerEnd))
-    if (!partHeaders) return undefined
+    if (!partHeaders)
+      return undefined
 
     const contentStart = headerEnd + HEADER_SEPARATOR.length
     const nextBoundary = findByteSequence(bodyBytes, followingBoundaryBytes, contentStart)
-    if (nextBoundary < 0) return undefined
+    if (nextBoundary < 0)
+      return undefined
     parts.push({
       ...partHeaders,
       bytes: bodyBytes.slice(contentStart, nextBoundary).buffer,
     })
-    if (parts.length > MAX_MULTIPART_PARTS) return undefined
+    if (parts.length > MAX_MULTIPART_PARTS)
+      return undefined
     cursor = nextBoundary + LINE_BREAK.length + boundaryBytes.length
   }
   return undefined

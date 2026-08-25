@@ -38,9 +38,11 @@ watch(
     const safeContent = sanitizeRichTextHtml(nextContent, {
       allowedImageOrigins: props.allowedImageOrigins,
     })
-    if (safeContent !== editorContent.value) editorContent.value = safeContent
+    if (safeContent !== editorContent.value)
+      editorContent.value = safeContent
     // AI modified: API-loaded or restored HTML cannot leave an unsafe value in the controlled parent model.
-    if (safeContent !== nextContent) content.value = safeContent
+    if (safeContent !== nextContent)
+      content.value = safeContent
   },
   { immediate: true },
 )
@@ -50,7 +52,8 @@ function updateContent(nextContent: string): void {
     allowedImageOrigins: props.allowedImageOrigins,
   })
   editorContent.value = safeContent
-  if (safeContent !== content.value) content.value = safeContent
+  if (safeContent !== content.value)
+    content.value = safeContent
 }
 </script>
 

@@ -96,8 +96,7 @@ function getUpdatedAtLabel(parameter: SystemParameterRecord): string {
           class="truncate rounded bg-muted px-1.5 py-0.5 text-xs"
           :title="row.original.key"
           translate="no"
-          >{{ row.original.key }}</code
-        >
+        >{{ row.original.key }}</code>
         <CopyButton
           :value="row.original.key"
           :label="t('systemParameters.copyKey')"

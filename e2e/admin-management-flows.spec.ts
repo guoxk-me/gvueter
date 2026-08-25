@@ -86,7 +86,7 @@ test('completes department and position CRUD through their management workspaces
   const refreshedDepartmentsResponse = await refreshDepartmentsRequest
   expect(refreshedDepartmentsResponse.status()).toBe(200)
   const refreshedDepartments = (await refreshedDepartmentsResponse.json()) as NamedListEnvelope
-  expect(refreshedDepartments.data.items.map((department) => department.name)).toContain(
+  expect(refreshedDepartments.data.items.map(department => department.name)).toContain(
     departmentName,
   )
   await expect(departmentDialog).toBeHidden()
@@ -101,8 +101,8 @@ test('completes department and position CRUD through their management workspaces
   const updateDepartmentRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'PUT' &&
-      /^\/api\/departments\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'PUT'
+      && /^\/api\/departments\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   const refreshUpdatedDepartmentsRequest = page.waitForResponse((response) => {
@@ -122,8 +122,8 @@ test('completes department and position CRUD through their management workspaces
   const deleteDepartmentRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'DELETE' &&
-      /^\/api\/departments\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'DELETE'
+      && /^\/api\/departments\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   await deleteDepartmentDialog.getByRole('button', { name: 'Delete', exact: true }).click()
@@ -171,9 +171,9 @@ test('completes department and position CRUD through their management workspaces
   const filteredPositionRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'GET' &&
-      requestUrl.pathname === '/api/positions' &&
-      requestUrl.searchParams.get('keyword') === positionCode
+      response.request().method() === 'GET'
+      && requestUrl.pathname === '/api/positions'
+      && requestUrl.searchParams.get('keyword') === positionCode
     )
   })
   await page.getByRole('searchbox', { name: 'Search position name or code' }).fill(positionCode)
@@ -188,8 +188,8 @@ test('completes department and position CRUD through their management workspaces
   const deletePositionRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'DELETE' &&
-      /^\/api\/positions\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'DELETE'
+      && /^\/api\/positions\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   await deletePositionDialog.getByRole('button', { name: 'Delete', exact: true }).click()
@@ -254,15 +254,15 @@ test('completes dictionary type and entry lifecycle through the master-detail UI
   const createEntryRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'POST' &&
-      /^\/api\/dictionaries\/types\/[^/]+\/entries$/.test(requestUrl.pathname)
+      response.request().method() === 'POST'
+      && /^\/api\/dictionaries\/types\/[^/]+\/entries$/.test(requestUrl.pathname)
     )
   })
   const refreshEntriesRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'GET' &&
-      /^\/api\/dictionaries\/types\/[^/]+\/entries$/.test(requestUrl.pathname)
+      response.request().method() === 'GET'
+      && /^\/api\/dictionaries\/types\/[^/]+\/entries$/.test(requestUrl.pathname)
     )
   })
   await entryDialog.getByRole('button', { name: 'Save', exact: true }).click()
@@ -278,8 +278,8 @@ test('completes dictionary type and entry lifecycle through the master-detail UI
   const updateEntryRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'PUT' &&
-      /^\/api\/dictionaries\/entries\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'PUT'
+      && /^\/api\/dictionaries\/entries\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   await editEntryDialog.getByRole('button', { name: 'Save', exact: true }).click()
@@ -293,8 +293,8 @@ test('completes dictionary type and entry lifecycle through the master-detail UI
   const deleteEntryRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'DELETE' &&
-      /^\/api\/dictionaries\/entries\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'DELETE'
+      && /^\/api\/dictionaries\/entries\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   await deleteEntryDialog.getByRole('button', { name: 'Delete', exact: true }).click()
@@ -307,8 +307,8 @@ test('completes dictionary type and entry lifecycle through the master-detail UI
   const deleteTypeRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'DELETE' &&
-      /^\/api\/dictionaries\/types\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'DELETE'
+      && /^\/api\/dictionaries\/types\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   await deleteTypeDialog.getByRole('button', { name: 'Delete', exact: true }).click()
@@ -340,8 +340,8 @@ test('creates and removes a hidden menu-group contract with live navigation refr
     (response) => {
       const requestUrl = new URL(response.url())
       return (
-        response.request().method() === 'POST' &&
-        /\/api\/system-menus\/?$/.test(requestUrl.pathname)
+        response.request().method() === 'POST'
+        && /\/api\/system-menus\/?$/.test(requestUrl.pathname)
       )
     },
     { timeout: 10_000 },
@@ -364,8 +364,8 @@ test('creates and removes a hidden menu-group contract with live navigation refr
   const deleteMenuRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'DELETE' &&
-      /^\/api\/system-menus\/[^/]+$/.test(requestUrl.pathname)
+      response.request().method() === 'DELETE'
+      && /^\/api\/system-menus\/[^/]+$/.test(requestUrl.pathname)
     )
   })
   await deleteMenuDialog.getByRole('button', { name: 'Delete', exact: true }).click()

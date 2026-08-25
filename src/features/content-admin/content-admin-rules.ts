@@ -15,13 +15,13 @@ export function getPriorityTone(
   priority: string,
   options: readonly DictionaryOption[],
 ): StatusTone {
-  return options.find((option) => option.value === priority)?.color ?? 'neutral'
+  return options.find(option => option.value === priority)?.color ?? 'neutral'
 }
 
 export function isSafeImagePreview(file: ContentFileRecord): boolean {
   return (
-    file.mimeType.startsWith('image/') &&
-    Boolean(file.previewUrl?.startsWith('/api/content-files/')) &&
-    !file.previewUrl?.startsWith('//')
+    file.mimeType.startsWith('image/')
+    && Boolean(file.previewUrl?.startsWith('/api/content-files/'))
+    && !file.previewUrl?.startsWith('//')
   )
 }

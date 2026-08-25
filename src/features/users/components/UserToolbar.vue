@@ -38,7 +38,7 @@ const fields = computed<readonly SearchFormField<UserListFilters>[]>(() => [
     placeholder: t('users.roleAll'),
     options: [
       { label: t('users.roleAll'), value: 'all' },
-      ...USER_ROLES.map((role) => ({ label: t(`roles.${role}`), value: role })),
+      ...USER_ROLES.map(role => ({ label: t(`roles.${role}`), value: role })),
     ],
   },
   {
@@ -48,7 +48,7 @@ const fields = computed<readonly SearchFormField<UserListFilters>[]>(() => [
     placeholder: t('users.statusAll'),
     options: [
       { label: t('users.statusAll'), value: 'all' },
-      ...USER_STATUSES.map((status) => ({ label: t(`users.${status}`), value: status })),
+      ...USER_STATUSES.map(status => ({ label: t(`users.${status}`), value: status })),
     ],
   },
 ])

@@ -9,7 +9,7 @@ import { getPostAuthenticationPath } from '@/features/account/auth-redirect'
 import { ApiError } from '@/lib/http'
 import { useAuthStore } from '@/stores/auth'
 
-type SsoCallbackOutcome = { status: 'error'; reason: string } | { status: 'ticket'; ticket: string }
+type SsoCallbackOutcome = { status: 'error', reason: string } | { status: 'ticket', ticket: string }
 
 const { t } = useI18n()
 const route = useRoute()
@@ -20,14 +20,16 @@ const failureMessageKey = ref('auth.ssoGenericFailure')
 const failureHeading = useTemplateRef<HTMLElement>('failureHeading')
 
 function getSsoCallbackOutcome(fragment: string): SsoCallbackOutcome {
-  if (!fragment.startsWith('#')) return { status: 'error', reason: 'invalid_ticket' }
+  if (!fragment.startsWith('#'))
+    return { status: 'error', reason: 'invalid_ticket' }
 
   const parameters = new URLSearchParams(fragment.slice(1))
   const tickets = parameters.getAll('ticket')
   const errors = parameters.getAll('error')
   if (tickets.length === 1 && errors.length === 0) {
     const ticket = tickets[0]?.trim() ?? ''
-    if (ticket && ticket.length <= 2048) return { status: 'ticket', ticket }
+    if (ticket && ticket.length <= 2048)
+      return { status: 'ticket', ticket }
   }
   if (errors.length === 1 && tickets.length === 0) {
     return { status: 'error', reason: errors[0] ?? 'provider_error' }
@@ -36,10 +38,14 @@ function getSsoCallbackOutcome(fragment: string): SsoCallbackOutcome {
 }
 
 function getFailureMessageKey(reason: string): string {
-  if (reason === 'access_denied') return 'auth.ssoAccessDenied'
-  if (reason === 'not_configured') return 'auth.ssoNotConfigured'
-  if (reason === 'account_unavailable') return 'auth.ssoAccountUnavailable'
-  if (reason === 'invalid_ticket') return 'auth.ssoInvalidTicket'
+  if (reason === 'access_denied')
+    return 'auth.ssoAccessDenied'
+  if (reason === 'not_configured')
+    return 'auth.ssoNotConfigured'
+  if (reason === 'account_unavailable')
+    return 'auth.ssoAccountUnavailable'
+  if (reason === 'invalid_ticket')
+    return 'auth.ssoInvalidTicket'
   return 'auth.ssoGenericFailure'
 }
 
@@ -67,7 +73,8 @@ async function completeSsoLogin(): Promise<void> {
   try {
     const redirectPath = await authStore.exchangeSsoTicket(outcome.ticket)
     if (!redirectPath) {
-      if (authStore.isAuthenticated) await router.replace('/dashboard')
+      if (authStore.isAuthenticated)
+        await router.replace('/dashboard')
       else await showFailure('auth.ssoGenericFailure')
       return
     }
@@ -75,14 +82,15 @@ async function completeSsoLogin(): Promise<void> {
       description: t('auth.loginSuccessDesc', { name: authStore.user?.name }),
     })
     await router.replace(getPostAuthenticationPath(redirectPath))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     if (error instanceof ApiError && error.code === 'SSO_SESSION_ACTIVE') {
       await router.replace('/dashboard')
       return
     }
     if (
-      error instanceof ApiError &&
-      (error.code === 'SSO_TICKET_EXPIRED' || error.code === 'SSO_TICKET_INVALID')
+      error instanceof ApiError
+      && (error.code === 'SSO_TICKET_EXPIRED' || error.code === 'SSO_TICKET_INVALID')
     ) {
       await showFailure('auth.ssoInvalidTicket')
       return
@@ -112,8 +120,12 @@ onMounted(() => {
         <Loader2 class="size-6 animate-spin" aria-hidden="true" />
       </div>
       <div>
-        <h1 class="text-xl font-semibold text-foreground">{{ t('auth.ssoCallbackTitle') }}</h1>
-        <p class="mt-2 text-sm text-muted-foreground">{{ t('auth.ssoExchanging') }}</p>
+        <h1 class="text-xl font-semibold text-foreground">
+          {{ t('auth.ssoCallbackTitle') }}
+        </h1>
+        <p class="mt-2 text-sm text-muted-foreground">
+          {{ t('auth.ssoExchanging') }}
+        </p>
       </div>
     </div>
 
@@ -131,10 +143,14 @@ onMounted(() => {
         >
           {{ t('auth.ssoFailedTitle') }}
         </h1>
-        <p class="mt-2 text-sm text-muted-foreground">{{ t(failureMessageKey) }}</p>
+        <p class="mt-2 text-sm text-muted-foreground">
+          {{ t(failureMessageKey) }}
+        </p>
       </div>
       <Button as-child class="w-full">
-        <RouterLink :to="{ name: 'login' }">{{ t('auth.ssoBackToLogin') }}</RouterLink>
+        <RouterLink :to="{ name: 'login' }">
+          {{ t('auth.ssoBackToLogin') }}
+        </RouterLink>
       </Button>
     </div>
   </div>

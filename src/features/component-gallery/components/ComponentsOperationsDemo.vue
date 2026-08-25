@@ -87,7 +87,7 @@ const recordsQuery = useQuery({
 
 const records = computed(() => recordsQuery.data.value ?? [])
 const selectedRecords = computed(() =>
-  records.value.filter((record) => selectedRowIds.value[record.id]),
+  records.value.filter(record => selectedRowIds.value[record.id]),
 )
 const recordsForExport = computed(() =>
   selectedRecords.value.length > 0 ? selectedRecords.value : records.value,
@@ -104,13 +104,13 @@ const recordColumns = computed(() => [
 ])
 
 const exportColumns = computed<readonly CsvExportColumn<OperationRecord>[]>(() => [
-  { label: t('components.operations.name'), getValue: (record) => record.name },
-  { label: t('components.operations.owner'), getValue: (record) => record.owner },
+  { label: t('components.operations.name'), getValue: record => record.name },
+  { label: t('components.operations.owner'), getValue: record => record.owner },
   {
     label: t('components.operations.status'),
-    getValue: (record) => t(`components.operations.${record.status}`),
+    getValue: record => t(`components.operations.${record.status}`),
   },
-  { label: t('components.operations.updatedAt'), getValue: (record) => record.updatedAt },
+  { label: t('components.operations.updatedAt'), getValue: record => record.updatedAt },
 ])
 
 watch(selectedRange, () => {
@@ -119,7 +119,7 @@ watch(selectedRange, () => {
 })
 
 async function loadOperationRecords(): Promise<OperationRecord[]> {
-  await new Promise((resolve) => window.setTimeout(resolve, 300))
+  await new Promise(resolve => window.setTimeout(resolve, 300))
   return demoRecords
 }
 
@@ -128,7 +128,8 @@ function clearSelection(): void {
 }
 
 function archiveSelectedRecords(): void {
-  if (selectedRecords.value.length === 0) return
+  if (selectedRecords.value.length === 0)
+    return
 
   toast.success(t('components.operations.archived', { count: selectedRecords.value.length }))
   clearSelection()
@@ -143,8 +144,10 @@ async function refreshRecords(): Promise<void> {
 }
 
 function statusVariant(status: OperationRecord['status']): 'default' | 'secondary' | 'outline' {
-  if (status === 'active') return 'default'
-  if (status === 'paused') return 'outline'
+  if (status === 'active')
+    return 'default'
+  if (status === 'paused')
+    return 'outline'
   return 'secondary'
 }
 </script>
@@ -165,7 +168,9 @@ function statusVariant(status: OperationRecord['status']): 'default' | 'secondar
         :clear-label="t('components.operations.clearRange')"
         :invalid-range-label="t('components.operations.invalidRange')"
       />
-      <template #usage> &lt;DateRangePicker v-model="dateRange" :presets="presets" /&gt; </template>
+      <template #usage>
+        &lt;DateRangePicker v-model="dateRange" :presets="presets" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard

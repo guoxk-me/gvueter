@@ -56,7 +56,7 @@ export default {
     loginFailed: 'Invalid username or password',
     logoutConfirm: 'Are you sure you want to logout?',
     usernamePlaceholder: 'Enter your username',
-    emailPlaceholder: "admin{'@'}example.com",
+    emailPlaceholder: 'admin{\'@\'}example.com',
     passwordPlaceholder: 'Enter your password',
     welcomeBack: 'Welcome back',
     loginSubtitle: 'Sign in to your admin account',
@@ -492,8 +492,8 @@ export default {
         },
       },
       kind: {
-        business: 'Business',
-        table: 'Table',
+        'business': 'Business',
+        'table': 'Table',
         'ui-primitive': 'Primitive',
       },
       maturity: {
@@ -2007,10 +2007,10 @@ export default {
         'The admin application could not start. Reload the application; unsaved changes may be lost.',
     },
     actions: {
-      retry: 'Try the request again.',
+      'retry': 'Try the request again.',
       'sign-in': 'Sign in again, then retry.',
       'request-access': 'Request access from an administrator.',
-      refresh: 'Refresh before applying the change again.',
+      'refresh': 'Refresh before applying the change again.',
       'review-input': 'Review the submitted values and correct the highlighted fields.',
       'contact-support': 'Contact support if the problem continues.',
     },

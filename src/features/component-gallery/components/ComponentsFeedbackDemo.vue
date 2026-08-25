@@ -48,7 +48,8 @@ function retryState(): void {
 
 function advanceProgress(): void {
   progressValue.value = Math.min(progressValue.value + 12, 100)
-  if (progressValue.value === 100) toast.success(t('components.feedback.progressComplete'))
+  if (progressValue.value === 100)
+    toast.success(t('components.feedback.progressComplete'))
 }
 
 function resetProgress(): void {
@@ -103,7 +104,9 @@ function confirmDialog(): void {
           </PopoverContent>
         </Popover>
       </div>
-      <template #usage> toast.success('Saved') · &lt;Dialog v-model:open="isOpen" /&gt; </template>
+      <template #usage>
+        toast.success('Saved') · &lt;Dialog v-model:open="isOpen" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard

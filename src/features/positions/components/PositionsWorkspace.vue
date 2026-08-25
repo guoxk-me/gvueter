@@ -35,7 +35,7 @@ const filterFields = computed<readonly SearchFormField<PositionListFilters>[]>((
     label: t('positions.status'),
     options: [
       { label: t('positions.allStatuses'), value: 'all' },
-      ...POSITION_STATUSES.map((status) => ({ label: t(`positions.${status}`), value: status })),
+      ...POSITION_STATUSES.map(status => ({ label: t(`positions.${status}`), value: status })),
     ],
   },
 ])
@@ -74,7 +74,8 @@ async function save(input: PositionInput): Promise<void> {
     await savePosition({ position: selectedPosition.value, input })
     isFormOpen.value = false
     toast.success(t('positions.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -83,7 +84,8 @@ async function remove(position: PositionRecord): Promise<void> {
   try {
     await deletePosition(position)
     toast.success(t('positions.deleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

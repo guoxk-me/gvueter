@@ -21,15 +21,16 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const selectedDefinition = computed<ComponentCenterModuleDefinition | undefined>(() =>
-  componentCenterModules.find((componentModule) => componentModule.id === props.moduleId),
+  componentCenterModules.find(componentModule => componentModule.id === props.moduleId),
 )
 
 const moduleEntries = computed(() => {
   const definition = selectedDefinition.value
-  if (!definition) return []
+  if (!definition)
+    return []
 
   // AI modified: route ownership comes from the typed module contract, never from an arbitrary query or backend component name.
-  return componentCatalog.filter((entry) => definition.catalogModules.includes(entry.module))
+  return componentCatalog.filter(entry => definition.catalogModules.includes(entry.module))
 })
 
 const selectedExamples = computed(() => componentModuleExamples[props.moduleId] ?? [])

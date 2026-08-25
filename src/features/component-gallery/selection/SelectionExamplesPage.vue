@@ -8,13 +8,13 @@ import SelectionExamplesShowcase from './SelectionExamplesShowcase.vue'
 defineOptions({ name: 'SelectionExamplesPage' })
 
 const selectionDefinition = componentCenterModules.find(
-  (componentModule) => componentModule.id === 'selection',
+  componentModule => componentModule.id === 'selection',
 )
 if (!selectionDefinition)
   throw new Error('The selection component-center module is not registered.')
 
 const selectionEntries = computed(() =>
-  componentCatalog.filter((entry) => entry.module === 'selection'),
+  componentCatalog.filter(entry => entry.module === 'selection'),
 )
 </script>
 

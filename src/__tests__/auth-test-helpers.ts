@@ -15,7 +15,8 @@ export function getTestPrincipal(user: User): AuthenticatedPrincipal {
 
 export function solveCaptchaChallenge(challenge: string): string {
   const operands = challenge.match(/\d+/g)?.map(Number)
-  if (!operands?.[0] || !operands[1]) throw new Error(`Unsupported captcha challenge: ${challenge}`)
+  if (!operands?.[0] || !operands[1])
+    throw new Error(`Unsupported captcha challenge: ${challenge}`)
   return String(operands[0] + operands[1])
 }
 

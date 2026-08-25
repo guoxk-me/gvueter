@@ -33,9 +33,9 @@ const { t } = useI18n()
     <FormField v-slot="{ componentField }" name="email.username">
       <FormItem>
         <FormLabel>{{ t('systemConfig.email.username') }}</FormLabel>
-        <FormControl
-          ><Input v-bind="componentField" autocomplete="username" :disabled="isDisabled"
-        /></FormControl>
+        <FormControl>
+          <Input v-bind="componentField" autocomplete="username" :disabled="isDisabled" />
+        </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>
@@ -67,9 +67,9 @@ const { t } = useI18n()
     <FormField v-slot="{ componentField }" name="email.fromAddress">
       <FormItem>
         <FormLabel>{{ t('systemConfig.email.fromAddress') }}</FormLabel>
-        <FormControl
-          ><Input v-bind="componentField" type="email" :disabled="isDisabled"
-        /></FormControl>
+        <FormControl>
+          <Input v-bind="componentField" type="email" :disabled="isDisabled" />
+        </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>

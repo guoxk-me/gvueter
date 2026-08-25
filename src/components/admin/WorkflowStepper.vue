@@ -19,13 +19,16 @@ const boundedCurrentStep = computed(() =>
 )
 
 function getStepState(index: number): 'complete' | 'current' | 'upcoming' {
-  if (index < boundedCurrentStep.value) return 'complete'
-  if (index === boundedCurrentStep.value) return 'current'
+  if (index < boundedCurrentStep.value)
+    return 'complete'
+  if (index === boundedCurrentStep.value)
+    return 'current'
   return 'upcoming'
 }
 
 function selectStep(index: number): void {
-  if (props.clickable) currentStep.value = index
+  if (props.clickable)
+    currentStep.value = index
 }
 </script>
 

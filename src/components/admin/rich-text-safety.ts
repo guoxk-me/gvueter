@@ -38,20 +38,26 @@ function safeUrl(
   allowedImageOrigins: readonly string[],
 ): string | undefined {
   const requestedUrl = value.trim()
-  if (!requestedUrl || [...requestedUrl].some((character) => character.charCodeAt(0) < 32))
+  if (!requestedUrl || [...requestedUrl].some(character => character.charCodeAt(0) < 32))
     return undefined
   // AI modified: reject backslashes because special-scheme URL parsers can reinterpret them as host separators.
-  if (requestedUrl.includes('\\')) return undefined
-  if (requestedUrl.startsWith('//')) return undefined
-  if (kind === 'link' && /^(?:#|\/|\.\/|\.\.\/)/.test(requestedUrl)) return requestedUrl
-  if (kind === 'image' && /^(?:\/|\.\/)/.test(requestedUrl)) return requestedUrl
+  if (requestedUrl.includes('\\'))
+    return undefined
+  if (requestedUrl.startsWith('//'))
+    return undefined
+  if (kind === 'link' && /^(?:#|\/|\.\/|\.\.\/)/.test(requestedUrl))
+    return requestedUrl
+  if (kind === 'image' && /^(?:\/|\.\/)/.test(requestedUrl))
+    return requestedUrl
 
   try {
     const url = new URL(requestedUrl)
-    if (kind === 'link' && ['http:', 'https:', 'mailto:'].includes(url.protocol)) return url.href
+    if (kind === 'link' && ['http:', 'https:', 'mailto:'].includes(url.protocol))
+      return url.href
     if (kind === 'image' && url.protocol === 'https:' && allowedImageOrigins.includes(url.origin))
       return url.href
-  } catch {
+  }
+  catch {
     return undefined
   }
   return undefined
@@ -60,7 +66,7 @@ function safeUrl(
 function safeClassNames(className: string): string {
   return className
     .split(/\s+/)
-    .filter((name) =>
+    .filter(name =>
       /^(?:ql-align-(?:center|justify|right)|ql-code-block|ql-indent-[1-8])$/.test(name),
     )
     .join(' ')
@@ -69,20 +75,21 @@ function safeClassNames(className: string): string {
 function escapedText(html: string): string {
   return html.replace(
     /[&<>"']/g,
-    (character) =>
+    character =>
       ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&#39;',
+        '\'': '&#39;',
       })[character] ?? character,
   )
 }
 
 // AI modified: the client accepts only the Quill subset documented by the component contract.
 export function sanitizeRichTextHtml(html: string, policy: RichTextSafetyPolicy = {}): string {
-  if (typeof DOMParser === 'undefined') return escapedText(html)
+  if (typeof DOMParser === 'undefined')
+    return escapedText(html)
 
   const document = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html')
   const body = document.body
@@ -92,7 +99,8 @@ export function sanitizeRichTextHtml(html: string, policy: RichTextSafetyPolicy 
     if (!allowedTags.has(element.tagName)) {
       if (['IFRAME', 'SCRIPT', 'STYLE', 'TEMPLATE'].includes(element.tagName)) {
         element.remove()
-      } else {
+      }
+      else {
         element.replaceWith(...element.childNodes)
       }
       continue
@@ -105,14 +113,16 @@ export function sanitizeRichTextHtml(html: string, policy: RichTextSafetyPolicy 
     for (const attribute of Array.from(element.attributes)) element.removeAttribute(attribute.name)
 
     const className = safeClassNames(originalClass)
-    if (className) element.setAttribute('class', className)
+    if (className)
+      element.setAttribute('class', className)
 
     if (element instanceof HTMLAnchorElement) {
       const href = safeUrl(originalHref, 'link', allowedImageOrigins)
       if (href) {
         element.setAttribute('href', href)
         element.setAttribute('rel', 'noopener noreferrer nofollow')
-        if (/^https?:/i.test(href)) element.setAttribute('target', '_blank')
+        if (/^https?:/i.test(href))
+          element.setAttribute('target', '_blank')
       }
     }
 
@@ -123,7 +133,8 @@ export function sanitizeRichTextHtml(html: string, policy: RichTextSafetyPolicy 
         element.replaceWith(
           document.createTextNode(alt ? `[Image blocked: ${alt}]` : '[Image blocked]'),
         )
-      } else {
+      }
+      else {
         element.setAttribute('src', source)
         element.setAttribute('alt', alt)
         element.setAttribute('loading', 'lazy')

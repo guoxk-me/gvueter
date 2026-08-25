@@ -20,15 +20,17 @@ const visibleIconOptions = computed(() => {
 
   // AI modified: gallery filtering derives only from the audited registry and never touches package-wide dynamic exports.
   return ADMIN_ICON_OPTIONS.filter((option) => {
-    if (selectedCategory.value !== 'all' && option.category !== selectedCategory.value) return false
-    if (!requestedText) return true
+    if (selectedCategory.value !== 'all' && option.category !== selectedCategory.value)
+      return false
+    if (!requestedText)
+      return true
 
     return [
       option.key,
       option.lucideName,
       getIconLabel(option),
       getCategoryLabel(option.category),
-    ].some((searchableText) =>
+    ].some(searchableText =>
       searchableText.toLocaleLowerCase(locale.value).includes(requestedText),
     )
   })

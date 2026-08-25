@@ -51,7 +51,8 @@ const { handleSubmit, resetForm } = useForm<SystemParameterInput>({
 watch(
   [open, () => props.parameter],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     resetForm({
       values: {

@@ -5,7 +5,7 @@ export function getSelectedDictionaryTypeId(
   currentDictionaryTypeId?: string,
 ): string | undefined {
   // AI modified: preserve a valid selection and otherwise fall back to the first server-ordered type.
-  return dictionaryTypes.some((dictionaryType) => dictionaryType.id === currentDictionaryTypeId)
+  return dictionaryTypes.some(dictionaryType => dictionaryType.id === currentDictionaryTypeId)
     ? currentDictionaryTypeId
     : dictionaryTypes[0]?.id
 }

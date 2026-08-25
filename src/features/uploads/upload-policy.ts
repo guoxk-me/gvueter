@@ -12,13 +12,13 @@ export function applyUploadPolicy(
   businessRules: UploadBusinessRules,
 ): EffectiveUploadPolicy {
   const configuredExtensions = new Set(
-    policy.allowedExtensions.map((extension) => extension.toLowerCase()),
+    policy.allowedExtensions.map(extension => extension.toLowerCase()),
   )
 
   // AI modified: global upload settings can only narrow each module's stricter business rules.
   return {
     maxFileSizeBytes: Math.min(policy.maxFileSizeBytes, businessRules.maxFileSizeBytes),
-    allowedExtensions: businessRules.allowedExtensions.filter((extension) =>
+    allowedExtensions: businessRules.allowedExtensions.filter(extension =>
       configuredExtensions.has(extension.toLowerCase()),
     ),
   }

@@ -1,18 +1,18 @@
-export type MarkdownInline =
-  | { kind: 'text'; text: string }
-  | { kind: 'strong'; children: readonly MarkdownInline[] }
-  | { kind: 'emphasis'; children: readonly MarkdownInline[] }
-  | { kind: 'code'; text: string }
-  | { kind: 'link'; children: readonly MarkdownInline[]; href?: string }
-  | { kind: 'image'; alt: string; source?: string }
+export type MarkdownInline
+  = | { kind: 'text', text: string }
+    | { kind: 'strong', children: readonly MarkdownInline[] }
+    | { kind: 'emphasis', children: readonly MarkdownInline[] }
+    | { kind: 'code', text: string }
+    | { kind: 'link', children: readonly MarkdownInline[], href?: string }
+    | { kind: 'image', alt: string, source?: string }
 
-export type MarkdownBlock =
-  | { kind: 'heading'; level: number; children: readonly MarkdownInline[] }
-  | { kind: 'paragraph'; lines: readonly (readonly MarkdownInline[])[] }
-  | { kind: 'quote'; children: readonly MarkdownInline[] }
-  | { kind: 'code'; language: string; source: string }
-  | { kind: 'list'; ordered: boolean; entries: readonly (readonly MarkdownInline[])[] }
-  | { kind: 'separator' }
+export type MarkdownBlock
+  = | { kind: 'heading', level: number, children: readonly MarkdownInline[] }
+    | { kind: 'paragraph', lines: readonly (readonly MarkdownInline[])[] }
+    | { kind: 'quote', children: readonly MarkdownInline[] }
+    | { kind: 'code', language: string, source: string }
+    | { kind: 'list', ordered: boolean, entries: readonly (readonly MarkdownInline[])[] }
+    | { kind: 'separator' }
 
 interface MarkdownDestinationPolicy {
   kind: 'image' | 'link'
@@ -25,13 +25,16 @@ function safeDestination(
 ): string | undefined {
   const requestedDestination = destination.trim()
   if (
-    !requestedDestination ||
-    [...requestedDestination].some((character) => character.charCodeAt(0) < 32)
-  )
+    !requestedDestination
+    || [...requestedDestination].some(character => character.charCodeAt(0) < 32)
+  ) {
     return undefined
+  }
   // AI modified: reject backslashes because special-scheme URL parsers can reinterpret them as host separators.
-  if (requestedDestination.includes('\\')) return undefined
-  if (requestedDestination.startsWith('//')) return undefined
+  if (requestedDestination.includes('\\'))
+    return undefined
+  if (requestedDestination.startsWith('//'))
+    return undefined
 
   if (policy.kind === 'image' && /^(?:\/|\.\/)/.test(requestedDestination))
     return requestedDestination
@@ -43,12 +46,14 @@ function safeDestination(
     if (policy.kind === 'link' && ['http:', 'https:', 'mailto:'].includes(url.protocol))
       return url.href
     if (
-      policy.kind === 'image' &&
-      url.protocol === 'https:' &&
-      policy.allowedImageOrigins.includes(url.origin)
-    )
+      policy.kind === 'image'
+      && url.protocol === 'https:'
+      && policy.allowedImageOrigins.includes(url.origin)
+    ) {
       return url.href
-  } catch {
+    }
+  }
+  catch {
     return undefined
   }
   return undefined
@@ -56,8 +61,8 @@ function safeDestination(
 
 function nextMarkerIndex(source: string, startIndex: number): number {
   const markerIndexes = ['![', '[', '**', '*', '`']
-    .map((marker) => source.indexOf(marker, startIndex))
-    .filter((index) => index >= 0)
+    .map(marker => source.indexOf(marker, startIndex))
+    .filter(index => index >= 0)
   return markerIndexes.length > 0 ? Math.min(...markerIndexes) : source.length
 }
 
@@ -84,7 +89,8 @@ export function readMarkdownInline(
             alt: label,
             source: safeDestination(destination, { kind: 'image', allowedImageOrigins }),
           })
-        } else {
+        }
+        else {
           nodes.push({
             kind: 'link',
             children: readMarkdownInline(label, allowedImageOrigins),
@@ -149,14 +155,16 @@ export function readMarkdown(
   let fencedLines: string[] = []
 
   const flushParagraph = () => {
-    if (paragraphLines.length === 0) return
+    if (paragraphLines.length === 0)
+      return
     blocks.push({
       kind: 'paragraph',
-      lines: paragraphLines.splice(0).map((line) => readMarkdownInline(line, allowedImageOrigins)),
+      lines: paragraphLines.splice(0).map(line => readMarkdownInline(line, allowedImageOrigins)),
     })
   }
   const flushList = () => {
-    if (listEntries.length === 0) return
+    if (listEntries.length === 0)
+      return
     blocks.push({ kind: 'list', ordered: listIsOrdered, entries: listEntries })
     listEntries = []
   }
@@ -168,7 +176,8 @@ export function readMarkdown(
         blocks.push({ kind: 'code', language: fencedLanguage, source: fencedLines.join('\n') })
         fencedLanguage = undefined
         fencedLines = []
-      } else {
+      }
+      else {
         fencedLines.push(line)
       }
       continue
@@ -225,7 +234,8 @@ export function readMarkdown(
     if (listMarker && listEntrySource) {
       flushParagraph()
       const isOrdered = Boolean(orderedMarker)
-      if (listEntries.length > 0 && listIsOrdered !== isOrdered) flushList()
+      if (listEntries.length > 0 && listIsOrdered !== isOrdered)
+        flushList()
       listIsOrdered = isOrdered
       listEntries.push(readMarkdownInline(listEntrySource, allowedImageOrigins))
       continue

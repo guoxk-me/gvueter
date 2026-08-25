@@ -59,14 +59,17 @@ export function readFormWorkbenchDraft(
   storage: Pick<Storage, 'getItem'> | undefined,
   principalId: string,
 ): FormWorkbenchDraft | undefined {
-  if (!principalId) return undefined
+  if (!principalId)
+    return undefined
   const storedDraft = safeStorageGet(storage, getFormWorkbenchDraftKey(principalId))
-  if (!storedDraft) return undefined
+  if (!storedDraft)
+    return undefined
 
   try {
     const candidate: unknown = JSON.parse(storedDraft)
     const draft = formWorkbenchDraftSchema.safeParse(candidate)
-    if (draft.success) return draft.data.principalId === principalId ? draft.data : undefined
+    if (draft.success)
+      return draft.data.principalId === principalId ? draft.data : undefined
 
     const versionTwoDraft = versionTwoFormWorkbenchDraftSchema.safeParse(candidate)
     if (versionTwoDraft.success) {
@@ -75,7 +78,8 @@ export function readFormWorkbenchDraft(
     }
 
     const legacyDraft = legacyFormWorkbenchDraftSchema.safeParse(candidate)
-    if (!legacyDraft.success) return undefined
+    if (!legacyDraft.success)
+      return undefined
     // AI modified: scoped version-one drafts migrate without losing fields or file-result names.
     return {
       version: 3,
@@ -86,7 +90,8 @@ export function readFormWorkbenchDraft(
       attachmentNames: legacyDraft.data.attachmentNames,
       imageNames: legacyDraft.data.imageNames,
     }
-  } catch {
+  }
+  catch {
     return undefined
   }
 }
@@ -126,7 +131,8 @@ export function useFormWorkbenchDraft({ principalId, storage }: UseFormWorkbench
   )
 
   function saveDraft(submission: FormWorkbenchSubmitInput): FormWorkbenchDraft | undefined {
-    if (!principalId) return undefined
+    if (!principalId)
+      return undefined
     const draft = getFormWorkbenchDraft(submission, principalId)
     // AI modified: file blobs stay browser-owned; drafts persist only safe, restorable field values and names.
     safeStorageSet(draftStorage, getFormWorkbenchDraftKey(principalId), JSON.stringify(draft))
@@ -135,7 +141,8 @@ export function useFormWorkbenchDraft({ principalId, storage }: UseFormWorkbench
   }
 
   function clearDraft(): void {
-    if (principalId) safeStorageDiscard(draftStorage, getFormWorkbenchDraftKey(principalId))
+    if (principalId)
+      safeStorageDiscard(draftStorage, getFormWorkbenchDraftKey(principalId))
     restoredDraft.value = undefined
   }
 

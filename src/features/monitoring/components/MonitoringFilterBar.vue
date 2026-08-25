@@ -31,7 +31,7 @@ const searchFields = computed<SearchFormField<MonitoringFilters>[]>(() => [
     type: 'select',
     options: [
       { label: t('monitoring.filters.allKinds'), value: 'all' },
-      ...MONITORING_LOG_KINDS.map((kind) => ({
+      ...MONITORING_LOG_KINDS.map(kind => ({
         label: t(`monitoring.logKinds.${kind}`),
         value: kind,
       })),
@@ -43,7 +43,7 @@ const searchFields = computed<SearchFormField<MonitoringFilters>[]>(() => [
     type: 'select',
     options: [
       { label: t('monitoring.filters.allSeverities'), value: 'all' },
-      ...MONITORING_LOG_SEVERITIES.map((severity) => ({
+      ...MONITORING_LOG_SEVERITIES.map(severity => ({
         label: t(`monitoring.severities.${severity}`),
         value: severity,
       })),

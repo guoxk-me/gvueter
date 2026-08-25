@@ -31,7 +31,8 @@ function changeCategory(value: AcceptableValue): void {
 }
 
 function changeReadFilter(value: AcceptableValue): void {
-  if (value !== 'all' && value !== 'unread' && value !== 'read') return
+  if (value !== 'all' && value !== 'unread' && value !== 'read')
+    return
   emit('change', { category: props.filters.category, read: value satisfies NotificationReadFilter })
 }
 </script>

@@ -23,9 +23,9 @@ export const TABLE_COLUMN_TEXT_CLASSES: Record<TableColumnTextBehavior, string> 
 }
 
 // AI modified: retain each accessor's value type without falling back to `any` for mixed columns.
-export type DataTableColumnDef<TData extends RowData> =
-  | ColumnDef<TData, unknown>
-  | { [TKey in keyof TData]-?: ColumnDef<TData, TData[TKey]> }[keyof TData]
+export type DataTableColumnDef<TData extends RowData>
+  = | ColumnDef<TData, unknown>
+    | { [TKey in keyof TData]-?: ColumnDef<TData, TData[TKey]> }[keyof TData]
 
 export interface DataTableFilterOption {
   label: string

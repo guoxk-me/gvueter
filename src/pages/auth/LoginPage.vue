@@ -39,9 +39,12 @@ let lockUntil = 0
 let lockTimer: ReturnType<typeof setInterval> | null = null
 
 const ssoButtonStatus = computed<'disabled' | 'error' | 'loading' | 'ready'>(() => {
-  if (isSsoConfigurationLoading.value) return 'loading'
-  if (didSsoConfigurationFail.value) return 'error'
-  if (!ssoConfiguration.value?.isEnabled) return 'disabled'
+  if (isSsoConfigurationLoading.value)
+    return 'loading'
+  if (didSsoConfigurationFail.value)
+    return 'error'
+  if (!ssoConfiguration.value?.isEnabled)
+    return 'disabled'
   return 'ready'
 })
 
@@ -72,34 +75,40 @@ async function refreshCaptcha(): Promise<void> {
   isCaptchaLoading.value = true
   try {
     captcha.value = await authStore.getCaptcha()
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     captcha.value = null
     toast.error(t('auth.captchaUnavailable'), {
       description: error instanceof Error ? error.message : t('errors.serverError'),
     })
-  } finally {
+  }
+  finally {
     isCaptchaLoading.value = false
   }
 }
 
 async function refreshSsoConfiguration(): Promise<void> {
-  if (isSsoConfigurationLoading.value && ssoConfiguration.value) return
+  if (isSsoConfigurationLoading.value && ssoConfiguration.value)
+    return
 
   isSsoConfigurationLoading.value = true
   didSsoConfigurationFail.value = false
   try {
     ssoConfiguration.value = await authStore.getSsoConfiguration()
-  } catch {
+  }
+  catch {
     // AI modified: SSO discovery failures stay recoverable without blocking password login.
     ssoConfiguration.value = null
     didSsoConfigurationFail.value = true
-  } finally {
+  }
+  finally {
     isSsoConfigurationLoading.value = false
   }
 }
 
 async function startSsoLogin(): Promise<void> {
-  if (isSsoStarting.value || ssoButtonStatus.value !== 'ready') return
+  if (isSsoStarting.value || ssoButtonStatus.value !== 'ready')
+    return
 
   isSsoStarting.value = true
   try {
@@ -110,13 +119,16 @@ async function startSsoLogin(): Promise<void> {
     }
     // AI modified: the backend creates the transaction before the browser leaves the login page.
     window.location.assign(authorizationUrl)
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     const isConfigurationDisabled = error instanceof ApiError && error.code === 'SSO_NOT_CONFIGURED'
-    if (isConfigurationDisabled) await refreshSsoConfiguration()
+    if (isConfigurationDisabled)
+      await refreshSsoConfiguration()
     toast.error(t('auth.ssoStartFailed'), {
       description: t(isConfigurationDisabled ? 'auth.ssoNotConfigured' : 'auth.ssoGenericFailure'),
     })
-  } finally {
+  }
+  finally {
     isSsoStarting.value = false
   }
 }
@@ -162,15 +174,18 @@ async function login(credentials: LoginCredentials): Promise<void> {
       provider: 'password',
     })
     // AI modified: a superseded login finishes silently while the newest attempt owns the UI/session.
-    if (!didAuthenticate) return
+    if (!didAuthenticate)
+      return
     failedAttempts.value = 0
     toast.success(t('auth.loginSuccess'), {
       description: t('auth.loginSuccessDesc', { name: authStore.user?.name }),
     })
     await router.push(getPostAuthenticationPath(route.query.redirect))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     const failure = getLoginFailure(error)
-    if (failure.shouldCountAttempt) failedAttempts.value += 1
+    if (failure.shouldCountAttempt)
+      failedAttempts.value += 1
     const { shouldCountAttempt, ...formFailure } = failure
     submissionFailure.value = { id: ++failureSequence, ...formFailure }
 
@@ -191,7 +206,8 @@ async function login(credentials: LoginCredentials): Promise<void> {
 
     // AI modified: every failed login consumes the challenge and requests a fresh one.
     await refreshCaptcha()
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }

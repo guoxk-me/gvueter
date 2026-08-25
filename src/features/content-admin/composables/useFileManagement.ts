@@ -24,7 +24,7 @@ export interface ContentFileUploadOutcome {
 export async function uploadContentFiles(files: File[]): Promise<ContentFileUploadOutcome> {
   // AI modified: settle every selected upload so successful files are not hidden by a later failure.
   const uploadResults = await Promise.allSettled(
-    files.map((file) =>
+    files.map(file =>
       uploadFileBytes<ContentFileRecord>('/content-files', file, {
         fileName: file.name,
         responseSchema: CONTENT_FILE_RECORD_SCHEMA,
@@ -37,8 +37,11 @@ export async function uploadContentFiles(files: File[]): Promise<ContentFileUplo
 
   uploadResults.forEach((uploadResult, index) => {
     const file = files[index]
-    if (!file) return
-    if (uploadResult.status === 'fulfilled') uploadedFiles.push(uploadResult.value)
+    if (!file)
+      return
+    if (uploadResult.status === 'fulfilled') {
+      uploadedFiles.push(uploadResult.value)
+    }
     else {
       failedFiles.push(file)
       firstFailure ??= uploadResult.reason

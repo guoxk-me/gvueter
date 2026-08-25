@@ -28,7 +28,8 @@ watch(
   canReadOperationLogs,
   (hasAccess) => {
     // AI modified: a denied audit deep link falls back before its protected query can mount.
-    if (!hasAccess && activeTab.value === 'operation-logs') activeTab.value = 'announcements'
+    if (!hasAccess && activeTab.value === 'operation-logs')
+      activeTab.value = 'announcements'
   },
   { immediate: true },
 )

@@ -50,7 +50,8 @@ export function resetComponentGalleryUploads(): void {
 function keepNewestUploads<T>(records: Map<string, T>): void {
   while (records.size > MAX_DEMO_UPLOAD_RECORDS) {
     const oldestKey = records.keys().next().value
-    if (typeof oldestKey !== 'string') return
+    if (typeof oldestKey !== 'string')
+      return
     records.delete(oldestKey)
   }
 }
@@ -78,11 +79,12 @@ export function saveGalleryEvidenceFile(input: {
   }
 }
 
-export const uploadGalleryChunkHandler = http.post<{ uploadId: string; chunkIndex: string }>(
+export const uploadGalleryChunkHandler = http.post<{ uploadId: string, chunkIndex: string }>(
   '/api/component-gallery/uploads/:uploadId/chunks/:chunkIndex',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Dashboard')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const chunkIndex = Number(params.chunkIndex)
     const totalChunks = Number(request.headers.get('X-Demo-Total-Chunks'))
@@ -90,20 +92,22 @@ export const uploadGalleryChunkHandler = http.post<{ uploadId: string; chunkInde
     let fileName = ''
     try {
       fileName = getSafeFileName(decodeURIComponent(encodedFileName)) ?? ''
-    } catch {
+    }
+    catch {
       fileName = ''
     }
     if (!fileName)
       return failure('The upload file name is invalid.', 'DEMO_UPLOAD_FILE_NAME_INVALID', 422)
     if (
-      !Number.isInteger(chunkIndex) ||
-      chunkIndex < 0 ||
-      !Number.isInteger(totalChunks) ||
-      totalChunks <= 0 ||
-      totalChunks > MAX_DEMO_CHUNKS ||
-      chunkIndex >= totalChunks
-    )
+      !Number.isInteger(chunkIndex)
+      || chunkIndex < 0
+      || !Number.isInteger(totalChunks)
+      || totalChunks <= 0
+      || totalChunks > MAX_DEMO_CHUNKS
+      || chunkIndex >= totalChunks
+    ) {
       return failure('The chunk coordinates are invalid.', 'DEMO_UPLOAD_CHUNK_INVALID', 422)
+    }
 
     const chunkBytes = await request.arrayBuffer()
     if (chunkBytes.byteLength === 0 || chunkBytes.byteLength > MAX_DEMO_CHUNK_BYTES)
@@ -111,19 +115,21 @@ export const uploadGalleryChunkHandler = http.post<{ uploadId: string; chunkInde
 
     // AI modified: a bounded acknowledgement delay makes intermediate progress, pause, and cancellation observable.
     await delay(DEMO_CHUNK_ACKNOWLEDGEMENT_DELAY_MS)
-    if (request.signal.aborted) return HttpResponse.error()
+    if (request.signal.aborted)
+      return HttpResponse.error()
 
     const failureKey = `${params.uploadId}:${chunkIndex}`
     if (
-      request.headers.get('X-Demo-Fail-Once') === 'true' &&
-      chunkIndex === 1 &&
-      !rejectedOnceChunks.has(failureKey)
+      request.headers.get('X-Demo-Fail-Once') === 'true'
+      && chunkIndex === 1
+      && !rejectedOnceChunks.has(failureKey)
     ) {
       // AI modified: a single deterministic server failure makes partial success and retry reproducible.
       rejectedOnceChunks.add(failureKey)
       while (rejectedOnceChunks.size > MAX_REJECTED_CHUNK_RECORDS) {
         const oldestFailureKey = rejectedOnceChunks.values().next().value
-        if (!oldestFailureKey) break
+        if (!oldestFailureKey)
+          break
         rejectedOnceChunks.delete(oldestFailureKey)
       }
       return failure(
@@ -138,12 +144,13 @@ export const uploadGalleryChunkHandler = http.post<{ uploadId: string; chunkInde
       fileName,
       receivedChunks: new Map<number, ArrayBuffer>(),
     }
-    if (record.totalChunks !== totalChunks || record.fileName !== fileName)
+    if (record.totalChunks !== totalChunks || record.fileName !== fileName) {
       return failure(
         'The upload contract changed between chunks.',
         'DEMO_UPLOAD_CONTRACT_CHANGED',
         409,
       )
+    }
     // AI modified: retaining bounded demo chunks makes the advertised result URL retrievable.
     record.receivedChunks.set(chunkIndex, chunkBytes)
     uploadRecords.set(params.uploadId, record)
@@ -161,13 +168,16 @@ export const completeGalleryUploadHandler = http.post<{ uploadId: string }>(
   '/api/component-gallery/uploads/:uploadId/complete',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Dashboard')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const record = uploadRecords.get(params.uploadId)
     const completionBody = await readMockJsonBody(request, DEMO_UPLOAD_COMPLETION_INPUT_SCHEMA)
-    if (!completionBody.isValid) return completionBody.response
+    if (!completionBody.isValid)
+      return completionBody.response
     const requestBody = completionBody.body
-    if (!record) return failure('No upload session exists.', 'DEMO_UPLOAD_SESSION_NOT_FOUND', 404)
+    if (!record)
+      return failure('No upload session exists.', 'DEMO_UPLOAD_SESSION_NOT_FOUND', 404)
     const requestedTotal = requestBody.totalChunks
     const requestedFileName = getSafeFileName(requestBody.fileName)
     const requestedContentType = requestBody.mimeType
@@ -178,8 +188,7 @@ export const completeGalleryUploadHandler = http.post<{ uploadId: string }>(
 
     const serverFileId = `demo-file-${params.uploadId}`
     const chunks = Array.from({ length: record.totalChunks }, (_, chunkIndex) =>
-      record.receivedChunks.get(chunkIndex),
-    )
+      record.receivedChunks.get(chunkIndex))
     if (chunks.includes(undefined))
       return failure('Some chunks are still missing.', 'DEMO_UPLOAD_INCOMPLETE', 409)
 
@@ -208,7 +217,8 @@ export const cancelGalleryUploadHandler = http.delete<{ uploadId: string }>(
   '/api/component-gallery/uploads/:uploadId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Dashboard')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     uploadRecords.delete(params.uploadId)
     completedUploads.delete(`demo-file-${params.uploadId}`)
@@ -220,7 +230,8 @@ export const downloadGalleryUploadHandler = http.get<{ serverFileId: string }>(
   '/api/component-gallery/files/:serverFileId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Dashboard')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const completedUpload = completedUploads.get(params.serverFileId)
     if (!completedUpload)

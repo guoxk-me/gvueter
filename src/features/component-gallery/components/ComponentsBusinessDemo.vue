@@ -62,17 +62,18 @@ const exportRecords: readonly ExportRecord[] = [
   { id: 'OPS-002', owner: 'Jordan Wu', status: 'pending' },
 ]
 const exportColumns = computed<readonly CsvExportColumn<ExportRecord>[]>(() => [
-  { label: 'ID', getValue: (record) => record.id },
-  { label: t('components.business.owner'), getValue: (record) => record.owner },
-  { label: t('components.business.currentStatus'), getValue: (record) => record.status },
+  { label: 'ID', getValue: record => record.id },
+  { label: t('components.business.owner'), getValue: record => record.owner },
+  { label: t('components.business.currentStatus'), getValue: record => record.status },
 ])
 
 function reportRejectedFiles(rejections: FileUploadRejection[]): void {
   const rejection = rejections[0]
-  if (!rejection) return
+  if (!rejection)
+    return
 
   const messageKeys = {
-    duplicate: 'components.upload.duplicate',
+    'duplicate': 'components.upload.duplicate',
     'file-too-large': 'components.upload.fileTooLarge',
     // AI modified: surface unsafe filenames rejected by the shared upload policy.
     'invalid-file-name': 'components.upload.invalidFileName',
@@ -120,7 +121,9 @@ function selectImportFile(file: File): void {
         :placeholder="t('components.business.selectDictionaryValue')"
       />
       <DetailDescriptions :items="detailItems" />
-      <template #usage> &lt;DictSelect v-model="status" code="account_status" /&gt; </template>
+      <template #usage>
+        &lt;DictSelect v-model="status" code="account_status" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard

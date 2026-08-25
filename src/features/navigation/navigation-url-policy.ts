@@ -1,23 +1,23 @@
-export type NavigationUrlRejectionReason =
-  | 'EMPTY_URL'
-  | 'BASE_ORIGIN_REQUIRED'
-  | 'INVALID_BASE_ORIGIN'
-  | 'INVALID_URL'
-  | 'UNSUPPORTED_PROTOCOL'
-  | 'CREDENTIALS_NOT_ALLOWED'
-  | 'ORIGIN_NOT_ALLOWED'
+export type NavigationUrlRejectionReason
+  = | 'EMPTY_URL'
+    | 'BASE_ORIGIN_REQUIRED'
+    | 'INVALID_BASE_ORIGIN'
+    | 'INVALID_URL'
+    | 'UNSUPPORTED_PROTOCOL'
+    | 'CREDENTIALS_NOT_ALLOWED'
+    | 'ORIGIN_NOT_ALLOWED'
 
-export type NavigationUrlDecision =
+export type NavigationUrlDecision
+  = | {
+    isAllowed: true
+    safeUrl: string
+    origin: string
+    isSameOrigin: boolean
+  }
   | {
-      isAllowed: true
-      safeUrl: string
-      origin: string
-      isSameOrigin: boolean
-    }
-  | {
-      isAllowed: false
-      reason: NavigationUrlRejectionReason
-    }
+    isAllowed: false
+    reason: NavigationUrlRejectionReason
+  }
 
 export interface NavigationUrlPolicy {
   baseOrigin: string | undefined
@@ -37,7 +37,8 @@ export function getNavigationAllowedOrigins(originEntries: readonly string[]): R
       // AI modified: configured cross-origin targets require HTTPS and cannot smuggle credentials.
       if (originUrl.protocol === 'https:' && !originUrl.username && !originUrl.password)
         allowedOrigins.add(originUrl.origin)
-    } catch {
+    }
+    catch {
       // Invalid deployment entries are ignored instead of weakening the policy.
     }
   }
@@ -59,13 +60,15 @@ export function evaluateNavigationUrl(
   policy: NavigationUrlPolicy,
 ): NavigationUrlDecision {
   const targetText = requestedUrl?.trim()
-  if (!targetText) return { isAllowed: false, reason: 'EMPTY_URL' }
+  if (!targetText)
+    return { isAllowed: false, reason: 'EMPTY_URL' }
 
   let baseUrl: URL | undefined
   if (policy.baseOrigin) {
     try {
       baseUrl = new URL(policy.baseOrigin)
-    } catch {
+    }
+    catch {
       return { isAllowed: false, reason: 'INVALID_BASE_ORIGIN' }
     }
 
@@ -76,7 +79,8 @@ export function evaluateNavigationUrl(
   let targetUrl: URL
   try {
     targetUrl = baseUrl ? new URL(targetText, `${baseUrl.origin}/`) : new URL(targetText)
-  } catch {
+  }
+  catch {
     return {
       isAllowed: false,
       reason: baseUrl ? 'INVALID_URL' : 'BASE_ORIGIN_REQUIRED',

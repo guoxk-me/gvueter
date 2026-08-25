@@ -30,7 +30,8 @@ const uniqueId = useId()
 // AI modified: encode caller-provided ids before they are interpolated into chart CSS selectors.
 function getSafeChartIdSegment(source: string): string {
   return Array.from(source, (character) => {
-    if (/^[\w-]$/.test(character)) return character
+    if (/^[\w-]$/.test(character))
+      return character
 
     const codePoint = character.codePointAt(0)
     return codePoint === undefined ? '-' : `-${codePoint.toString(16)}-`
@@ -57,28 +58,35 @@ function hasSameBounds(first: ChartBounds | undefined, second: ChartBounds): boo
 
 onMounted(() => {
   const container = containerRef.value
-  if (!container || typeof ResizeObserver === 'undefined') return
+  if (!container || typeof ResizeObserver === 'undefined')
+    return
 
   // AI modified: remount size-sensitive chart children only after a distinct visible resize.
   resizeObserver = new ResizeObserver(([entry]) => {
-    if (!entry) return
+    if (!entry)
+      return
 
     const nextBounds = {
       height: entry.contentRect.height,
       width: entry.contentRect.width,
     }
-    if (nextBounds.width <= 0 || nextBounds.height <= 0) return
-    if (hasSameBounds(pendingBounds, nextBounds)) return
-    if (!pendingBounds && hasSameBounds(committedBounds, nextBounds)) return
+    if (nextBounds.width <= 0 || nextBounds.height <= 0)
+      return
+    if (hasSameBounds(pendingBounds, nextBounds))
+      return
+    if (!pendingBounds && hasSameBounds(committedBounds, nextBounds))
+      return
 
     pendingBounds = nextBounds
-    if (resizeFrame !== undefined) return
+    if (resizeFrame !== undefined)
+      return
 
     resizeFrame = requestAnimationFrame(() => {
       resizeFrame = undefined
       const latestBounds = pendingBounds
       pendingBounds = undefined
-      if (!latestBounds || hasSameBounds(committedBounds, latestBounds)) return
+      if (!latestBounds || hasSameBounds(committedBounds, latestBounds))
+        return
 
       committedBounds = latestBounds
       revision.value += 1

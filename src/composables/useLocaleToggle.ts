@@ -11,7 +11,8 @@ let activeAppearanceStore: AppearanceStore | undefined
 let localeEffectScope: EffectScope | undefined
 
 export function startAppLocaleSync(appearance: AppearanceStore = useAppearanceStore()): void {
-  if (activeAppearanceStore === appearance && localeEffectScope?.active) return
+  if (activeAppearanceStore === appearance && localeEffectScope?.active)
+    return
 
   localeEffectScope?.stop()
   activeAppearanceStore = appearance

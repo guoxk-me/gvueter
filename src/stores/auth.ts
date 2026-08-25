@@ -91,7 +91,8 @@ function persistStoredSession(
     ? safeStorageSet(storage, AUTH_TENANT_STORAGE_KEY, nextTenantId)
     : safeStorageDiscard(storage, AUTH_TENANT_STORAGE_KEY)
 
-  if (didStoreToken && didStoreExpiry && didStoreProvider && didStoreTenant) return true
+  if (didStoreToken && didStoreExpiry && didStoreProvider && didStoreTenant)
+    return true
 
   // AI modified: a partially persisted credential set is removed before memory can accept it.
   clearStoredSession(storage)
@@ -102,7 +103,8 @@ export function getSessionPrincipalId(
   account: User | null,
   activeTenantId: string | null,
 ): string | null {
-  if (!account) return null
+  if (!account)
+    return null
   return activeTenantId ? `${activeTenantId}:${account.id}` : String(account.id)
 }
 
@@ -122,7 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isSessionReady = ref(false)
   let sessionRestoreTask: Promise<void> | null = null
   let sessionRevision = 0
-  let ssoExchangeTask: { ticket: string; task: Promise<string | null> } | null = null
+  let ssoExchangeTask: { ticket: string, task: Promise<string | null> } | null = null
 
   const isAuthenticated = computed(() => Boolean(token.value && user.value && authorization.value))
   const principalId = computed(() => getSessionPrincipalId(user.value, tenantId.value))
@@ -173,9 +175,9 @@ export const useAuthStore = defineStore('auth', () => {
   ): void {
     const nextPrincipalId = getSessionPrincipalId(principal.user, principal.tenantId)
     const hasAuthorizationChanged = Boolean(
-      authorization.value &&
-      (authorization.value.contractVersion !== principal.authorization.contractVersion ||
-        authorization.value.policyVersion !== principal.authorization.policyVersion),
+      authorization.value
+      && (authorization.value.contractVersion !== principal.authorization.contractVersion
+        || authorization.value.policyVersion !== principal.authorization.policyVersion),
     )
     const hasRoleChanged = Boolean(user.value && user.value.role !== principal.user.role)
     if (previousPrincipalId !== nextPrincipalId || hasAuthorizationChanged || hasRoleChanged) {
@@ -212,12 +214,12 @@ export const useAuthStore = defineStore('auth', () => {
     sessionRevision += 1
     const previousPrincipalId = getSessionPrincipalId(user.value, tenantId.value)
     const hasSessionState = Boolean(
-      user.value ||
-      authorization.value ||
-      token.value ||
-      tokenExpiresAt.value ||
-      tenantId.value ||
-      provider.value !== 'password',
+      user.value
+      || authorization.value
+      || token.value
+      || tokenExpiresAt.value
+      || tenantId.value
+      || provider.value !== 'password',
     )
     token.value = null
     tokenExpiresAt.value = null
@@ -243,7 +245,8 @@ export const useAuthStore = defineStore('auth', () => {
     nextProvider: AuthProvider,
     authenticationRevision: number,
   ): boolean {
-    if (sessionRevision !== authenticationRevision) return false
+    if (sessionRevision !== authenticationRevision)
+      return false
 
     const previousPrincipalId = getSessionPrincipalId(user.value, tenantId.value)
     if (!persistStoredSession(browserSessionStorage, data, nextProvider, data.tenantId)) {
@@ -272,12 +275,13 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (!token.value) {
       const didNotifyBoundary = clearSession()
-      if (!didNotifyBoundary)
+      if (!didNotifyBoundary) {
         notifySessionPrincipalChanged({
           previousPrincipalId: null,
           principalId: null,
           reason: 'session-ended',
         })
+      }
       isSessionReady.value = true
       return
     }
@@ -290,7 +294,8 @@ export const useAuthStore = defineStore('auth', () => {
         responseSchema: AUTHENTICATED_PRINCIPAL_SCHEMA,
       })
         .then((currentPrincipal) => {
-          if (sessionRevision !== restoreRevision || token.value !== restoreToken) return
+          if (sessionRevision !== restoreRevision || token.value !== restoreToken)
+            return
           applyAuthenticatedPrincipal(
             currentPrincipal,
             getSessionPrincipalId(user.value, tenantId.value),
@@ -299,7 +304,8 @@ export const useAuthStore = defineStore('auth', () => {
         })
         .catch((error: unknown) => {
           // AI modified: a response belonging to a replaced session cannot overwrite its successor.
-          if (sessionRevision !== restoreRevision || token.value !== restoreToken) return
+          if (sessionRevision !== restoreRevision || token.value !== restoreToken)
+            return
           // AI modified: transient network/server failures must not destroy a valid local session.
           if (isSessionInvalidatingError(error)) {
             clearSession()
@@ -317,7 +323,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function refreshPrincipal(): Promise<boolean> {
-    if (!token.value) return false
+    if (!token.value)
+      return false
     // AI modified: only the newest policy refresh may replace the active authorization snapshot.
     const refreshRevision = ++sessionRevision
     const refreshToken = token.value
@@ -326,12 +333,15 @@ export const useAuthStore = defineStore('auth', () => {
       currentPrincipal = await get<AuthenticatedPrincipal>('/auth/me', undefined, {
         responseSchema: AUTHENTICATED_PRINCIPAL_SCHEMA,
       })
-    } catch (error) {
+    }
+    catch (error) {
       // AI modified: a newer refresh intentionally cancels its predecessor and owns the result.
-      if (isCanceledRequest(error)) return false
+      if (isCanceledRequest(error))
+        return false
       throw error
     }
-    if (sessionRevision !== refreshRevision || token.value !== refreshToken) return false
+    if (sessionRevision !== refreshRevision || token.value !== refreshToken)
+      return false
     applyAuthenticatedPrincipal(currentPrincipal, getSessionPrincipalId(user.value, tenantId.value))
     return true
   }
@@ -373,7 +383,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function exchangeSsoTicket(ticket: string): Promise<string | null> {
-    if (ssoExchangeTask?.ticket === ticket) return ssoExchangeTask.task
+    if (ssoExchangeTask?.ticket === ticket)
+      return ssoExchangeTask.task
     if (token.value || user.value) {
       throw new ApiError(
         'SSO_SESSION_ACTIVE',
@@ -395,8 +406,10 @@ export const useAuthStore = defineStore('auth', () => {
     ssoExchangeTask = { ticket, task }
     try {
       return await task
-    } finally {
-      if (ssoExchangeTask?.task === task) ssoExchangeTask = null
+    }
+    finally {
+      if (ssoExchangeTask?.task === task)
+        ssoExchangeTask = null
     }
   }
 
@@ -426,7 +439,8 @@ export const useAuthStore = defineStore('auth', () => {
     const updatedUser = await put<User>('/auth/profile', input, {
       responseSchema: ADMIN_USER_SCHEMA,
     })
-    if (sessionRevision !== profileRevision || token.value !== profileToken) return updatedUser
+    if (sessionRevision !== profileRevision || token.value !== profileToken)
+      return updatedUser
     setUser(updatedUser)
     return updatedUser
   }
@@ -436,10 +450,13 @@ export const useAuthStore = defineStore('auth', () => {
     const logoutToken = token.value
     try {
       await post<null>('/auth/logout', undefined, { responseSchema: EMPTY_RESPONSE_SCHEMA })
-    } catch (error: unknown) {
+    }
+    catch (error: unknown) {
       // AI modified: an already-expired or server-revoked session is still a successful local logout.
-      if (!isSessionInvalidatingError(error)) throw error
-    } finally {
+      if (!isSessionInvalidatingError(error))
+        throw error
+    }
+    finally {
       // AI modified: a late logout response cannot erase a newer login established in the same tab.
       if (sessionRevision === logoutRevision && token.value === logoutToken) {
         clearSession()

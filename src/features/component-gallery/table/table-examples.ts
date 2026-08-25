@@ -1,16 +1,16 @@
 import type { ProTableLabels } from '@/components/pro-table'
 
-export type TableExampleId =
-  | 'basic'
-  | 'client-pagination'
-  | 'server-pagination'
-  | 'tree'
-  | 'editable'
-  | 'selection-bulk'
-  | 'virtual-scroll'
-  | 'complex-columns'
-  | 'responsive'
-  | 'states'
+export type TableExampleId
+  = | 'basic'
+    | 'client-pagination'
+    | 'server-pagination'
+    | 'tree'
+    | 'editable'
+    | 'selection-bulk'
+    | 'virtual-scroll'
+    | 'complex-columns'
+    | 'responsive'
+    | 'states'
 
 export type TableExampleGroup = 'foundations' | 'interaction' | 'scale' | 'resilience'
 
@@ -273,8 +273,9 @@ export const TABLE_EXAMPLE_SCENARIOS: readonly TableExampleScenario[] = [
 ]
 
 export function getTableExampleScenario(id: TableExampleId): TableExampleScenario {
-  const scenario = TABLE_EXAMPLE_SCENARIOS.find((candidate) => candidate.id === id)
-  if (!scenario) throw new Error(`Unknown table example: ${id}`)
+  const scenario = TABLE_EXAMPLE_SCENARIOS.find(candidate => candidate.id === id)
+  if (!scenario)
+    throw new Error(`Unknown table example: ${id}`)
   return scenario
 }
 
@@ -392,7 +393,7 @@ export const TABLE_EXAMPLES_COPY = {
       resilience: 'States',
     },
     scenarios: {
-      basic: {
+      'basic': {
         title: 'Basic table',
         description:
           'A compact business list with typed columns, sorting, and locale-aware values.',
@@ -407,11 +408,11 @@ export const TABLE_EXAMPLES_COPY = {
         description:
           'A manual ProTable sends zero-based page state and renders only the simulated response page.',
       },
-      tree: {
+      'tree': {
         title: 'Tree table',
         description: 'Expandable parent and child rows use the native ProTable sub-row contract.',
       },
-      editable: {
+      'editable': {
         title: 'Editable cells',
         description:
           'Double-click a title or owner, then press Enter to commit or Escape to cancel.',
@@ -431,12 +432,12 @@ export const TABLE_EXAMPLES_COPY = {
         description:
           'Visibility, order, pinning, density, sorting, long text, and locale-aware values share one table.',
       },
-      responsive: {
+      'responsive': {
         title: 'Responsive table',
         description:
           'Narrow containers scroll internally and keep the page free from horizontal overflow.',
       },
-      states: {
+      'states': {
         title: 'Loading, empty, and error states',
         description:
           'Switch between the complete table lifecycle and recover from the error state with Retry.',
@@ -575,7 +576,7 @@ export const TABLE_EXAMPLES_COPY = {
       resilience: '状态',
     },
     scenarios: {
-      basic: { title: '基础表格', description: '包含类型安全列、排序和本地化业务值的紧凑列表。' },
+      'basic': { title: '基础表格', description: '包含类型安全列、排序和本地化业务值的紧凑列表。' },
       'client-pagination': {
         title: '客户端分页',
         description: '共享 DataTable 负责客户端分页、每页行数重置与页码夹紧。',
@@ -584,8 +585,8 @@ export const TABLE_EXAMPLES_COPY = {
         title: '服务端分页',
         description: '手动 ProTable 发送零基页码状态，并只呈现模拟响应页。',
       },
-      tree: { title: '树形表格', description: '父子行通过 ProTable 原生子行契约展开和折叠。' },
-      editable: {
+      'tree': { title: '树形表格', description: '父子行通过 ProTable 原生子行契约展开和折叠。' },
+      'editable': {
         title: '可编辑单元格',
         description: '双击标题或负责人，按 Enter 提交，按 Escape 取消。',
       },
@@ -601,11 +602,11 @@ export const TABLE_EXAMPLES_COPY = {
         title: '复杂列配置',
         description: '列显隐、排序、固定、密度、长文本和本地化数值在同一表格中协作。',
       },
-      responsive: {
+      'responsive': {
         title: '响应式表格',
         description: '窄容器内部滚动，避免整个页面产生横向溢出。',
       },
-      states: {
+      'states': {
         title: '加载、空与错误状态',
         description: '切换完整表格生命周期，并通过重试从错误状态恢复。',
       },

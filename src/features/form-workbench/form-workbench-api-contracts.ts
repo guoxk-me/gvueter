@@ -17,11 +17,11 @@ const WORKBENCH_FILE_NAME_SCHEMA = z
   .min(1)
   .max(180)
   .refine(
-    (fileName) =>
-      !fileName.startsWith('.') &&
-      !fileName.endsWith('.') &&
-      !/[\\/]/.test(fileName) &&
-      ![...fileName].some((character) => character.charCodeAt(0) < 32),
+    fileName =>
+      !fileName.startsWith('.')
+      && !fileName.endsWith('.')
+      && !/[\\/]/.test(fileName)
+      && ![...fileName].some(character => character.charCodeAt(0) < 32),
   )
 
 // AI modified: submissions repeat bounded domain validation before mutable Mock state is touched.

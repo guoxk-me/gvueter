@@ -26,7 +26,8 @@ import './assets/css/main.css'
 
 // AI modified: stale lazy assets are captured before asynchronous bootstrap work can begin.
 const uninstallPreloadRecovery = installApplicationPreloadRecovery()
-if (import.meta.hot) import.meta.hot.dispose(uninstallPreloadRecovery)
+if (import.meta.hot)
+  import.meta.hot.dispose(uninstallPreloadRecovery)
 
 async function bootstrap() {
   // 早期应用主题色，避免首屏色彩闪烁
@@ -47,8 +48,8 @@ async function bootstrap() {
 
   const mockSetting = import.meta.env.VITE_ENABLE_MOCKS
   // AI modified: an explicit flag wins, while an omitted flag keeps local development convenient.
-  const shouldEnableMocks =
-    mockSetting === 'true' || (mockSetting === undefined && import.meta.env.DEV)
+  const shouldEnableMocks
+    = mockSetting === 'true' || (mockSetting === undefined && import.meta.env.DEV)
 
   // AI modified: remove a previously active root-scoped worker before switching between Mock and PWA modes.
   const shouldReloadForWorkerBoundary = await reconcileServiceWorkerMode(

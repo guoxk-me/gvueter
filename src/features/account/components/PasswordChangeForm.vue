@@ -37,11 +37,11 @@ const validationSchema = computed(() =>
           .regex(/\d/, t('account.passwordNumber')),
         confirmPassword: z.string().min(1, t('auth.confirmPasswordPlaceholder')),
       })
-      .refine((passwords) => passwords.newPassword === passwords.confirmPassword, {
+      .refine(passwords => passwords.newPassword === passwords.confirmPassword, {
         message: t('auth.passwordMismatch'),
         path: ['confirmPassword'],
       })
-      .refine((passwords) => passwords.currentPassword !== passwords.newPassword, {
+      .refine(passwords => passwords.currentPassword !== passwords.newPassword, {
         message: t('account.passwordMustChange'),
         path: ['newPassword'],
       }),

@@ -99,7 +99,9 @@ function announceCopyError(): void {
           {{ t('components.workflow.nextStep') }}
         </Button>
       </div>
-      <template #usage> &lt;WorkflowStepper v-model="currentStep" :steps="steps" /&gt; </template>
+      <template #usage>
+        &lt;WorkflowStepper v-model="currentStep" :steps="steps" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -107,7 +109,9 @@ function announceCopyError(): void {
       :description="t('components.workflow.timelineDescription')"
     >
       <ActivityTimeline :entries="auditEntries" />
-      <template #usage> &lt;ActivityTimeline :entries="auditEntries" /&gt; </template>
+      <template #usage>
+        &lt;ActivityTimeline :entries="auditEntries" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -127,7 +131,9 @@ function announceCopyError(): void {
           @error="announceCopyError"
         />
       </div>
-      <template #usage> &lt;CopyButton :value="invitationCode" /&gt; </template>
+      <template #usage>
+        &lt;CopyButton :value="invitationCode" /&gt;
+      </template>
     </ComponentDemoCard>
   </div>
 </template>

@@ -44,7 +44,8 @@ const imageStyle = computed(() => ({
 }))
 
 function releaseObjectUrl(): void {
-  if (objectUrl.value) URL.revokeObjectURL(objectUrl.value)
+  if (objectUrl.value)
+    URL.revokeObjectURL(objectUrl.value)
   objectUrl.value = undefined
 }
 
@@ -61,7 +62,8 @@ function markImageReady(): void {
 function selectImage(event: Event): void {
   const input = event.target as HTMLInputElement
   const selectedFile = input.files?.[0]
-  if (!selectedFile) return
+  if (!selectedFile)
+    return
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
     reportError(t('components.media.unsupportedImage'))
     input.value = ''
@@ -83,7 +85,7 @@ function selectImage(event: Event): void {
 }
 
 function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
-  return new Promise((resolve) => canvas.toBlob(resolve, props.outputType, props.quality))
+  return new Promise(resolve => canvas.toBlob(resolve, props.outputType, props.quality))
 }
 
 async function cropImage(): Promise<void> {
@@ -108,7 +110,8 @@ async function cropImage(): Promise<void> {
     canvas.width = props.outputWidth
     canvas.height = Math.max(1, Math.round(props.outputWidth / props.aspectRatio))
     const context = canvas.getContext('2d')
-    if (!context) throw new Error('Canvas is unavailable')
+    if (!context)
+      throw new Error('Canvas is unavailable')
 
     // AI modified: export only the visible crop rectangle at a predictable business output size.
     context.drawImage(
@@ -123,11 +126,14 @@ async function cropImage(): Promise<void> {
       canvas.height,
     )
     const croppedImage = await canvasBlob(canvas)
-    if (!croppedImage) throw new Error('The browser could not encode the cropped image')
+    if (!croppedImage)
+      throw new Error('The browser could not encode the cropped image')
     emit('cropped', croppedImage)
-  } catch {
+  }
+  catch {
     reportError(t('components.media.cropFailed'))
-  } finally {
+  }
+  finally {
     isCropping.value = false
   }
 }
@@ -157,7 +163,7 @@ onBeforeUnmount(releaseObjectUrl)
         type="file"
         accept="image/jpeg,image/png,image/webp"
         @change="selectImage"
-      />
+      >
     </label>
 
     <div
@@ -175,7 +181,7 @@ onBeforeUnmount(releaseObjectUrl)
         :style="imageStyle"
         @load="markImageReady"
         @error="reportError(t('components.media.imageLoadFailed'))"
-      />
+      >
       <div v-else class="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
         {{ t('components.media.noImage') }}
       </div>
@@ -194,7 +200,7 @@ onBeforeUnmount(releaseObjectUrl)
           min="1"
           max="4"
           step="0.05"
-        />
+        >
       </label>
       <label class="space-y-1 text-xs font-medium text-muted-foreground">
         {{ t('components.media.horizontalPosition') }}
@@ -205,7 +211,7 @@ onBeforeUnmount(releaseObjectUrl)
           min="-1"
           max="1"
           step="0.05"
-        />
+        >
       </label>
       <label class="space-y-1 text-xs font-medium text-muted-foreground">
         {{ t('components.media.verticalPosition') }}
@@ -216,7 +222,7 @@ onBeforeUnmount(releaseObjectUrl)
           min="-1"
           max="1"
           step="0.05"
-        />
+        >
       </label>
     </div>
 

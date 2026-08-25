@@ -1,9 +1,9 @@
-export type FileUploadRejectReason =
-  | 'duplicate'
-  | 'invalid-file-name'
-  | 'invalid-type'
-  | 'max-files'
-  | 'file-too-large'
+export type FileUploadRejectReason
+  = | 'duplicate'
+    | 'invalid-file-name'
+    | 'invalid-type'
+    | 'max-files'
+    | 'file-too-large'
 
 export interface FileUploadEntry {
   id: string
@@ -29,14 +29,14 @@ export function isUploadFileNameSafe(fileName: string): boolean {
     return characterCode < 32 || characterCode === 127
   })
   return (
-    requestedName.length > 0 &&
-    requestedName.length <= 180 &&
-    requestedName === fileName &&
-    requestedName !== '.' &&
-    requestedName !== '..' &&
-    !hasControlCharacter &&
-    !/[\\/]/.test(requestedName) &&
-    !/[. ]$/.test(requestedName)
+    requestedName.length > 0
+    && requestedName.length <= 180
+    && requestedName === fileName
+    && requestedName !== '.'
+    && requestedName !== '..'
+    && !hasControlCharacter
+    && !/[\\/]/.test(requestedName)
+    && !/[. ]$/.test(requestedName)
   )
 }
 
@@ -46,26 +46,28 @@ export function isUploadFileTypeAllowed(file: File, policy: FileUploadTypePolicy
   const lowerType = file.type.toLowerCase()
   const acceptRules = (policy.accept ?? '')
     .split(',')
-    .map((rule) => rule.trim().toLowerCase())
+    .map(rule => rule.trim().toLowerCase())
     .filter(Boolean)
-  const isAcceptedByInput =
-    acceptRules.length === 0 ||
-    acceptRules.some((rule) => {
-      if (rule.startsWith('.')) return lowerName.endsWith(rule)
-      if (rule.endsWith('/*')) return lowerType.startsWith(rule.slice(0, -1))
-      return lowerType === rule
-    })
-  const allowedExtensions = (policy.allowedExtensions ?? []).map((extension) =>
+  const isAcceptedByInput
+    = acceptRules.length === 0
+      || acceptRules.some((rule) => {
+        if (rule.startsWith('.'))
+          return lowerName.endsWith(rule)
+        if (rule.endsWith('/*'))
+          return lowerType.startsWith(rule.slice(0, -1))
+        return lowerType === rule
+      })
+  const allowedExtensions = (policy.allowedExtensions ?? []).map(extension =>
     extension.toLowerCase().startsWith('.')
       ? extension.toLowerCase()
       : `.${extension.toLowerCase()}`,
   )
-  const allowedMimeTypes = (policy.allowedMimeTypes ?? []).map((mimeType) => mimeType.toLowerCase())
+  const allowedMimeTypes = (policy.allowedMimeTypes ?? []).map(mimeType => mimeType.toLowerCase())
 
   return (
-    isAcceptedByInput &&
-    (allowedExtensions.length === 0 ||
-      allowedExtensions.some((extension) => lowerName.endsWith(extension))) &&
-    (allowedMimeTypes.length === 0 || allowedMimeTypes.includes(lowerType))
+    isAcceptedByInput
+    && (allowedExtensions.length === 0
+      || allowedExtensions.some(extension => lowerName.endsWith(extension)))
+    && (allowedMimeTypes.length === 0 || allowedMimeTypes.includes(lowerType))
   )
 }

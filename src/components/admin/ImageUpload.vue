@@ -40,11 +40,12 @@ const allowedImageMimeTypes = ['image/jpeg', 'image/png', 'image/webp'] as const
 watch(
   entries,
   (currentEntries) => {
-    const currentIds = new Set(currentEntries.map((entry) => entry.id))
+    const currentIds = new Set(currentEntries.map(entry => entry.id))
     const nextPreviewUrls: Record<string, string> = {}
 
     for (const [entryId, previewUrl] of Object.entries(previewUrls.value)) {
-      if (!currentIds.has(entryId)) URL.revokeObjectURL(previewUrl)
+      if (!currentIds.has(entryId))
+        URL.revokeObjectURL(previewUrl)
     }
 
     for (const entry of currentEntries) {
@@ -58,7 +59,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
-  Object.values(previewUrls.value).forEach((previewUrl) => URL.revokeObjectURL(previewUrl))
+  Object.values(previewUrls.value).forEach(previewUrl => URL.revokeObjectURL(previewUrl))
 })
 </script>
 
@@ -96,7 +97,7 @@ onBeforeUnmount(() => {
           :src="previewUrls[entry.id]"
           :alt="entry.file.name"
           class="size-full object-cover"
-        />
+        >
         <div v-else class="flex size-full items-center justify-center text-muted-foreground">
           <ImageIcon class="size-8" aria-hidden="true" />
         </div>

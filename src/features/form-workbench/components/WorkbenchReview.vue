@@ -35,8 +35,8 @@ const { t } = useI18n()
         {{
           submission.reviewers.length
             ? submission.reviewers
-                .map((reviewer) => t(`formWorkbench.reviewers.${reviewer}`))
-                .join(', ')
+              .map((reviewer) => t(`formWorkbench.reviewers.${reviewer}`))
+              .join(', ')
             : t('common.noData')
         }}
       </dd>

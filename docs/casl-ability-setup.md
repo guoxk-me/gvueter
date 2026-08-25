@@ -6,15 +6,15 @@ CASL 是浏览器端的体验层权限模型。路由、菜单、`PermissionGate
 
 ```ts
 type PermissionAction = 'read' | 'create' | 'update' | 'delete'
-type PermissionSubject =
-  | 'Dashboard'
-  | 'User'
-  | 'Content'
-  | 'Analytics'
-  | 'Settings'
-  | 'RolePolicy'
-  | 'Monitoring'
-  | 'AuditLog'
+type PermissionSubject
+  = | 'Dashboard'
+    | 'User'
+    | 'Content'
+    | 'Analytics'
+    | 'Settings'
+    | 'RolePolicy'
+    | 'Monitoring'
+    | 'AuditLog'
 
 interface RolePermission {
   action: PermissionAction
@@ -32,12 +32,12 @@ interface AuthorizationSnapshot {
   dataScope: DataScopeGrant
 }
 
-type DataScope =
-  | { scope: 'all' }
-  | { scope: 'departmentTree' }
-  | { scope: 'department' }
-  | { scope: 'self' }
-  | { scope: 'custom'; departmentIds: string[] }
+type DataScope
+  = | { scope: 'all' }
+    | { scope: 'departmentTree' }
+    | { scope: 'department' }
+    | { scope: 'self' }
+    | { scope: 'custom', departmentIds: string[] }
 ```
 
 `/auth/login`、SSO exchange 与 `/auth/me` 必须原子返回后端选定的 `tenantId`、用户和 `AuthorizationSnapshot`。客户端提交的 tenant 只是选择提示，不能建立成员关系；`src/lib/ability.ts` 只把后端快照投影为单例 `appAbility`，不会再根据用户对象上的展示角色读取本地策略；缺少或不符合契约的快照按无权限处理。`src/features/roles/role-policy.ts` 只为 MSW 模拟服务端策略，数据范围投影位于 `src/features/roles/data-scope.ts`。

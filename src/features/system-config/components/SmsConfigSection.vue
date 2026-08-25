@@ -49,9 +49,9 @@ const { t } = useI18n()
     <FormField v-slot="{ componentField }" name="sms.accessKeyId">
       <FormItem>
         <FormLabel>{{ t('systemConfig.shared.accessKeyId') }}</FormLabel>
-        <FormControl
-          ><Input v-bind="componentField" autocomplete="off" :disabled="isDisabled"
-        /></FormControl>
+        <FormControl>
+          <Input v-bind="componentField" autocomplete="off" :disabled="isDisabled" />
+        </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>

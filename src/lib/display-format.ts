@@ -35,10 +35,12 @@ export function getDateTimeLabel(
   options: DateTimeLabelOptions,
 ): string {
   const { locale, timeZone, emptyLabel = EMPTY_DISPLAY_LABEL, ...dateTimeOptions } = options
-  if (dateInput === null || dateInput === undefined || dateInput === '') return emptyLabel
+  if (dateInput === null || dateInput === undefined || dateInput === '')
+    return emptyLabel
 
   const date = dateInput instanceof Date ? dateInput : new Date(dateInput)
-  if (Number.isNaN(date.getTime())) return emptyLabel
+  if (Number.isNaN(date.getTime()))
+    return emptyLabel
 
   // AI modified: displayed dates always declare locale and business timezone for deterministic output.
   return new Intl.DateTimeFormat(locale, { ...dateTimeOptions, timeZone }).format(date)
@@ -46,7 +48,8 @@ export function getDateTimeLabel(
 
 export function getNumberLabel(amount: DisplayNumberInput, options: NumberLabelOptions): string {
   const { locale, emptyLabel = EMPTY_DISPLAY_LABEL, ...numberOptions } = options
-  if (!isDisplayNumber(amount)) return emptyLabel
+  if (!isDisplayNumber(amount))
+    return emptyLabel
 
   return new Intl.NumberFormat(locale, numberOptions).format(amount)
 }
@@ -73,7 +76,8 @@ export function getPercentageLabel(
   percentagePoints: DisplayNumberInput,
   options: PercentageLabelOptions,
 ): string {
-  if (!isDisplayNumber(percentagePoints)) return options.emptyLabel ?? EMPTY_DISPLAY_LABEL
+  if (!isDisplayNumber(percentagePoints))
+    return options.emptyLabel ?? EMPTY_DISPLAY_LABEL
 
   return getNumberLabel(percentagePoints / 100, {
     ...options,
@@ -83,11 +87,12 @@ export function getPercentageLabel(
 
 export function getFileSizeLabel(bytes: DisplayNumberInput, options: FileSizeLabelOptions): string {
   const { locale, emptyLabel = EMPTY_DISPLAY_LABEL } = options
-  if (!isDisplayNumber(bytes) || bytes < 0) return emptyLabel
+  if (!isDisplayNumber(bytes) || bytes < 0)
+    return emptyLabel
 
   const units = ['B', 'KB', 'MB', 'GB', 'TB'] as const
-  const unitIndex =
-    bytes === 0 ? 0 : Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const unitIndex
+    = bytes === 0 ? 0 : Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
   const amount = bytes / 1024 ** unitIndex
   const fractionDigits = unitIndex === 0 || amount >= 10 ? 0 : 1
   const amountLabel = getNumberLabel(amount, {

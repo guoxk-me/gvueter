@@ -93,9 +93,9 @@ const visibleProjects = computed(() => {
   const keyword = (filters.value.keyword ?? '').trim().toLocaleLowerCase()
   const status = filters.value.status ?? 'all'
   return projects.value.filter((project) => {
-    const matchesKeyword =
-      !keyword ||
-      [project.name, project.owner].some((value) => value.toLocaleLowerCase().includes(keyword))
+    const matchesKeyword
+      = !keyword
+        || [project.name, project.owner].some(value => value.toLocaleLowerCase().includes(keyword))
     const matchesStatus = status === 'all' || project.status === status
     return matchesKeyword && matchesStatus
   })
@@ -148,12 +148,15 @@ function openProjectDrawer(project: DemoProject): void {
 }
 
 function updateProjectStatus(value: AcceptableValue): void {
-  if (value === 'active' || value === 'planned' || value === 'paused') projectDraft.status = value
+  if (value === 'active' || value === 'planned' || value === 'paused')
+    projectDraft.status = value
 }
 
 function statusVariant(status: ProjectStatus): 'default' | 'secondary' | 'outline' {
-  if (status === 'active') return 'default'
-  if (status === 'paused') return 'outline'
+  if (status === 'active')
+    return 'default'
+  if (status === 'paused')
+    return 'outline'
   return 'secondary'
 }
 </script>

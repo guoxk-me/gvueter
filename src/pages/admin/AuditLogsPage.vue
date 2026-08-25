@@ -20,7 +20,7 @@ const operationLogState = useAllowedUrlState({
 })
 const selectedOperationLogId = computed<string | undefined>({
   get: () => operationLogState.value || undefined,
-  set: (operationLogId) => (operationLogState.value = operationLogId ?? ''),
+  set: operationLogId => (operationLogState.value = operationLogId ?? ''),
 })
 
 function acceptOperationLogOptions(operationLogIds: readonly string[]): void {

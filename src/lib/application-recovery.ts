@@ -69,7 +69,8 @@ export function reportApplicationFailure(
   const hasBeenReported = isWeakReferenceCandidate(failure) && reportedFailures.has(failure)
 
   if (!hasBeenReported) {
-    if (isWeakReferenceCandidate(failure)) reportedFailures.add(failure)
+    if (isWeakReferenceCandidate(failure))
+      reportedFailures.add(failure)
 
     const source = kind === 'asset-preload' ? 'vite-preload' : kind
     reportFrontendError(
@@ -106,7 +107,8 @@ export function showBootstrapRecovery(
   reloadApplication: () => void = () => window.location.reload(),
 ): void {
   const mountTarget = target.getElementById('app')
-  if (!mountTarget) return
+  if (!mountTarget)
+    return
 
   const isChinese = target.documentElement.lang.toLowerCase().startsWith('zh')
   const copy = isChinese
@@ -129,8 +131,8 @@ export function showBootstrapRecovery(
   panel.setAttribute('aria-live', 'assertive')
 
   const content = target.createElement('div')
-  content.className =
-    'flex w-full max-w-lg flex-col items-center rounded-xl border border-destructive/35 bg-destructive/5 px-5 py-8 text-center'
+  content.className
+    = 'flex w-full max-w-lg flex-col items-center rounded-xl border border-destructive/35 bg-destructive/5 px-5 py-8 text-center'
 
   const title = target.createElement('h1')
   title.className = 'text-xl font-semibold text-foreground'
@@ -141,8 +143,8 @@ export function showBootstrapRecovery(
   description.textContent = copy.description
 
   const reloadButton = target.createElement('button')
-  reloadButton.className =
-    'mt-5 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+  reloadButton.className
+    = 'mt-5 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
   reloadButton.type = 'button'
   reloadButton.textContent = copy.action
   reloadButton.addEventListener('click', reloadApplication)

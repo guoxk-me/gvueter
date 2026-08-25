@@ -65,20 +65,23 @@ export function useMonitoring(appliedFilters: Ref<MonitoringFilters>) {
   })
 
   async function terminateSession(sessionId: string): Promise<boolean> {
-    if (terminateSessionMutation.isPending.value) return false
+    if (terminateSessionMutation.isPending.value)
+      return false
     // AI modified: one mutation instance and a pending guard prevent duplicate operator actions.
     await terminateSessionMutation.mutateAsync(sessionId)
     return true
   }
 
   async function runJob(jobId: string): Promise<boolean> {
-    if (runJobMutation.isPending.value) return false
+    if (runJobMutation.isPending.value)
+      return false
     await runJobMutation.mutateAsync(jobId)
     return true
   }
 
   async function clearCache(cacheName: string): Promise<boolean> {
-    if (clearCacheMutation.isPending.value) return false
+    if (clearCacheMutation.isPending.value)
+      return false
     await clearCacheMutation.mutateAsync(cacheName)
     return true
   }

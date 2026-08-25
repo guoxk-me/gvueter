@@ -70,7 +70,8 @@ function isExampleRegion(region: string | undefined): region is ExampleRegion {
 }
 
 function isIsoDate(date: string | undefined): date is string {
-  if (!date || !isoDatePattern.test(date)) return false
+  if (!date || !isoDatePattern.test(date))
+    return false
 
   const parsedDate = new Date(`${date}T00:00:00.000Z`)
   return !Number.isNaN(parsedDate.valueOf()) && parsedDate.toISOString().startsWith(date)
@@ -79,10 +80,10 @@ function isIsoDate(date: string | undefined): date is string {
 export function readSelectionFilters(query: LocationQuery): SelectionFilters {
   const requestedStatus = getFirstQueryValue(query.selectionStatus)
   const requestedRegion = getFirstQueryValue(query.selectionRegion)
-  const requestedSkills =
-    getFirstQueryValue(query.selectionSkills)
+  const requestedSkills
+    = getFirstQueryValue(query.selectionSkills)
       ?.split(',')
-      .filter((skill) => skillKeys.has(skill)) ?? []
+      .filter(skill => skillKeys.has(skill)) ?? []
   const requestedStart = getFirstQueryValue(query.selectionStart)
   const requestedEnd = getFirstQueryValue(query.selectionEnd)
 
@@ -105,9 +106,12 @@ export function getSelectionFilterQuery(
   const nextQuery: LocationQueryRaw = { ...currentQuery }
   for (const queryKey of SELECTION_FILTER_QUERY_KEYS) delete nextQuery[queryKey]
 
-  if (filters.status !== 'all') nextQuery.selectionStatus = filters.status
-  if (filters.region !== 'all') nextQuery.selectionRegion = filters.region
-  if (filters.skills.length > 0) nextQuery.selectionSkills = filters.skills.join(',')
+  if (filters.status !== 'all')
+    nextQuery.selectionStatus = filters.status
+  if (filters.region !== 'all')
+    nextQuery.selectionRegion = filters.region
+  if (filters.skills.length > 0)
+    nextQuery.selectionSkills = filters.skills.join(',')
   if (filters.dateRange) {
     nextQuery.selectionStart = filters.dateRange.start
     nextQuery.selectionEnd = filters.dateRange.end
@@ -117,47 +121,50 @@ export function getSelectionFilterQuery(
 }
 
 function isSelectionFilters(value: unknown): value is SelectionFilters {
-  if (typeof value !== 'object' || value === null) return false
+  if (typeof value !== 'object' || value === null)
+    return false
 
   const candidate = value as Partial<SelectionFilters>
   return (
-    typeof candidate.status === 'string' &&
-    statuses.has(candidate.status as ExampleStatus) &&
-    typeof candidate.region === 'string' &&
-    regions.has(candidate.region as ExampleRegion) &&
-    Array.isArray(candidate.skills) &&
-    candidate.skills.every((skill) => typeof skill === 'string' && skillKeys.has(skill)) &&
-    (candidate.dateRange === null ||
-      (typeof candidate.dateRange === 'object' &&
-        candidate.dateRange !== null &&
-        isIsoDate(candidate.dateRange.start) &&
-        isIsoDate(candidate.dateRange.end) &&
-        candidate.dateRange.start <= candidate.dateRange.end))
+    typeof candidate.status === 'string'
+    && statuses.has(candidate.status as ExampleStatus)
+    && typeof candidate.region === 'string'
+    && regions.has(candidate.region as ExampleRegion)
+    && Array.isArray(candidate.skills)
+    && candidate.skills.every(skill => typeof skill === 'string' && skillKeys.has(skill))
+    && (candidate.dateRange === null
+      || (typeof candidate.dateRange === 'object'
+        && candidate.dateRange !== null
+        && isIsoDate(candidate.dateRange.start)
+        && isIsoDate(candidate.dateRange.end)
+        && candidate.dateRange.start <= candidate.dateRange.end))
   )
 }
 
 function isFilterScheme(value: unknown): value is FilterScheme {
-  if (typeof value !== 'object' || value === null) return false
+  if (typeof value !== 'object' || value === null)
+    return false
 
   const candidate = value as Partial<FilterScheme>
   return (
-    typeof candidate.id === 'string' &&
-    candidate.id.length > 0 &&
-    typeof candidate.name === 'string' &&
-    candidate.name.trim().length > 0 &&
-    candidate.name.length <= 60 &&
-    isSelectionFilters(candidate.filters)
+    typeof candidate.id === 'string'
+    && candidate.id.length > 0
+    && typeof candidate.name === 'string'
+    && candidate.name.trim().length > 0
+    && candidate.name.length <= 60
+    && isSelectionFilters(candidate.filters)
   )
 }
 
 export function readSavedFilterSchemes(storageValue: string | null): FilterScheme[] {
-  if (!storageValue) return []
+  if (!storageValue)
+    return []
 
   try {
     const storedValue: unknown = JSON.parse(storageValue)
     // AI modified: persisted demo filters are treated as untrusted input after every reload.
     return Array.isArray(storedValue)
-      ? storedValue.filter(isFilterScheme).map((scheme) => ({
+      ? storedValue.filter(isFilterScheme).map(scheme => ({
           id: scheme.id,
           name: scheme.name,
           filters: {
@@ -168,7 +175,8 @@ export function readSavedFilterSchemes(storageValue: string | null): FilterSchem
           },
         }))
       : []
-  } catch {
+  }
+  catch {
     return []
   }
 }

@@ -15,29 +15,29 @@ async function getFiles(directory) {
   return files.flat()
 }
 
-const unitSpecs = (await getFiles(resolve(projectRoot, 'src/__tests__'))).filter((file) =>
+const unitSpecs = (await getFiles(resolve(projectRoot, 'src/__tests__'))).filter(file =>
   file.endsWith('.spec.ts'),
 )
-const browserSpecs = (await getFiles(resolve(projectRoot, 'e2e'))).filter((file) =>
+const browserSpecs = (await getFiles(resolve(projectRoot, 'e2e'))).filter(file =>
   file.endsWith('.spec.ts'),
 )
 const specSource = (
-  await Promise.all([...unitSpecs, ...browserSpecs].map((file) => readFile(file, 'utf8')))
+  await Promise.all([...unitSpecs, ...browserSpecs].map(file => readFile(file, 'utf8')))
 ).join('\n')
 const featureEntries = await readdir(resolve(projectRoot, 'src/features'), {
   withFileTypes: true,
 })
-const features = featureEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name)
+const features = featureEntries.filter(entry => entry.isDirectory()).map(entry => entry.name)
 const unreferencedFeatures = features.filter(
-  (feature) => !specSource.includes(`@/features/${feature}`),
+  feature => !specSource.includes(`@/features/${feature}`),
 )
 const declaredTests = [
   ...specSource.matchAll(/\b(?:it|test)(?:\.(?:concurrent|each|fails|skip|todo))*\s*\(/g),
-].map((match) => match[0])
+].map(match => match[0])
 const disabledTestCount = [...specSource.matchAll(/\b(?:describe|it|test)\.(?:skip|todo)\s*\(/g)]
   .length
 // AI modified: skipped and todo declarations are not evidence of executed behavior.
-const testCount = declaredTests.filter((declaration) => !/\.(?:skip|todo)/.test(declaration)).length
+const testCount = declaredTests.filter(declaration => !/\.(?:skip|todo)/.test(declaration)).length
 const minimums = { browserSpecs: 5, testCases: 450, unitSpecs: 60 }
 const violations = []
 

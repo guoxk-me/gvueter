@@ -30,10 +30,10 @@ const { t } = useI18n()
 const selectedRole = defineModel<UserRole | undefined>()
 const selectedRoleKey = computed<UserRole | null>({
   get: () => selectedRole.value ?? null,
-  set: (role) => (selectedRole.value = role ?? undefined),
+  set: role => (selectedRole.value = role ?? undefined),
 })
 const roleOptions = computed<SearchableSelectOption<UserRole>[]>(() =>
-  props.roles.map((role) => ({
+  props.roles.map(role => ({
     value: role,
     label: t(`roles.${role}`),
     disabled: props.disabledRoles.includes(role),

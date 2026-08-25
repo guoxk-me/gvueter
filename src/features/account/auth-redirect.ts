@@ -10,14 +10,15 @@ export function getPostAuthenticationPath(candidate: unknown): string {
     for (let decodePass = 0; decodePass < 2; decodePass += 1) {
       decodedCandidate = decodeURIComponent(decodedCandidate)
     }
-  } catch {
+  }
+  catch {
     return DEFAULT_POST_AUTHENTICATION_PATH
   }
 
   // AI modified: password and SSO redirects share one strict same-origin path boundary.
   const hasControlCharacter = [...decodedCandidate].some((character) => {
     const codePoint = character.codePointAt(0)
-    return codePoint !== undefined && (codePoint <= 0x1f || codePoint === 0x7f)
+    return codePoint !== undefined && (codePoint <= 0x1F || codePoint === 0x7F)
   })
   if (decodedCandidate.startsWith('//') || decodedCandidate.includes('\\') || hasControlCharacter) {
     return DEFAULT_POST_AUTHENTICATION_PATH
@@ -27,17 +28,22 @@ export function getPostAuthenticationPath(candidate: unknown): string {
 }
 
 export function getSafeSsoAuthorizationUrl(candidate: unknown): string | null {
-  if (typeof window === 'undefined') return null
-  if (typeof candidate !== 'string' || !candidate.trim()) return null
+  if (typeof window === 'undefined')
+    return null
+  if (typeof candidate !== 'string' || !candidate.trim())
+    return null
 
   try {
     const applicationOrigin = window.location.origin
     const authorizationUrl = new URL(candidate, `${applicationOrigin}/`)
-    if (authorizationUrl.username || authorizationUrl.password) return null
-    if (authorizationUrl.origin === applicationOrigin) return authorizationUrl.toString()
+    if (authorizationUrl.username || authorizationUrl.password)
+      return null
+    if (authorizationUrl.origin === applicationOrigin)
+      return authorizationUrl.toString()
     // AI modified: external identity-provider navigation requires HTTPS and never accepts credentials.
     return authorizationUrl.protocol === 'https:' ? authorizationUrl.toString() : null
-  } catch {
+  }
+  catch {
     return null
   }
 }

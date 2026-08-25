@@ -62,19 +62,19 @@ interface SchemaFieldBase {
   visibleWhen?: (values: SchemaDrivenValues) => boolean
 }
 
-export type SchemaDrivenField = SchemaFieldBase &
-  (
-    | { name: 'requestName' | 'approverEmail' | 'notes'; kind: 'email' | 'text' | 'textarea' }
-    | { name: 'environment' | 'urgency'; kind: 'select'; options: readonly string[] }
+export type SchemaDrivenField = SchemaFieldBase
+  & (
+    | { name: 'requestName' | 'approverEmail' | 'notes', kind: 'email' | 'text' | 'textarea' }
+    | { name: 'environment' | 'urgency', kind: 'select', options: readonly string[] }
     | {
-        name: 'serviceOwner'
-        kind: 'remote-select'
-        dependsOn: 'environment'
-        optionSource: 'service-owners'
-      }
-    | { name: 'requiresEvidence'; kind: 'switch' }
-    | { name: 'evidence'; kind: 'file' }
-    | { name: 'richBrief'; kind: 'rich-text' }
+      name: 'serviceOwner'
+      kind: 'remote-select'
+      dependsOn: 'environment'
+      optionSource: 'service-owners'
+    }
+    | { name: 'requiresEvidence', kind: 'switch' }
+    | { name: 'evidence', kind: 'file' }
+    | { name: 'richBrief', kind: 'rich-text' }
   )
 
 // AI modified: the complete example renders every field from one discriminated schema instead of hard-coded field markup.
@@ -98,7 +98,7 @@ export const SCHEMA_DRIVEN_FIELDS: readonly SchemaDrivenField[] = [
     kind: 'email',
     required: true,
     permission: 'sensitive-write',
-    visibleWhen: (values) => values.environment === 'production',
+    visibleWhen: values => values.environment === 'production',
   },
   { name: 'urgency', kind: 'select', required: true, options: ['normal', 'urgent'] },
   { name: 'requiresEvidence', kind: 'switch', required: false },
@@ -106,14 +106,14 @@ export const SCHEMA_DRIVEN_FIELDS: readonly SchemaDrivenField[] = [
     name: 'evidence',
     kind: 'file',
     required: true,
-    visibleWhen: (values) => values.requiresEvidence,
+    visibleWhen: values => values.requiresEvidence,
   },
   { name: 'richBrief', kind: 'rich-text', required: true },
   { name: 'notes', kind: 'textarea', required: false },
 ]
 
 export function getVisibleSchemaFields(values: SchemaDrivenValues): readonly SchemaDrivenField[] {
-  return SCHEMA_DRIVEN_FIELDS.filter((field) => !field.visibleWhen || field.visibleWhen(values))
+  return SCHEMA_DRIVEN_FIELDS.filter(field => !field.visibleWhen || field.visibleWhen(values))
 }
 
 export function getSubmittableSchemaFields(
@@ -122,6 +122,6 @@ export function getSubmittableSchemaFields(
 ): readonly SchemaDrivenField[] {
   // AI modified: submission projection enforces field access after visibility is resolved.
   return getVisibleSchemaFields(values).filter(
-    (field) => field.permission !== 'sensitive-write' || access.canWriteSensitiveFields,
+    field => field.permission !== 'sensitive-write' || access.canWriteSensitiveFields,
   )
 }

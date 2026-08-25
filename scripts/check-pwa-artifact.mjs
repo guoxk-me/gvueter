@@ -12,7 +12,7 @@ const generatedIconPaths = [
   'pwa-192x192.png',
   'pwa-512x512.png',
   'pwa-64x64.png',
-].map((filename) => resolve(outputDirectory, filename))
+].map(filename => resolve(outputDirectory, filename))
 
 async function exists(filePath) {
   return access(filePath).then(
@@ -41,8 +41,8 @@ if (!hasServiceWorker || !hasWebManifest) {
 }
 
 const manifest = JSON.parse(await readFile(webManifestPath, 'utf8'))
-const iconSizes = new Set(manifest.icons?.map((icon) => icon.sizes))
-const hasMaskableIcon = manifest.icons?.some((icon) => icon.purpose?.includes('maskable'))
+const iconSizes = new Set(manifest.icons?.map(icon => icon.sizes))
+const hasMaskableIcon = manifest.icons?.some(icon => icon.purpose?.includes('maskable'))
 const requiredManifestValues = {
   display: 'standalone',
   scope: '/',
@@ -55,13 +55,17 @@ for (const [key, expectedValue] of Object.entries(requiredManifestValues)) {
     violations.push(`manifest.${key} must equal ${JSON.stringify(expectedValue)}`)
   }
 }
-if (!iconSizes.has('192x192')) violations.push('manifest must include a 192x192 icon')
-if (!iconSizes.has('512x512')) violations.push('manifest must include a 512x512 icon')
-if (!hasMaskableIcon) violations.push('manifest must include a maskable icon')
+if (!iconSizes.has('192x192'))
+  violations.push('manifest must include a 192x192 icon')
+if (!iconSizes.has('512x512'))
+  violations.push('manifest must include a 512x512 icon')
+if (!hasMaskableIcon)
+  violations.push('manifest must include a maskable icon')
 
 for (const icon of manifest.icons ?? []) {
   const iconPath = resolve(outputDirectory, icon.src.replace(/^\//, ''))
-  if (!(await exists(iconPath))) violations.push(`manifest icon is missing: ${icon.src}`)
+  if (!(await exists(iconPath)))
+    violations.push(`manifest icon is missing: ${icon.src}`)
 }
 
 const serviceWorkerSource = await readFile(serviceWorkerPath, 'utf8')

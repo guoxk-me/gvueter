@@ -25,14 +25,14 @@ const teamMembers = computed<TeamMember[]>(() =>
   })),
 )
 const memberOptions = computed<SearchableSelectOption[]>(() =>
-  teamMembers.value.map((member) => ({
+  teamMembers.value.map(member => ({
     value: member.id,
     label: member.name,
     keywords: [member.team, member.id],
   })),
 )
 const selectedMember = computed(() =>
-  teamMembers.value.find((member) => member.id === selectedMemberId.value),
+  teamMembers.value.find(member => member.id === selectedMemberId.value),
 )
 
 function rememberSearch(searchTerm: string): void {

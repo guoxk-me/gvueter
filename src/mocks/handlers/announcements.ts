@@ -34,7 +34,7 @@ const initialAnnouncements: AnnouncementRecord[] = [
     updatedAt: '2026-07-08T08:00:00.000Z',
   },
 ]
-const announcements = initialAnnouncements.map((announcement) => ({ ...announcement }))
+const announcements = initialAnnouncements.map(announcement => ({ ...announcement }))
 let announcementSequence = 1
 const MAX_MOCK_ANNOUNCEMENTS = 200
 
@@ -67,7 +67,7 @@ export function getPublishedMockAnnouncements(): readonly PublishedMockAnnouncem
 }
 
 function getAnnouncement(announcementId: string): AnnouncementRecord | undefined {
-  return announcements.find((announcement) => announcement.id === announcementId)
+  return announcements.find(announcement => announcement.id === announcementId)
 }
 
 function getAnnouncementFailure(message: string, code: string, status = 400) {
@@ -78,14 +78,15 @@ export function resetMockAnnouncements(): void {
   announcements.splice(
     0,
     announcements.length,
-    ...initialAnnouncements.map((announcement) => ({ ...announcement })),
+    ...initialAnnouncements.map(announcement => ({ ...announcement })),
   )
   announcementSequence = 1
 }
 
 export const listAnnouncementsHandler = http.get('/api/announcements', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Content')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<AnnouncementListResponse>>({
     code: 0,
@@ -99,12 +100,14 @@ export const createAnnouncementHandler = http.post<never, Record<string, unknown
   async ({ request }) => {
     // AI modified: content mutations follow the editable role policy instead of a hard-coded role.
     const authentication = authorizeMockPermission(request, 'create', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
     const requestBody = await readMockJsonBody(request, ANNOUNCEMENT_INPUT_SCHEMA, {
       code: 'INVALID_ANNOUNCEMENT',
       message: '公告信息不完整',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const safeContent = sanitizeRichTextHtml(input.content)
     if (!getAnnouncementTextPreview(safeContent))
@@ -145,14 +148,17 @@ export const updateAnnouncementHandler = http.put<
   Record<string, unknown>
 >('/api/announcements/:announcementId', async ({ params, request }) => {
   const authentication = authorizeMockPermission(request, 'update', 'Content')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const announcement = getAnnouncement(params.announcementId)
-  if (!announcement) return getAnnouncementFailure('公告不存在', 'ANNOUNCEMENT_NOT_FOUND', 404)
+  if (!announcement)
+    return getAnnouncementFailure('公告不存在', 'ANNOUNCEMENT_NOT_FOUND', 404)
   const requestBody = await readMockJsonBody(request, ANNOUNCEMENT_INPUT_SCHEMA, {
     code: 'INVALID_ANNOUNCEMENT',
     message: '公告信息不完整',
   })
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const input = requestBody.body
   const safeContent = sanitizeRichTextHtml(input.content)
   if (!getAnnouncementTextPreview(safeContent))
@@ -181,20 +187,23 @@ export const updateAnnouncementStatusHandler = http.put<
   AnnouncementStatusInput
 >('/api/announcements/:announcementId/status', async ({ params, request }) => {
   const authentication = authorizeMockPermission(request, 'update', 'Content')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const announcement = getAnnouncement(params.announcementId)
-  if (!announcement) return getAnnouncementFailure('公告不存在', 'ANNOUNCEMENT_NOT_FOUND', 404)
+  if (!announcement)
+    return getAnnouncementFailure('公告不存在', 'ANNOUNCEMENT_NOT_FOUND', 404)
   const requestBody = await readMockJsonBody(request, ANNOUNCEMENT_STATUS_INPUT_SCHEMA, {
     code: 'INVALID_ANNOUNCEMENT_STATUS',
     message: '公告状态无效',
   })
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const input = requestBody.body
 
   // AI modified: publication time is server-owned and only changes on a publish transition.
   announcement.status = input.status
-  announcement.publishedAt =
-    input.status === 'published' ? new Date().toISOString() : announcement.publishedAt
+  announcement.publishedAt
+    = input.status === 'published' ? new Date().toISOString() : announcement.publishedAt
   announcement.updatedAt = new Date().toISOString()
   recordMockOperation(authentication.user, {
     action: input.status === 'published' ? 'publish' : 'offline',
@@ -212,9 +221,11 @@ export const deleteAnnouncementHandler = http.delete<{ announcementId: string }>
   '/api/announcements/:announcementId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
     const announcement = getAnnouncement(params.announcementId)
-    if (!announcement) return getAnnouncementFailure('公告不存在', 'ANNOUNCEMENT_NOT_FOUND', 404)
+    if (!announcement)
+      return getAnnouncementFailure('公告不存在', 'ANNOUNCEMENT_NOT_FOUND', 404)
     announcements.splice(announcements.indexOf(announcement), 1)
     recordMockOperation(authentication.user, {
       action: 'delete',

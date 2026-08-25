@@ -14,11 +14,11 @@ const initialLoginActivities: readonly MockLoginActivity[] = [
   { id: 'login-006', userId: 1, occurredAt: '2026-07-13T08:12:00.000Z', status: 'success' },
 ]
 
-const loginActivities = initialLoginActivities.map((activity) => ({ ...activity }))
+const loginActivities = initialLoginActivities.map(activity => ({ ...activity }))
 let loginActivitySequence = initialLoginActivities.length
 
 export function getMockLoginActivities(): MockLoginActivity[] {
-  return loginActivities.map((activity) => ({ ...activity }))
+  return loginActivities.map(activity => ({ ...activity }))
 }
 
 export function recordMockLoginActivity(userId: number, occurredAt = new Date()): void {
@@ -37,7 +37,7 @@ export function resetMockDashboardData(): void {
   loginActivities.splice(
     0,
     loginActivities.length,
-    ...initialLoginActivities.map((activity) => ({ ...activity })),
+    ...initialLoginActivities.map(activity => ({ ...activity })),
   )
   loginActivitySequence = initialLoginActivities.length
 }

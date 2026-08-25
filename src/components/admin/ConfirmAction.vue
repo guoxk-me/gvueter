@@ -50,7 +50,8 @@ const isOpen = defineModel<boolean>('open', { default: false })
 function confirmAction(): void {
   emit('confirm')
   // AI modified: allow async owners to keep the dialog open until their mutation resolves.
-  if (props.closeOnConfirm) isOpen.value = false
+  if (props.closeOnConfirm)
+    isOpen.value = false
 }
 </script>
 

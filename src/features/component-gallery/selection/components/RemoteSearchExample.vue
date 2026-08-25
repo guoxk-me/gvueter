@@ -79,10 +79,11 @@ function waitForDirectory(delay: number, signal: AbortSignal): Promise<void> {
 
 const demoSource = computed<RemoteOptionSource>(() => async (query, signal) => {
   await waitForDirectory(query.toLocaleLowerCase() === 'slow' ? 700 : 320, signal)
-  if (query.toLocaleLowerCase() === 'error') throw new Error('Simulated directory outage')
+  if (query.toLocaleLowerCase() === 'error')
+    throw new Error('Simulated directory outage')
 
   const requestedText = query.toLocaleLowerCase()
-  return directory.value.filter((option) =>
+  return directory.value.filter(option =>
     `${option.label} ${option.description ?? ''}`.toLocaleLowerCase().includes(requestedText),
   )
 })
@@ -134,7 +135,7 @@ function clearSearch(): void {
         :aria-label="copy.label"
         :placeholder="copy.placeholder"
         class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full min-w-0 rounded-md border bg-transparent py-2 pr-11 pl-9 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-      />
+      >
       <Button
         v-if="query || selectedOption"
         type="button"
@@ -207,8 +208,7 @@ function clearSearch(): void {
             <span
               v-if="option.description"
               class="block break-words text-xs text-muted-foreground"
-              >{{ option.description }}</span
-            >
+            >{{ option.description }}</span>
           </span>
         </button>
       </div>

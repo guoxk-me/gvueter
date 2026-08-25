@@ -36,14 +36,14 @@ export const ssoConfigurationHandler = http.get('/api/auth/sso/config', () =>
       data: getMockSsoConfiguration(),
     },
     { headers: NO_STORE_RESPONSE_HEADERS },
-  ),
-)
+  ))
 
 export const ssoStartHandler = http.post<never, SsoStartInput>(
   '/api/auth/sso/start',
   async ({ request }) => {
     const requestBody = await readMockJsonBody(request, SSO_START_INPUT_SCHEMA)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     if (!getMockSsoConfiguration().isEnabled) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'SSO_NOT_CONFIGURED', message: 'SSO 登录尚未启用', data: null },
@@ -51,7 +51,7 @@ export const ssoStartHandler = http.post<never, SsoStartInput>(
       )
     }
 
-    const ssoUser = mockUsers.find((user) => user.id === 1 && user.status === 'active')
+    const ssoUser = mockUsers.find(user => user.id === 1 && user.status === 'active')
     if (!ssoUser) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'SSO_ACCOUNT_UNAVAILABLE', message: 'SSO 账号不可用', data: null },
@@ -80,7 +80,8 @@ export const ssoExchangeHandler = http.post<never, SsoExchangeInput>(
   '/api/auth/sso/exchange',
   async ({ request }) => {
     const requestBody = await readMockJsonBody(request, SSO_EXCHANGE_INPUT_SCHEMA)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
 
     const ticket = consumeMockSsoTicket(requestBody.body.ticket)
     if (ticket.status === 'expired') {
@@ -96,7 +97,7 @@ export const ssoExchangeHandler = http.post<never, SsoExchangeInput>(
       )
     }
 
-    const matchedUser = mockUsers.find((user) => user.id === ticket.userId)
+    const matchedUser = mockUsers.find(user => user.id === ticket.userId)
     if (!matchedUser || matchedUser.status !== 'active') {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'SSO_ACCOUNT_UNAVAILABLE', message: 'SSO 账号不可用', data: null },

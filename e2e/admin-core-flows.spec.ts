@@ -55,9 +55,9 @@ async function searchUsers(page: Page, keyword: string): Promise<void> {
   const searchRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'GET' &&
-      requestUrl.pathname === '/api/users' &&
-      requestUrl.searchParams.get('keyword') === keyword
+      response.request().method() === 'GET'
+      && requestUrl.pathname === '/api/users'
+      && requestUrl.searchParams.get('keyword') === keyword
     )
   })
   await page.getByRole('searchbox', { name: 'Search' }).fill(keyword)
@@ -84,15 +84,16 @@ async function showCalendarMonth(
   targetHeading: string,
 ): Promise<void> {
   const displayedMonthLabel = (await heading.textContent())?.trim()
-  if (!displayedMonthLabel) throw new Error('The calendar did not expose its visible month')
+  if (!displayedMonthLabel)
+    throw new Error('The calendar did not expose its visible month')
   const displayedMonth = new Date(`${displayedMonthLabel} 1`)
   if (Number.isNaN(displayedMonth.getTime()))
     throw new Error(`The calendar exposed an invalid month: ${displayedMonthLabel}`)
 
-  const monthOffset =
-    (targetMonth.getFullYear() - displayedMonth.getFullYear()) * 12 +
-    targetMonth.getMonth() -
-    displayedMonth.getMonth()
+  const monthOffset
+    = (targetMonth.getFullYear() - displayedMonth.getFullYear()) * 12
+      + targetMonth.getMonth()
+      - displayedMonth.getMonth()
   const navigationName = monthOffset > 0 ? 'Next page' : 'Previous page'
   for (let pageOffset = 0; pageOffset < Math.abs(monthOffset); pageOffset += 1) {
     await calendar.getByRole('button', { name: navigationName, exact: true }).click()
@@ -331,8 +332,8 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
   const titleAvailabilityRequest = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      requestUrl.pathname === '/api/form-workbench/title-availability' &&
-      requestUrl.searchParams.get('title') === 'Browser verified customer rollout'
+      requestUrl.pathname === '/api/form-workbench/title-availability'
+      && requestUrl.searchParams.get('title') === 'Browser verified customer rollout'
     )
   })
   await page.getByRole('button', { name: 'Next', exact: true }).click()
@@ -418,8 +419,8 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
   const conflictResponse = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'POST' &&
-      requestUrl.pathname === '/api/form-workbench/submissions'
+      response.request().method() === 'POST'
+      && requestUrl.pathname === '/api/form-workbench/submissions'
     )
   })
   await page.getByRole('button', { name: 'Submit request' }).click()
@@ -432,8 +433,8 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
   const recoveredTitleAvailability = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      requestUrl.pathname === '/api/form-workbench/title-availability' &&
-      requestUrl.searchParams.get('title') === 'Browser verified customer rollout recovered'
+      requestUrl.pathname === '/api/form-workbench/title-availability'
+      && requestUrl.searchParams.get('title') === 'Browser verified customer rollout recovered'
     )
   })
   await page.getByRole('button', { name: 'Next', exact: true }).click()
@@ -449,8 +450,8 @@ test('validates, restores, submits, and recovers the dynamic stepped form', asyn
   const submissionResponse = page.waitForResponse((response) => {
     const requestUrl = new URL(response.url())
     return (
-      response.request().method() === 'POST' &&
-      requestUrl.pathname === '/api/form-workbench/submissions'
+      response.request().method() === 'POST'
+      && requestUrl.pathname === '/api/form-workbench/submissions'
     )
   })
   await page.getByRole('button', { name: 'Submit request' }).click()

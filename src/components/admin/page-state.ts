@@ -38,25 +38,25 @@ export interface PageStateContract {
 
 // AI modified: one typed taxonomy separates query, connectivity, authorization, concurrency, and session recovery semantics.
 export const PAGE_STATE_CONTRACTS = {
-  ready: {
+  'ready': {
     surface: 'region',
     blocksContent: false,
     announcement: 'none',
     recoveryActions: ['none'],
   },
-  loading: {
+  'loading': {
     surface: 'region',
     blocksContent: true,
     announcement: 'polite',
     recoveryActions: ['none'],
   },
-  refreshing: {
+  'refreshing': {
     surface: 'region',
     blocksContent: false,
     announcement: 'polite',
     recoveryActions: ['none'],
   },
-  empty: {
+  'empty': {
     surface: 'page',
     blocksContent: true,
     announcement: 'polite',
@@ -68,7 +68,7 @@ export const PAGE_STATE_CONTRACTS = {
     announcement: 'polite',
     recoveryActions: ['reset-search'],
   },
-  error: {
+  'error': {
     surface: 'page',
     blocksContent: true,
     announcement: 'assertive',
@@ -80,25 +80,25 @@ export const PAGE_STATE_CONTRACTS = {
     announcement: 'assertive',
     recoveryActions: ['reload'],
   },
-  offline: {
+  'offline': {
     surface: 'global-boundary',
     blocksContent: false,
     announcement: 'assertive',
     recoveryActions: ['reconnect', 'retry'],
   },
-  forbidden: {
+  'forbidden': {
     surface: 'page',
     blocksContent: true,
     announcement: 'assertive',
     recoveryActions: ['return'],
   },
-  conflict: {
+  'conflict': {
     surface: 'operation',
     blocksContent: false,
     announcement: 'assertive',
     recoveryActions: ['reload', 'review'],
   },
-  success: {
+  'success': {
     surface: 'operation',
     blocksContent: false,
     announcement: 'polite',

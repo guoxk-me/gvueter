@@ -71,31 +71,44 @@ export interface ApiErrorContext {
 
 export function getApiErrorCategory(code: string, status?: number): ApiErrorCategory {
   const upperCode = code.toUpperCase()
-  if (upperCode === 'REQUEST_CANCELED') return 'canceled'
-  if (SESSION_INVALIDATION_CODES.has(upperCode)) return 'authentication'
+  if (upperCode === 'REQUEST_CANCELED')
+    return 'canceled'
+  if (SESSION_INVALIDATION_CODES.has(upperCode))
+    return 'authentication'
   if (status === 401 || ['401', 'TOKEN_EXPIRED', 'UNAUTHORIZED'].includes(upperCode))
     return 'authentication'
-  if (status === 403 || ['403', 'FORBIDDEN'].includes(upperCode)) return 'authorization'
-  if (status === 409 || upperCode.includes('CONFLICT')) return 'conflict'
+  if (status === 403 || ['403', 'FORBIDDEN'].includes(upperCode))
+    return 'authorization'
+  if (status === 409 || upperCode.includes('CONFLICT'))
+    return 'conflict'
   if (status === 422 || upperCode.includes('VALIDATION') || upperCode.includes('INVALID_INPUT'))
     return 'validation'
   if (status === 408 || upperCode === 'REQUEST_TIMEOUT' || upperCode.includes('TIMEOUT'))
     return 'timeout'
-  if (upperCode === 'NETWORK_ERROR') return 'network'
-  if (typeof status === 'number' && status >= 500) return 'server'
+  if (upperCode === 'NETWORK_ERROR')
+    return 'network'
+  if (typeof status === 'number' && status >= 500)
+    return 'server'
   if (upperCode === 'INVALID_API_ENVELOPE' || upperCode === 'INVALID_API_RESPONSE_DATA')
     return 'contract'
-  if (typeof status === 'number' && status >= 400) return 'client'
+  if (typeof status === 'number' && status >= 400)
+    return 'client'
   return 'unknown'
 }
 
 export function getApiErrorAction(category: ApiErrorCategory): ApiErrorAction {
-  if (category === 'authentication') return 'sign-in'
-  if (category === 'authorization') return 'request-access'
-  if (category === 'conflict') return 'refresh'
-  if (category === 'validation' || category === 'client') return 'review-input'
-  if (category === 'timeout' || category === 'network' || category === 'server') return 'retry'
-  if (category === 'contract' || category === 'unknown') return 'contact-support'
+  if (category === 'authentication')
+    return 'sign-in'
+  if (category === 'authorization')
+    return 'request-access'
+  if (category === 'conflict')
+    return 'refresh'
+  if (category === 'validation' || category === 'client')
+    return 'review-input'
+  if (category === 'timeout' || category === 'network' || category === 'server')
+    return 'retry'
+  if (category === 'contract' || category === 'unknown')
+    return 'contact-support'
   return 'none'
 }
 
@@ -130,7 +143,7 @@ export interface GetRequestOptions {
 export interface ResponseDataSchema<T> {
   safeParse: (
     value: unknown,
-  ) => { success: true; data: T } | { success: false; error: { issues: unknown } }
+  ) => { success: true, data: T } | { success: false, error: { issues: unknown } }
 }
 
 export interface ResponseContractOptions<T> {
@@ -178,7 +191,7 @@ export function getSafeFileName(fileName: string): string | undefined {
   const pathSegments = fileName.split(/[\\/]/)
   const finalSegment = pathSegments[pathSegments.length - 1]?.trim() ?? ''
   const printableName = [...finalSegment]
-    .filter((character) => character.charCodeAt(0) >= 32 && character.charCodeAt(0) !== 127)
+    .filter(character => character.charCodeAt(0) >= 32 && character.charCodeAt(0) !== 127)
     .join('')
     .replace(/^\.+/, '')
     .trim()
@@ -192,10 +205,11 @@ export const http = axios.create({
 })
 
 function isUnauthenticatedRequestPath(requestPath: string | undefined): boolean {
-  if (!requestPath) return false
+  if (!requestPath)
+    return false
   return (
-    UNAUTHENTICATED_REQUEST_PATHS.has(requestPath) ||
-    UNAUTHENTICATED_REQUEST_PREFIXES.some((prefix) => requestPath.startsWith(prefix))
+    UNAUTHENTICATED_REQUEST_PATHS.has(requestPath)
+    || UNAUTHENTICATED_REQUEST_PREFIXES.some(prefix => requestPath.startsWith(prefix))
   )
 }
 
@@ -209,7 +223,8 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   // AI modified: public authentication attempts must not carry or end an unrelated active session.
   if (isUnauthenticatedRequestPath(requestPath)) {
     config.headers.delete('Authorization')
-  } else if (token) {
+  }
+  else if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
@@ -217,11 +232,11 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 function isApiEnvelope(value: unknown): value is ApiEnvelope<unknown> {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'code' in value &&
-    'message' in value &&
-    'data' in value
+    typeof value === 'object'
+    && value !== null
+    && 'code' in value
+    && 'message' in value
+    && 'data' in value
   )
 }
 
@@ -232,7 +247,8 @@ function isSuccessfulBusinessCode(code: number | string): boolean {
 function getAccessFailureStatus(error: ApiError): 401 | 403 | undefined {
   const code = error.code.toUpperCase()
   // AI modified: explicit account/session termination codes end the session even when transported as 403.
-  if (SESSION_INVALIDATION_CODES.has(code)) return 401
+  if (SESSION_INVALIDATION_CODES.has(code))
+    return 401
   if (error.status === 401 || ['401', 'TOKEN_EXPIRED', 'UNAUTHORIZED'].includes(code)) {
     return 401
   }
@@ -245,7 +261,8 @@ function getAccessFailureStatus(error: ApiError): 401 | 403 | undefined {
 function hasCurrentAuthenticatedRequest(config?: InternalAxiosRequestConfig): boolean {
   const requestPath = config?.url?.split(/[?#]/, 1)[0]
   // AI modified: public identity-entry failures never invalidate an already active principal.
-  if (isUnauthenticatedRequestPath(requestPath)) return false
+  if (isUnauthenticatedRequestPath(requestPath))
+    return false
   const authorization = config?.headers.get('Authorization')
   const currentToken = getSessionAccessToken()
   // AI modified: a late response from an older credential cannot invalidate the replacement session.
@@ -254,7 +271,8 @@ function hasCurrentAuthenticatedRequest(config?: InternalAxiosRequestConfig): bo
 
 function getHeaderValue(headers: AxiosResponse['headers'], headerName: string): string | undefined {
   const headerValue = headers[headerName]
-  if (typeof headerValue === 'string' && headerValue.trim()) return headerValue.trim().slice(0, 200)
+  if (typeof headerValue === 'string' && headerValue.trim())
+    return headerValue.trim().slice(0, 200)
   return undefined
 }
 
@@ -263,10 +281,11 @@ function getRequestId(
   config?: InternalAxiosRequestConfig,
 ): string | undefined {
   const responseRequestId = response
-    ? (getHeaderValue(response.headers, 'x-request-id') ??
-      getHeaderValue(response.headers, 'x-correlation-id'))
+    ? (getHeaderValue(response.headers, 'x-request-id')
+      ?? getHeaderValue(response.headers, 'x-correlation-id'))
     : undefined
-  if (responseRequestId) return responseRequestId
+  if (responseRequestId)
+    return responseRequestId
 
   const requestHeader = config?.headers.get(REQUEST_ID_HEADER)
   return typeof requestHeader === 'string' && requestHeader.trim()
@@ -299,11 +318,13 @@ async function applyAccessFailurePolicy(
 }
 
 async function getResponseBody(error: unknown): Promise<unknown> {
-  if (!axios.isAxiosError(error) || !error.response) return undefined
+  if (!axios.isAxiosError(error) || !error.response)
+    return undefined
 
   const body: unknown = error.response.data
   const contentType = getHeaderValue(error.response.headers, 'content-type')?.toLowerCase() ?? ''
-  if (!contentType.includes('/json') && !contentType.includes('+json')) return body
+  if (!contentType.includes('/json') && !contentType.includes('+json'))
+    return body
 
   try {
     // AI modified: download failures arrive as Blob/bytes, so recover JSON envelopes before policy handling.
@@ -316,7 +337,8 @@ async function getResponseBody(error: unknown): Promise<unknown> {
     if (typeof body === 'string') {
       return JSON.parse(body) as unknown
     }
-  } catch {
+  }
+  catch {
     return body
   }
 
@@ -403,7 +425,8 @@ function getEnvelopeData<T>(response: AxiosResponse, responseSchema?: ResponseDa
     )
   }
 
-  if (!responseSchema) return envelopeResult.data.data as T
+  if (!responseSchema)
+    return envelopeResult.data.data as T
   const dataResult = responseSchema.safeParse(envelopeResult.data.data)
   if (!dataResult.success) {
     // AI modified: feature callers can reject structurally invalid payloads before state or UI consumes them.
@@ -427,7 +450,8 @@ function getRequestKey(url: string, params?: Record<string, unknown>): string {
 }
 
 export function isUnauthorizedError(error: unknown): error is ApiError {
-  if (!(error instanceof ApiError)) return false
+  if (!(error instanceof ApiError))
+    return false
   const code = error.code.toUpperCase()
   return error.status === 401 || ['401', 'TOKEN_EXPIRED', 'UNAUTHORIZED'].includes(code)
 }
@@ -465,7 +489,8 @@ export async function get<T>(
       signal: controller?.signal,
     })
     return getEnvelopeData<T>(response, options.responseSchema)
-  } finally {
+  }
+  finally {
     if (controller && pendingGetRequests.get(requestKey) === controller) {
       pendingGetRequests.delete(requestKey)
     }
@@ -510,7 +535,8 @@ export async function upload<T>(
   const fileName = getSafeFileName(options.fileName ?? (file as File).name)
   if (fileName) {
     formData.append(fieldName, file, fileName)
-  } else {
+  }
+  else {
     formData.append(fieldName, file)
   }
 
@@ -532,7 +558,8 @@ export async function uploadFileBytes<T>(
   options: UploadFileBytesOptions & ResponseContractOptions<T> = {},
 ): Promise<T> {
   const fileName = getSafeFileName(options.fileName ?? file.name ?? '')
-  if (!fileName) throw new ApiError('INVALID_UPLOAD_FILE_NAME', 'The upload file name is invalid')
+  if (!fileName)
+    throw new ApiError('INVALID_UPLOAD_FILE_NAME', 'The upload file name is invalid')
 
   // AI modified: binary uploads preserve the original payload without trusting client metadata sizes.
   const response = await http.post<ApiEnvelope<T>>(url, await file.arrayBuffer(), {
@@ -555,7 +582,8 @@ function getDownloadFileName(contentDisposition?: string): string | undefined {
   if (encodedName) {
     try {
       return getSafeFileName(decodeURIComponent(encodedName))
-    } catch {
+    }
+    catch {
       return getSafeFileName(encodedName)
     }
   }
@@ -576,8 +604,8 @@ export async function download(
   const contentTypeHeader = response.headers['content-type']
   const contentDispositionHeader = response.headers['content-disposition']
   const contentType = typeof contentTypeHeader === 'string' ? contentTypeHeader : undefined
-  const contentDisposition =
-    typeof contentDispositionHeader === 'string' ? contentDispositionHeader : undefined
+  const contentDisposition
+    = typeof contentDispositionHeader === 'string' ? contentDispositionHeader : undefined
 
   return {
     blob: response.data,

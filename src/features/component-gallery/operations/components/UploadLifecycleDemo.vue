@@ -88,7 +88,7 @@ const tasks = ref<DemoUploadTask[]>([])
 const rejectedFiles = ref<FileUploadRejection[]>([])
 const controllers = new Map<string, AbortController>()
 const rejectionMessageKeys: Record<FileUploadRejectReason, string> = {
-  duplicate: 'components.upload.duplicate',
+  'duplicate': 'components.upload.duplicate',
   'file-too-large': 'components.upload.fileTooLarge',
   'invalid-file-name': 'components.upload.invalidFileName',
   'invalid-type': 'components.upload.invalidType',
@@ -96,13 +96,13 @@ const rejectionMessageKeys: Record<FileUploadRejectReason, string> = {
 }
 
 const completedCount = computed(
-  () => tasks.value.filter((task) => task.status === 'succeeded').length,
+  () => tasks.value.filter(task => task.status === 'succeeded').length,
 )
-const failedCount = computed(() => tasks.value.filter((task) => task.status === 'failed').length)
+const failedCount = computed(() => tasks.value.filter(task => task.status === 'failed').length)
 const canceledCount = computed(
-  () => tasks.value.filter((task) => task.status === 'canceled').length,
+  () => tasks.value.filter(task => task.status === 'canceled').length,
 )
-const waitingCount = computed(() => tasks.value.filter((task) => task.status === 'waiting').length)
+const waitingCount = computed(() => tasks.value.filter(task => task.status === 'waiting').length)
 const queueSummary = computed(
   () =>
     `${completedCount.value} ${copy.value.succeeded} · ${failedCount.value} ${copy.value.failed} · ${canceledCount.value} ${copy.value.canceled}`,
@@ -116,10 +116,10 @@ onBeforeUnmount(() => {
 function addFiles(files: File[]): void {
   rejectedFiles.value = []
   const existingFiles = new Set(
-    tasks.value.map((task) => `${task.file.name}:${task.file.size}:${task.file.lastModified}`),
+    tasks.value.map(task => `${task.file.name}:${task.file.size}:${task.file.lastModified}`),
   )
   const newTasks = files
-    .filter((file) => !existingFiles.has(`${file.name}:${file.size}:${file.lastModified}`))
+    .filter(file => !existingFiles.has(`${file.name}:${file.size}:${file.lastModified}`))
     .map(createDemoUploadTask)
   tasks.value.push(...newTasks)
 }
@@ -153,14 +153,18 @@ function statusLabel(task: DemoUploadTask): string {
 }
 
 function statusVariant(task: DemoUploadTask): 'default' | 'destructive' | 'outline' | 'secondary' {
-  if (task.status === 'succeeded') return 'default'
-  if (task.status === 'failed') return 'destructive'
-  if (task.status === 'uploading') return 'secondary'
+  if (task.status === 'succeeded')
+    return 'default'
+  if (task.status === 'failed')
+    return 'destructive'
+  if (task.status === 'uploading')
+    return 'secondary'
   return 'outline'
 }
 
 async function uploadTask(task: DemoUploadTask): Promise<void> {
-  if (!['waiting', 'paused', 'failed'].includes(task.status)) return
+  if (!['waiting', 'paused', 'failed'].includes(task.status))
+    return
 
   task.status = 'uploading'
   task.error = undefined
@@ -207,39 +211,47 @@ async function uploadTask(task: DemoUploadTask): Promise<void> {
     task.resultUrl = completion.resultUrl
     task.progress = 100
     task.status = 'succeeded'
-  } catch (error) {
-    if (controller.signal.aborted) return
+  }
+  catch (error) {
+    if (controller.signal.aborted)
+      return
     task.status = 'failed'
     task.error = error instanceof Error ? error.message : copy.value.failure
-  } finally {
-    if (controllers.get(task.id) === controller) controllers.delete(task.id)
+  }
+  finally {
+    if (controllers.get(task.id) === controller)
+      controllers.delete(task.id)
   }
 }
 
 function startWaitingUploads(): void {
-  for (const task of tasks.value.filter((task) => task.status === 'waiting')) void uploadTask(task)
+  for (const task of tasks.value.filter(task => task.status === 'waiting')) void uploadTask(task)
 }
 
 function pauseTask(task: DemoUploadTask): void {
-  if (task.status !== 'uploading') return
+  if (task.status !== 'uploading')
+    return
   task.status = 'paused'
   controllers.get(task.id)?.abort()
 }
 
 function resumeTask(task: DemoUploadTask): void {
-  if (task.status !== 'paused') return
+  if (task.status !== 'paused')
+    return
   task.status = 'waiting'
   void uploadTask(task)
 }
 
 function retryTask(task: DemoUploadTask): void {
-  if (task.status !== 'failed') return
+  if (task.status !== 'failed')
+    return
   task.status = 'waiting'
   void uploadTask(task)
 }
 
 function cancelTask(task: DemoUploadTask): void {
-  if (['succeeded', 'canceled'].includes(task.status)) return
+  if (['succeeded', 'canceled'].includes(task.status))
+    return
   task.status = 'canceled'
   task.error = undefined
   controllers.get(task.id)?.abort()
@@ -251,11 +263,11 @@ function cancelTask(task: DemoUploadTask): void {
 
 function removeTask(task: DemoUploadTask): void {
   controllers.get(task.id)?.abort()
-  tasks.value = tasks.value.filter((candidate) => candidate.id !== task.id)
+  tasks.value = tasks.value.filter(candidate => candidate.id !== task.id)
 }
 
 function clearFinished(): void {
-  tasks.value = tasks.value.filter((task) =>
+  tasks.value = tasks.value.filter(task =>
     ['waiting', 'uploading', 'paused', 'failed'].includes(task.status),
   )
 }

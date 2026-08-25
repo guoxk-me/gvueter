@@ -56,7 +56,8 @@ const { handleSubmit, resetForm } = useForm<UserInput>({ validationSchema: formS
 watch(
   [open, () => props.user],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     resetForm({
       values: {

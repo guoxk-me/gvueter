@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 defineSlots<{
-  entry?: (props: { entry: ActivityTimelineEntry; index: number }) => unknown
+  entry?: (props: { entry: ActivityTimelineEntry, index: number }) => unknown
 }>()
 
 const indicatorClass = computed<Record<ActivityTone, string>>(() => ({

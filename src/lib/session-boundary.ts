@@ -16,7 +16,8 @@ export function registerSessionBoundaryHandler(
 ): () => void {
   sessionBoundaryHandlers.set(key, handler)
   return () => {
-    if (sessionBoundaryHandlers.get(key) === handler) sessionBoundaryHandlers.delete(key)
+    if (sessionBoundaryHandlers.get(key) === handler)
+      sessionBoundaryHandlers.delete(key)
   }
 }
 
@@ -25,7 +26,8 @@ export function notifySessionPrincipalChanged(change: SessionPrincipalChange): v
   for (const handler of Array.from(sessionBoundaryHandlers.values())) {
     try {
       handler(change)
-    } catch {
+    }
+    catch {
       // AI modified: one failed projection cannot prevent the remaining principal cleanup handlers.
     }
   }

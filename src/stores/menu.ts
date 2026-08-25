@@ -5,8 +5,8 @@ import { computed, ref } from 'vue'
 function getVisibleMenus(menus: NavigationMenuNode[]): NavigationMenuNode[] {
   return (
     menus
-      .filter((menuNode) => !menuNode.hidden)
-      .map((menuNode) => ({
+      .filter(menuNode => !menuNode.hidden)
+      .map(menuNode => ({
         ...menuNode,
         children: getVisibleMenus(menuNode.children),
       }))
@@ -16,7 +16,7 @@ function getVisibleMenus(menus: NavigationMenuNode[]): NavigationMenuNode[] {
 }
 
 function getMenuLeaves(menus: NavigationMenuNode[]): NavigationMenuNode[] {
-  return menus.flatMap((menuNode) => [
+  return menus.flatMap(menuNode => [
     ...(menuNode.to || menuNode.href ? [menuNode] : []),
     ...getMenuLeaves(menuNode.children),
   ])

@@ -56,7 +56,8 @@ export function useDictionaryManagement(selectedDictionaryTypeId: Ref<string | u
   })
 
   function invalidateOptionCache(dictionaryCode?: string): void {
-    if (!dictionaryCode) return
+    if (!dictionaryCode)
+      return
     dictionaryStore.invalidate(dictionaryCode)
     void queryClient.invalidateQueries({ queryKey: ['dictionary-options', dictionaryCode] })
   }
@@ -89,10 +90,11 @@ export function useDictionaryManagement(selectedDictionaryTypeId: Ref<string | u
   })
   const saveDictionaryEntryMutation = useMutation({
     mutationFn: ({ dictionaryEntry, input }: DictionaryEntryChangeRequest) => {
-      if (dictionaryEntry)
+      if (dictionaryEntry) {
         return put<DictionaryEntry>(`/dictionaries/entries/${dictionaryEntry.id}`, input, {
           responseSchema: DICTIONARY_ENTRY_SCHEMA,
         })
+      }
       if (!selectedDictionaryTypeId.value)
         throw new Error('A dictionary type must be selected before creating an entry')
       return post<DictionaryEntry>(
@@ -103,7 +105,7 @@ export function useDictionaryManagement(selectedDictionaryTypeId: Ref<string | u
     },
     onSuccess: () => {
       const selectedDictionaryType = dictionaryTypesQuery.data.value?.items.find(
-        (dictionaryType) => dictionaryType.id === selectedDictionaryTypeId.value,
+        dictionaryType => dictionaryType.id === selectedDictionaryTypeId.value,
       )
       invalidateOptionCache(selectedDictionaryType?.code)
       void queryClient.invalidateQueries({ queryKey: dictionaryEntriesQueryKey })
@@ -116,7 +118,7 @@ export function useDictionaryManagement(selectedDictionaryTypeId: Ref<string | u
       }),
     onSuccess: () => {
       const selectedDictionaryType = dictionaryTypesQuery.data.value?.items.find(
-        (dictionaryType) => dictionaryType.id === selectedDictionaryTypeId.value,
+        dictionaryType => dictionaryType.id === selectedDictionaryTypeId.value,
       )
       invalidateOptionCache(selectedDictionaryType?.code)
       void queryClient.invalidateQueries({ queryKey: dictionaryEntriesQueryKey })

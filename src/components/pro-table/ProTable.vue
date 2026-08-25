@@ -109,13 +109,13 @@ const emit = defineEmits<{
   paginationChange: [pagination: PaginationState]
   sortingChange: [sorting: SortingState]
   filterChange: [filters: ColumnFiltersState]
-  selectionChange: [selection: { selectedRowIds: RowSelectionState; rows: TData[] }]
+  selectionChange: [selection: { selectedRowIds: RowSelectionState, rows: TData[] }]
   expandedChange: [expanded: ExpandedState]
   editCommit: [change: ProTableEditCommit<TData>]
 }>()
 
 const slots = defineSlots<{
-  cell?: (props: { cell: Cell<TData, unknown>; row: Row<TData> }) => unknown
+  'cell'?: (props: { cell: Cell<TData, unknown>, row: Row<TData> }) => unknown
   'expanded-row'?: (props: { row: Row<TData> }) => unknown
   'toolbar-leading'?: () => unknown
   'toolbar-import'?: () => unknown
@@ -157,14 +157,14 @@ const resolvedLabels = computed<ProTableLabels>(() => ({
 }))
 const hasToolbar = computed(
   () =>
-    props.enableColumnControls ||
-    props.enableDensity ||
-    props.enableFullscreen ||
-    Boolean(
-      slots['toolbar-leading'] ||
-      slots['toolbar-import'] ||
-      slots['toolbar-export'] ||
-      slots['toolbar-print'],
+    props.enableColumnControls
+    || props.enableDensity
+    || props.enableFullscreen
+    || Boolean(
+      slots['toolbar-leading']
+      || slots['toolbar-import']
+      || slots['toolbar-export']
+      || slots['toolbar-print'],
     ),
 )
 
@@ -228,7 +228,7 @@ const table = useVueTable({
   manualPagination: props.manualPagination,
   manualSorting: props.manualSorting,
   manualFiltering: props.manualFiltering,
-  enableRowSelection: (row) =>
+  enableRowSelection: row =>
     props.enableRowSelection && (props.getRowCanSelect?.(row.original) ?? true),
   enableExpanding: props.enableExpanding,
   getRowCanExpand: props.getRowCanExpand,
@@ -248,7 +248,8 @@ const table = useVueTable({
       pagination: nextPagination,
       rowSelection: nextSelection,
     })
-    if (previousPageIndex !== 0) emit('paginationChange', nextPagination)
+    if (previousPageIndex !== 0)
+      emit('paginationChange', nextPagination)
     emit('sortingChange', nextSorting)
   },
   onColumnFiltersChange: (updater) => {
@@ -263,7 +264,8 @@ const table = useVueTable({
       pagination: nextPagination,
       rowSelection: nextSelection,
     })
-    if (previousPageIndex !== 0) emit('paginationChange', nextPagination)
+    if (previousPageIndex !== 0)
+      emit('paginationChange', nextPagination)
     emit('filterChange', nextFilters)
   },
   onRowSelectionChange: (updater) => {
@@ -272,8 +274,9 @@ const table = useVueTable({
     syncTableState({ rowSelection: nextSelection })
     const selectedRows = table
       .getCoreRowModel()
-      .flatRows.filter((row) => nextSelection[row.id])
-      .map((row) => row.original)
+      .flatRows
+      .filter(row => nextSelection[row.id])
+      .map(row => row.original)
     emit('selectionChange', { selectedRowIds: nextSelection, rows: selectedRows })
   },
   onColumnVisibilityChange: (updater) => {
@@ -298,14 +301,15 @@ const table = useVueTable({
 
 function syncTableState(state: Partial<TableState>): void {
   // AI modified: controlled model updates reach TanStack memoized row models in the same interaction.
-  table.setOptions((previousOptions) => ({
+  table.setOptions(previousOptions => ({
     ...previousOptions,
     state: { ...table.initialState, ...previousOptions.state, ...state },
   }))
 }
 
 function clearSelectionForDataChange(): RowSelectionState {
-  if (Object.keys(selectedRowIds.value).length === 0) return selectedRowIds.value
+  if (Object.keys(selectedRowIds.value).length === 0)
+    return selectedRowIds.value
 
   // AI modified: data-shaping changes clear selection; ordinary page navigation preserves stable IDs.
   const nextSelection: RowSelectionState = {}
@@ -315,8 +319,10 @@ function clearSelectionForDataChange(): RowSelectionState {
 }
 
 const rowHeight = computed(() => {
-  if (density.value === 'compact') return 36
-  if (density.value === 'comfortable') return 56
+  if (density.value === 'compact')
+    return 36
+  if (density.value === 'comfortable')
+    return 56
   return 44
 })
 function getRowsForState(_state: Partial<TableState>): Row<TData>[] {
@@ -375,7 +381,8 @@ const pageCount = computed(() => {
 
 function applyPaginationChange(requestedPagination: PaginationState): void {
   const nextPageSize = getAcceptedPageSize(requestedPagination.pageSize, allowedPageSizes.value)
-  if (nextPageSize === undefined) return
+  if (nextPageSize === undefined)
+    return
 
   const isPageSizeChange = nextPageSize !== pagination.value.pageSize
   const requestedState = {
@@ -392,8 +399,8 @@ function applyPaginationChange(requestedPagination: PaginationState): void {
       }
     : getClampedPagination(requestedState, nextPageCount)
   if (
-    nextPagination.pageIndex === pagination.value.pageIndex &&
-    nextPagination.pageSize === pagination.value.pageSize
+    nextPagination.pageIndex === pagination.value.pageIndex
+    && nextPagination.pageSize === pagination.value.pageSize
   ) {
     return
   }
@@ -413,10 +420,10 @@ watch(
     () => props.isLoading,
   ],
   () => {
-    const safePageSize =
-      getAcceptedPageSize(pagination.value.pageSize, allowedPageSizes.value) ??
-      allowedPageSizes.value[0] ??
-      10
+    const safePageSize
+      = getAcceptedPageSize(pagination.value.pageSize, allowedPageSizes.value)
+        ?? allowedPageSizes.value[0]
+        ?? 10
     const requestedPagination = {
       pageIndex: safePageSize === pagination.value.pageSize ? pagination.value.pageIndex : 0,
       pageSize: safePageSize,
@@ -435,8 +442,8 @@ watch(
         )
 
     if (
-      safePagination.pageIndex === pagination.value.pageIndex &&
-      safePagination.pageSize === pagination.value.pageSize
+      safePagination.pageIndex === pagination.value.pageIndex
+      && safePagination.pageSize === pagination.value.pageSize
     ) {
       return
     }
@@ -464,13 +471,14 @@ const rowVirtualizer = useVirtualizer(
 )
 
 const renderedRows = computed<RenderedRow<TData>[]>(() => {
-  if (!props.enableVirtualization) return rows.value.map((row) => ({ key: row.id, row }))
+  if (!props.enableVirtualization)
+    return rows.value.map(row => ({ key: row.id, row }))
 
   const virtualItems = rowVirtualizer.value.getVirtualItems()
   if (virtualItems.length === 0) {
     // AI modified: SSR/hidden containers keep a bounded first viewport until dimensions are observable.
     const fallbackCount = Math.ceil(props.virtualHeight / rowHeight.value) + props.virtualOverscan
-    return rows.value.slice(0, fallbackCount).map((row) => ({ key: row.id, row }))
+    return rows.value.slice(0, fallbackCount).map(row => ({ key: row.id, row }))
   }
 
   return virtualItems.flatMap((virtualItem) => {
@@ -480,7 +488,8 @@ const renderedRows = computed<RenderedRow<TData>[]>(() => {
 })
 
 const bodyStyle = computed<CSSProperties | undefined>(() => {
-  if (!props.enableVirtualization) return undefined
+  if (!props.enableVirtualization)
+    return undefined
   return {
     display: 'grid',
     height: `${rowVirtualizer.value.getTotalSize()}px`,
@@ -490,7 +499,8 @@ const bodyStyle = computed<CSSProperties | undefined>(() => {
 
 function getRowStyle(renderedRow: RenderedRow<TData>): CSSProperties | undefined {
   // AI modified: non-virtual rows may grow when a column intentionally wraps long business text.
-  if (!renderedRow.virtualItem) return { minHeight: `${rowHeight.value}px` }
+  if (!renderedRow.virtualItem)
+    return { minHeight: `${rowHeight.value}px` }
   return {
     display: 'flex',
     height: `${rowHeight.value}px`,
@@ -501,7 +511,8 @@ function getRowStyle(renderedRow: RenderedRow<TData>): CSSProperties | undefined
 }
 
 function getExpandedRowStyle(renderedRow: RenderedRow<TData>): CSSProperties | undefined {
-  if (!renderedRow.virtualItem) return { minHeight: `${rowHeight.value}px` }
+  if (!renderedRow.virtualItem)
+    return { minHeight: `${rowHeight.value}px` }
   return {
     display: 'flex',
     height: `${rowHeight.value}px`,
@@ -516,22 +527,22 @@ function getColumnStyle(column: Column<TData>): CSSProperties {
   const leadingWidth = leadingColumnCount.value * 44
   // AI modified: declared content minima participate in the actual flex width instead of being cosmetic metadata.
   const columnWidth = getColumnWidth(column)
-  const pinnedColumns =
-    pinned === 'left'
+  const pinnedColumns
+    = pinned === 'left'
       ? table.getLeftVisibleLeafColumns()
       : pinned === 'right'
         ? table.getRightVisibleLeafColumns()
         : []
-  const pinnedIndex = pinnedColumns.findIndex((pinnedColumn) => pinnedColumn.id === column.id)
-  const leftOffset =
-    pinned === 'left'
-      ? leadingWidth +
-        pinnedColumns
-          .slice(0, Math.max(pinnedIndex, 0))
-          .reduce((totalWidth, pinnedColumn) => totalWidth + getColumnWidth(pinnedColumn), 0)
+  const pinnedIndex = pinnedColumns.findIndex(pinnedColumn => pinnedColumn.id === column.id)
+  const leftOffset
+    = pinned === 'left'
+      ? leadingWidth
+      + pinnedColumns
+        .slice(0, Math.max(pinnedIndex, 0))
+        .reduce((totalWidth, pinnedColumn) => totalWidth + getColumnWidth(pinnedColumn), 0)
       : undefined
-  const rightOffset =
-    pinned === 'right'
+  const rightOffset
+    = pinned === 'right'
       ? pinnedColumns
           .slice(pinnedIndex + 1)
           .reduce((totalWidth, pinnedColumn) => totalWidth + getColumnWidth(pinnedColumn), 0)
@@ -557,12 +568,15 @@ function updateRowSelection(row: Row<TData>, value: boolean | 'indeterminate'): 
 }
 
 function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 'none' | undefined {
-  if (!column.getCanSort()) return undefined
+  if (!column.getCanSort())
+    return undefined
 
   // AI modified: the semantic header mirrors the visible sort direction for assistive technology.
   const sortDirection = column.getIsSorted()
-  if (sortDirection === 'asc') return 'ascending'
-  if (sortDirection === 'desc') return 'descending'
+  if (sortDirection === 'asc')
+    return 'ascending'
+  if (sortDirection === 'desc')
+    return 'descending'
   return 'none'
 }
 
@@ -573,8 +587,10 @@ function getRowSelectionLabel(row: Row<TData>): string {
 }
 
 function beginCellEdit(cell: Cell<TData, unknown>, event: MouseEvent | KeyboardEvent): void {
-  if (!cell.column.columnDef.meta?.editable || props.isLoading) return
-  if (!(event.currentTarget instanceof HTMLElement)) return
+  if (!cell.column.columnDef.meta?.editable || props.isLoading)
+    return
+  if (!(event.currentTarget instanceof HTMLElement))
+    return
 
   editingCellId.value = cell.id
   editingCellTrigger.value = event.currentTarget
@@ -582,7 +598,8 @@ function beginCellEdit(cell: Cell<TData, unknown>, event: MouseEvent | KeyboardE
 }
 
 function handleCellEditKeydown(cell: Cell<TData, unknown>, event: KeyboardEvent): void {
-  if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== 'F2')) return
+  if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== 'F2'))
+    return
 
   event.preventDefault()
   beginCellEdit(cell, event)
@@ -593,7 +610,8 @@ function restoreEditingCellFocus(): void {
   editingCellTrigger.value = undefined
   // AI modified: keyboard editing returns focus to the cell that opened the editor.
   void nextTick(() => {
-    if (trigger?.isConnected) trigger.focus()
+    if (trigger?.isConnected)
+      trigger.focus()
   })
 }
 
@@ -607,7 +625,8 @@ function commitCellEdit(
   row: Row<TData>,
   shouldRestoreFocus = true,
 ): void {
-  if (editingCellId.value !== cell.id) return
+  if (editingCellId.value !== cell.id)
+    return
 
   const change: ProTableEditCommit<TData> = {
     row: row.original,
@@ -618,13 +637,15 @@ function commitCellEdit(
   }
   editingCellId.value = undefined
   emit('editCommit', change)
-  if (shouldRestoreFocus) restoreEditingCellFocus()
+  if (shouldRestoreFocus)
+    restoreEditingCellFocus()
   else editingCellTrigger.value = undefined
 }
 
 async function toggleFullscreen(): Promise<void> {
   const root = tableRoot.value
-  if (!root) return
+  if (!root)
+    return
 
   if (isFullscreen.value && document.fullscreenElement !== root) {
     isFullscreen.value = false
@@ -637,7 +658,8 @@ async function toggleFullscreen(): Promise<void> {
     return
   }
 
-  if (root.requestFullscreen) await root.requestFullscreen()
+  if (root.requestFullscreen)
+    await root.requestFullscreen()
   isFullscreen.value = true
   await nextTick()
 }

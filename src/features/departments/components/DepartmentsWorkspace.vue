@@ -45,7 +45,8 @@ async function save(input: DepartmentInput): Promise<void> {
     await saveDepartment({ department: selectedDepartment.value, input })
     isFormOpen.value = false
     toast.success(t('departments.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -54,7 +55,8 @@ async function remove(department: DepartmentRecord): Promise<void> {
   try {
     await deleteDepartment(department)
     toast.success(t('departments.deleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

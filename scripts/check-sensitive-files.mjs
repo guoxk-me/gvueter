@@ -24,23 +24,27 @@ const violations = []
 for (const repositoryFile of repositoryFiles) {
   const fileName = basename(repositoryFile)
   if (
-    (fileName.startsWith('.env') && fileName !== '.env.example') ||
-    /\.(?:key|p12|pem|pfx)$/i.test(fileName)
+    (fileName.startsWith('.env') && fileName !== '.env.example')
+    || /\.(?:key|p12|pem|pfx)$/i.test(fileName)
   ) {
     violations.push(`${repositoryFile}: sensitive file type must not be committed`)
     continue
   }
 
   const content = await readFile(resolve(projectRoot, repositoryFile)).catch((error) => {
-    if (error?.code === 'ENOENT') return null
+    if (error?.code === 'ENOENT')
+      return null
     throw error
   })
-  if (!content) continue
-  if (content.includes(0)) continue
+  if (!content)
+    continue
+  if (content.includes(0))
+    continue
 
   const source = content.toString('utf8')
   for (const [label, pattern] of secretPatterns) {
-    if (pattern.test(source)) violations.push(`${repositoryFile}: possible ${label}`)
+    if (pattern.test(source))
+      violations.push(`${repositoryFile}: possible ${label}`)
   }
 }
 

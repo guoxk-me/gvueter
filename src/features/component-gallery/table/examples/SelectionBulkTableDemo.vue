@@ -28,12 +28,13 @@ const lastBulkAction = shallowRef('')
 const selectedCount = computed(() => Object.keys(selectedRowIds.value).length)
 const filteredRows = computed(() =>
   sourceRows.value.filter(
-    (row) => activeStatus.value === 'all' || row.status === activeStatus.value,
+    row => activeStatus.value === 'all' || row.status === activeStatus.value,
   ),
 )
 const orderedFilteredRows = computed(() => {
   const activeSort = sorting.value[0]
-  if (!activeSort) return filteredRows.value
+  if (!activeSort)
+    return filteredRows.value
   return [...filteredRows.value].sort((leftRow, rightRow) => {
     const leftText = String(leftRow[activeSort.id as 'id' | 'title' | 'owner' | 'status'])
     const rightText = String(rightRow[activeSort.id as 'id' | 'title' | 'owner' | 'status'])
@@ -47,13 +48,13 @@ const currentPageRows = computed(() => {
 })
 const selectedRows = computed(() => {
   const selectedIds = new Set(Object.keys(selectedRowIds.value))
-  return sourceRows.value.filter((row) => selectedIds.has(row.id))
+  return sourceRows.value.filter(row => selectedIds.has(row.id))
 })
 const exportColumns = computed<readonly CsvExportColumn<TableWorkOrder>[]>(() => [
-  { label: props.copy.columns.id, getValue: (row) => row.id },
-  { label: props.copy.columns.title, getValue: (row) => row.title },
-  { label: props.copy.columns.owner, getValue: (row) => row.owner },
-  { label: props.copy.columns.status, getValue: (row) => props.copy.status[row.status] },
+  { label: props.copy.columns.id, getValue: row => row.id },
+  { label: props.copy.columns.title, getValue: row => row.title },
+  { label: props.copy.columns.owner, getValue: row => row.owner },
+  { label: props.copy.columns.status, getValue: row => props.copy.status[row.status] },
 ])
 const columns = computed(() => [
   columnHelper.accessor('id', {
@@ -76,7 +77,7 @@ const columns = computed(() => [
 
 function freshRows(): TableWorkOrder[] {
   // Eleven rows make deleting the final selectable page observable: page 3 clamps back to page 2.
-  return TABLE_WORK_ORDERS.slice(0, 11).map((row) => ({ ...row }))
+  return TABLE_WORK_ORDERS.slice(0, 11).map(row => ({ ...row }))
 }
 
 function updateStatusFilter(nextStatus: StatusFilter): void {
@@ -99,10 +100,11 @@ function runBulkAction(action: 'archive' | 'assign'): void {
 
 async function deleteSelectedRows(): Promise<void> {
   const selectedIds = new Set(Object.keys(selectedRowIds.value))
-  if (selectedIds.size === 0) return
-  const remainingRows = sourceRows.value.filter((row) => !selectedIds.has(row.id))
+  if (selectedIds.size === 0)
+    return
+  const remainingRows = sourceRows.value.filter(row => !selectedIds.has(row.id))
   const remainingFilteredCount = remainingRows.filter(
-    (row) => activeStatus.value === 'all' || row.status === activeStatus.value,
+    row => activeStatus.value === 'all' || row.status === activeStatus.value,
   ).length
   const lastPageIndex = Math.max(
     Math.ceil(remainingFilteredCount / pagination.value.pageSize) - 1,
@@ -118,8 +120,8 @@ async function deleteSelectedRows(): Promise<void> {
 }
 
 function reportExport(scope: 'current' | 'selected' | 'filtered', rowCount: number): void {
-  const scopeLabel =
-    scope === 'current'
+  const scopeLabel
+    = scope === 'current'
       ? props.copy.selection.exportCurrentPage
       : scope === 'selected'
         ? props.copy.selection.exportSelected

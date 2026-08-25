@@ -3,8 +3,8 @@ import type { DepartmentRecord, DepartmentTreeNode } from './types'
 function sortDepartmentBranches(departments: DepartmentTreeNode[]): void {
   departments.sort(
     (leftDepartment, rightDepartment) =>
-      leftDepartment.order - rightDepartment.order ||
-      leftDepartment.name.localeCompare(rightDepartment.name),
+      leftDepartment.order - rightDepartment.order
+      || leftDepartment.name.localeCompare(rightDepartment.name),
   )
   for (const department of departments) sortDepartmentBranches(department.children)
 }

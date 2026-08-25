@@ -21,7 +21,8 @@ const props = withDefaults(
 )
 
 const percentage = computed(() => {
-  if (props.max <= 0) return 0
+  if (props.max <= 0)
+    return 0
   return Math.min(Math.max((props.value / props.max) * 100, 0), 100)
 })
 const indicatorClass = computed(

@@ -43,7 +43,7 @@ const filterFields = computed<readonly SearchFormField<SystemParameterListFilter
     label: t('systemParameters.status'),
     options: [
       { label: t('systemParameters.allStatuses'), value: 'all' },
-      ...SYSTEM_PARAMETER_STATUSES.map((status) => ({
+      ...SYSTEM_PARAMETER_STATUSES.map(status => ({
         label: t(`systemParameters.${status}`),
         value: status,
       })),
@@ -85,7 +85,8 @@ async function save(input: SystemParameterInput): Promise<void> {
     await saveParameter({ parameter: selectedParameter.value, input })
     isFormOpen.value = false
     toast.success(t('systemParameters.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -94,7 +95,8 @@ async function remove(parameter: SystemParameterRecord): Promise<void> {
   try {
     await deleteParameter(parameter)
     toast.success(t('systemParameters.deleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

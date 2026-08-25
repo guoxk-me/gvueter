@@ -44,22 +44,22 @@ defineSlots<{
 
 // AI modified: presentation follows the typed semantic state instead of caller-selected arbitrary tones.
 const presentations: Record<PageStateKind, PageStatePresentation> = {
-  ready: {
+  'ready': {
     icon: CheckCircle2,
     iconClass: 'bg-success/10 text-success',
     panelClass: 'border-success/30 bg-success/5',
   },
-  loading: {
+  'loading': {
     icon: LoaderCircle,
     iconClass: 'bg-primary/10 text-primary',
     panelClass: 'border-border bg-muted/20',
   },
-  refreshing: {
+  'refreshing': {
     icon: RefreshCw,
     iconClass: 'bg-primary/10 text-primary',
     panelClass: 'border-primary/30 bg-primary/5',
   },
-  empty: {
+  'empty': {
     icon: Inbox,
     iconClass: 'bg-muted text-muted-foreground',
     panelClass: 'border-border bg-muted/20',
@@ -69,7 +69,7 @@ const presentations: Record<PageStateKind, PageStatePresentation> = {
     iconClass: 'bg-muted text-muted-foreground',
     panelClass: 'border-border bg-muted/20',
   },
-  error: {
+  'error': {
     icon: CircleAlert,
     iconClass: 'bg-destructive/10 text-destructive',
     panelClass: 'border-destructive/35 bg-destructive/5',
@@ -79,22 +79,22 @@ const presentations: Record<PageStateKind, PageStatePresentation> = {
     iconClass: 'bg-destructive/10 text-destructive',
     panelClass: 'border-destructive/35 bg-destructive/5',
   },
-  offline: {
+  'offline': {
     icon: WifiOff,
     iconClass: 'bg-warning/10 text-warning',
     panelClass: 'border-warning/35 bg-warning/5',
   },
-  forbidden: {
+  'forbidden': {
     icon: ShieldX,
     iconClass: 'bg-destructive/10 text-destructive',
     panelClass: 'border-destructive/35 bg-destructive/5',
   },
-  conflict: {
+  'conflict': {
     icon: GitCompareArrows,
     iconClass: 'bg-warning/10 text-warning',
     panelClass: 'border-warning/35 bg-warning/5',
   },
-  success: {
+  'success': {
     icon: CheckCircle2,
     iconClass: 'bg-success/10 text-success',
     panelClass: 'border-success/30 bg-success/5',

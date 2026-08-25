@@ -30,9 +30,9 @@ const visibleItems = computed(() => {
   return items.filter((item) => {
     const itemIsRead = notificationStore.isRead(item.id, item.isRead)
     return (
-      read.value === 'all' ||
-      (read.value === 'read' && itemIsRead) ||
-      (read.value === 'unread' && !itemIsRead)
+      read.value === 'all'
+      || (read.value === 'read' && itemIsRead)
+      || (read.value === 'unread' && !itemIsRead)
     )
   })
 })

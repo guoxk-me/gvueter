@@ -122,14 +122,15 @@ watch(
     // AI modified: abort plus request sequencing prevents stale simulated responses from replacing newer URL state.
     const responseTimer = globalThis.setTimeout(
       () => {
-        if (requestController.signal.aborted || requestId !== requestSequence) return
+        if (requestController.signal.aborted || requestId !== requestSequence)
+          return
 
         const keywordText = request.keyword.trim().toLowerCase()
         const matchingRows = TABLE_WORK_ORDERS.filter((row) => {
-          const hasKeyword =
-            keywordText.length === 0 ||
-            row.title.toLowerCase().includes(keywordText) ||
-            row.owner.toLowerCase().includes(keywordText)
+          const hasKeyword
+            = keywordText.length === 0
+              || row.title.toLowerCase().includes(keywordText)
+              || row.owner.toLowerCase().includes(keywordText)
           return hasKeyword && (request.status === 'all' || row.status === request.status)
         })
         if (activeSort) {
@@ -197,12 +198,8 @@ watch(
           serverRequest.status
         }}&amp;sortBy={{ serverRequest.sortBy }}&amp;sortOrder={{ serverRequest.sortOrder }}
       </code>
-      <span data-testid="server-canceled"
-        >{{ copy.server.canceledRequests }}: {{ canceledRequestCount }}</span
-      >
-      <span data-testid="server-latest-response"
-        >{{ copy.server.latestResponse }}: {{ latestResponse }}</span
-      >
+      <span data-testid="server-canceled">{{ copy.server.canceledRequests }}: {{ canceledRequestCount }}</span>
+      <span data-testid="server-latest-response">{{ copy.server.latestResponse }}: {{ latestResponse }}</span>
     </div>
     <ProTable
       v-model:pagination="pagination"

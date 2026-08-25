@@ -29,7 +29,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const columnHelper = createColumnHelper<DepartmentRow>()
 const departmentsById = computed(
-  () => new Map(props.departments.map((department) => [department.id, department])),
+  () => new Map(props.departments.map(department => [department.id, department])),
 )
 const rows = computed(() => {
   const flattenedDepartments: DepartmentRow[] = []

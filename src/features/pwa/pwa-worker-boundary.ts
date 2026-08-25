@@ -11,12 +11,14 @@ interface WorkerBoundaryEnvironment {
 }
 
 function getWorkerFilename(worker: ServiceWorker | null): string | undefined {
-  if (!worker) return undefined
+  if (!worker)
+    return undefined
 
   try {
     const pathSegments = new URL(worker.scriptURL).pathname.split('/')
     return pathSegments[pathSegments.length - 1]
-  } catch {
+  }
+  catch {
     return undefined
   }
 }
@@ -37,7 +39,8 @@ export function isPwaWorkerRegistration(registration: ServiceWorkerRegistration)
 }
 
 function getDefaultEnvironment(): WorkerBoundaryEnvironment {
-  if (typeof navigator === 'undefined') return {}
+  if (typeof navigator === 'undefined')
+    return {}
 
   return {
     cacheStorage: typeof caches === 'undefined' ? undefined : caches,
@@ -50,8 +53,10 @@ export async function reconcileServiceWorkerMode(
   environment: WorkerBoundaryEnvironment = getDefaultEnvironment(),
 ): Promise<boolean> {
   const conflictingWorkerFilenames = new Set<string>()
-  if (mode !== 'pwa') conflictingWorkerFilenames.add(PWA_WORKER_FILENAME)
-  if (mode !== 'mock') conflictingWorkerFilenames.add(MOCK_WORKER_FILENAME)
+  if (mode !== 'pwa')
+    conflictingWorkerFilenames.add(PWA_WORKER_FILENAME)
+  if (mode !== 'mock')
+    conflictingWorkerFilenames.add(MOCK_WORKER_FILENAME)
 
   let shouldReload = false
   const serviceWorker = environment.serviceWorker
@@ -59,18 +64,18 @@ export async function reconcileServiceWorkerMode(
     const controllerFilename = getWorkerFilename(serviceWorker.controller)
     // AI modified: restricted browser storage must not turn optional worker cleanup into a bootstrap failure.
     const registrations = await serviceWorker.getRegistrations().catch(() => [])
-    const conflictingRegistrations = registrations.filter((registration) =>
+    const conflictingRegistrations = registrations.filter(registration =>
       registrationUsesWorker(registration, conflictingWorkerFilenames),
     )
 
     // AI modified: root-scoped MSW and PWA workers are mutually exclusive, so remove the inactive mode first.
     const removalResults = await Promise.all(
-      conflictingRegistrations.map((registration) => registration.unregister().catch(() => false)),
+      conflictingRegistrations.map(registration => registration.unregister().catch(() => false)),
     )
-    shouldReload =
-      controllerFilename !== undefined &&
-      conflictingWorkerFilenames.has(controllerFilename) &&
-      removalResults.some(Boolean)
+    shouldReload
+      = controllerFilename !== undefined
+        && conflictingWorkerFilenames.has(controllerFilename)
+        && removalResults.some(Boolean)
   }
 
   if (mode !== 'pwa' && environment.cacheStorage) {
@@ -78,8 +83,8 @@ export async function reconcileServiceWorkerMode(
     // AI modified: Mock and development modes discard only Gvueter-owned offline caches.
     await Promise.all(
       cacheNames
-        .filter((cacheName) => cacheName.includes(PWA_CACHE_ID))
-        .map((cacheName) => environment.cacheStorage?.delete(cacheName).catch(() => false)),
+        .filter(cacheName => cacheName.includes(PWA_CACHE_ID))
+        .map(cacheName => environment.cacheStorage?.delete(cacheName).catch(() => false)),
     )
   }
 

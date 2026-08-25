@@ -52,18 +52,18 @@ const galleryCopy = computed<GalleryCopy>(() =>
         noRecovery: '无需动作',
         recovered: '已执行恢复入口并回到可用状态。',
         states: {
-          ready: { label: '就绪', title: '数据可用', description: '内容已加载并可以继续操作。' },
-          loading: {
+          'ready': { label: '就绪', title: '数据可用', description: '内容已加载并可以继续操作。' },
+          'loading': {
             label: '首次加载',
             title: '正在加载页面',
             description: '保留稳定布局并为异步区域标记 busy。',
           },
-          refreshing: {
+          'refreshing': {
             label: '局部刷新',
             title: '正在刷新最新数据',
             description: '保留已有内容，避免局部刷新造成页面闪空。',
           },
-          empty: {
+          'empty': {
             label: '空数据',
             title: '尚无业务记录',
             description: '这是有效的空集合，不是接口失败。',
@@ -75,7 +75,7 @@ const galleryCopy = computed<GalleryCopy>(() =>
             description: '保留查询条件并提供清除筛选入口。',
             primaryAction: '清除筛选',
           },
-          error: {
+          'error': {
             label: '接口失败',
             title: '数据暂时无法加载',
             description: '错误信息提供可执行的下一步，而不是只显示错误码。',
@@ -87,26 +87,26 @@ const galleryCopy = computed<GalleryCopy>(() =>
             description: '致命渲染或资源加载故障会进入全局恢复边界，并且不展示底层错误。',
             primaryAction: '刷新应用',
           },
-          offline: {
+          'offline': {
             label: '网络断开',
             title: '当前处于离线状态',
             description: '保留已有会话与内容，恢复网络后可以重试。',
             primaryAction: '重试',
           },
-          forbidden: {
+          'forbidden': {
             label: '权限不足',
             title: '没有访问此内容的权限',
             description: '前端反馈不会替代服务端授权校验。',
             primaryAction: '返回工作台',
           },
-          conflict: {
+          'conflict': {
             label: '数据冲突',
             title: '记录已被其他人修改',
             description: '先刷新服务端版本，再决定是否重新应用本地更改。',
             primaryAction: '加载最新版本',
             secondaryAction: '查看差异',
           },
-          success: {
+          'success': {
             label: '提交成功',
             title: '更改已保存',
             description: '成功反馈确认业务结果并保持下一步清晰。',
@@ -125,13 +125,13 @@ const galleryCopy = computed<GalleryCopy>(() =>
           },
         },
         recoveryLabels: {
-          none: '无需动作',
-          retry: '重试',
+          'none': '无需动作',
+          'retry': '重试',
           'reset-search': '清除筛选',
-          reconnect: '恢复网络',
-          return: '安全返回',
-          reload: '刷新版本',
-          review: '查看明细',
+          'reconnect': '恢复网络',
+          'return': '安全返回',
+          'reload': '刷新版本',
+          'review': '查看明细',
           'sign-in': '重新登录',
         },
       }
@@ -151,22 +151,22 @@ const galleryCopy = computed<GalleryCopy>(() =>
         noRecovery: 'No action',
         recovered: 'The recovery entry ran and returned to usable content.',
         states: {
-          ready: {
+          'ready': {
             label: 'Ready',
             title: 'Data is available',
             description: 'The content is loaded and ready for the next operation.',
           },
-          loading: {
+          'loading': {
             label: 'Initial loading',
             title: 'Loading the page',
             description: 'The layout stays stable while the async region is marked busy.',
           },
-          refreshing: {
+          'refreshing': {
             label: 'Local refresh',
             title: 'Refreshing current data',
             description: 'Existing content remains visible instead of flashing to an empty page.',
           },
-          empty: {
+          'empty': {
             label: 'Empty',
             title: 'No business records yet',
             description: 'This is a valid empty collection, not an API failure.',
@@ -178,7 +178,7 @@ const galleryCopy = computed<GalleryCopy>(() =>
             description: 'The query stays visible and offers a clear-filter recovery.',
             primaryAction: 'Clear filters',
           },
-          error: {
+          'error': {
             label: 'API error',
             title: 'Data could not be loaded',
             description:
@@ -192,20 +192,20 @@ const galleryCopy = computed<GalleryCopy>(() =>
               'Fatal render or asset failures enter the global recovery boundary without exposing diagnostics.',
             primaryAction: 'Reload application',
           },
-          offline: {
+          'offline': {
             label: 'Offline',
             title: 'You are offline',
             description:
               'Existing session and content stay intact; retry after connectivity returns.',
             primaryAction: 'Retry',
           },
-          forbidden: {
+          'forbidden': {
             label: 'Forbidden',
             title: 'You cannot access this content',
             description: 'Client feedback never substitutes for server authorization.',
             primaryAction: 'Back to dashboard',
           },
-          conflict: {
+          'conflict': {
             label: 'Conflict',
             title: 'Someone else changed this record',
             description:
@@ -213,7 +213,7 @@ const galleryCopy = computed<GalleryCopy>(() =>
             primaryAction: 'Load latest',
             secondaryAction: 'Review differences',
           },
-          success: {
+          'success': {
             label: 'Success',
             title: 'Changes were saved',
             description:
@@ -234,13 +234,13 @@ const galleryCopy = computed<GalleryCopy>(() =>
           },
         },
         recoveryLabels: {
-          none: 'No action',
-          retry: 'Retry',
+          'none': 'No action',
+          'retry': 'Retry',
           'reset-search': 'Clear filters',
-          reconnect: 'Reconnect',
-          return: 'Safe return',
-          reload: 'Reload version',
-          review: 'Review details',
+          'reconnect': 'Reconnect',
+          'return': 'Safe return',
+          'reload': 'Reload version',
+          'review': 'Review details',
           'sign-in': 'Sign in again',
         },
       },

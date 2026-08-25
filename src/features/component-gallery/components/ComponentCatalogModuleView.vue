@@ -42,16 +42,20 @@ const visibleEntries = computed(() => {
   const requestedText = searchQuery.value.trim().toLocaleLowerCase()
 
   return props.entries.filter((entry) => {
-    const matchesText =
-      !requestedText ||
-      [entry.displayName, entry.summary, ...entry.businessScenarios, ...entry.states].some(
-        (searchableText) => searchableText.toLocaleLowerCase().includes(requestedText),
-      )
+    const matchesText
+      = !requestedText
+        || [entry.displayName, entry.summary, ...entry.businessScenarios, ...entry.states].some(
+          searchableText => searchableText.toLocaleLowerCase().includes(requestedText),
+        )
 
-    if (!matchesText) return false
-    if (selectedView.value === 'without-demo') return entry.availability.demo === 'missing'
-    if (selectedView.value === 'without-tests') return entry.availability.test === 'missing'
-    if (selectedView.value === 'needs-enhancement') return entry.availability.enhancement !== 'none'
+    if (!matchesText)
+      return false
+    if (selectedView.value === 'without-demo')
+      return entry.availability.demo === 'missing'
+    if (selectedView.value === 'without-tests')
+      return entry.availability.test === 'missing'
+    if (selectedView.value === 'needs-enhancement')
+      return entry.availability.enhancement !== 'none'
     return true
   })
 })

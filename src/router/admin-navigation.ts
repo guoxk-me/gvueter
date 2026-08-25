@@ -56,7 +56,7 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     ability: ['read', 'Dashboard'],
   },
   // AI modified: every independent component route is discoverable without expanding the primary backend menu contract.
-  ...componentCenterModules.map<AdminNavigationItem>((componentModule) => ({
+  ...componentCenterModules.map<AdminNavigationItem>(componentModule => ({
     labelKey: componentModule.titleKey,
     groupKey: 'nav.components',
     to: componentModule.path,

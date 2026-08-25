@@ -112,43 +112,48 @@ function isRecord(candidate: unknown): candidate is Record<string, unknown> {
 
 function hasAllowedColumnIds(candidate: unknown): candidate is string[] {
   return (
-    Array.isArray(candidate) &&
-    candidate.every(
-      (columnId) =>
+    Array.isArray(candidate)
+    && candidate.every(
+      columnId =>
         typeof columnId === 'string' && columnIds.includes(columnId as (typeof columnIds)[number]),
-    ) &&
-    new Set(candidate).size === candidate.length
+    )
+    && new Set(candidate).size === candidate.length
   )
 }
 
 function readColumnPreferences(): ColumnPreferences {
   try {
     const preferenceText = safeStorageGet(getBrowserStorage('local'), preferenceKey)
-    if (!preferenceText) return defaultPreferences
+    if (!preferenceText)
+      return defaultPreferences
     const candidate: unknown = JSON.parse(preferenceText)
-    if (!isRecord(candidate) || candidate.version !== 1) return defaultPreferences
+    if (!isRecord(candidate) || candidate.version !== 1)
+      return defaultPreferences
     if (!['compact', 'standard', 'comfortable'].includes(String(candidate.density)))
       return defaultPreferences
     if (
-      !isRecord(candidate.visibility) ||
-      !isRecord(candidate.pinning) ||
-      !Array.isArray(candidate.order)
-    )
+      !isRecord(candidate.visibility)
+      || !isRecord(candidate.pinning)
+      || !Array.isArray(candidate.order)
+    ) {
       return defaultPreferences
+    }
     if (
       !Object.entries(candidate.visibility).every(
         ([columnId, isVisible]) =>
-          columnIds.includes(columnId as (typeof columnIds)[number]) &&
-          typeof isVisible === 'boolean',
+          columnIds.includes(columnId as (typeof columnIds)[number])
+          && typeof isVisible === 'boolean',
       )
-    )
+    ) {
       return defaultPreferences
+    }
     if (
-      !hasAllowedColumnIds(candidate.order) ||
-      !hasAllowedColumnIds(candidate.pinning.left) ||
-      !hasAllowedColumnIds(candidate.pinning.right)
-    )
+      !hasAllowedColumnIds(candidate.order)
+      || !hasAllowedColumnIds(candidate.pinning.left)
+      || !hasAllowedColumnIds(candidate.pinning.right)
+    ) {
       return defaultPreferences
+    }
 
     // AI modified: persisted browser input is accepted only after a versioned allowlist check.
     return {
@@ -158,7 +163,8 @@ function readColumnPreferences(): ColumnPreferences {
       order: candidate.order,
       pinning: { left: candidate.pinning.left, right: candidate.pinning.right },
     }
-  } catch {
+  }
+  catch {
     return defaultPreferences
   }
 }

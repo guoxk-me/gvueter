@@ -31,7 +31,7 @@ export const MANAGED_MENU_INPUT_SCHEMA: z.ZodType<ManagedMenuInput, z.ZodTypeDef
       .string()
       .trim()
       .max(200)
-      .transform((componentKey) => componentKey as ManagedMenuInput['componentKey']),
+      .transform(componentKey => componentKey as ManagedMenuInput['componentKey']),
     icon: z.enum(MANAGED_MENU_ICON_KEYS),
     requiredAbility: MANAGED_MENU_ABILITY_SCHEMA.optional(),
     permissionIdentifier: z.string().max(300).regex(PERMISSION_IDENTIFIER_PATTERN),

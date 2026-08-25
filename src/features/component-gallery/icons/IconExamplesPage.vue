@@ -16,7 +16,7 @@ defineOptions({ name: 'IconExamplesPage' })
 
 const { t } = useI18n()
 const iconSelectorCatalogEntry = computed(() =>
-  componentCatalog.find((entry) => entry.id === 'icon-selector'),
+  componentCatalog.find(entry => entry.id === 'icon-selector'),
 )
 </script>
 

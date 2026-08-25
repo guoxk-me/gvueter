@@ -26,14 +26,14 @@ interface ProvisioningRequest {
   budgetLimit: number | null
 }
 
-type ProvisioningErrorKey =
-  | 'approverEmail'
-  | 'backupPolicy'
-  | 'budgetLimit'
-  | 'justification'
-  | 'ownerEmail'
-  | 'projectName'
-  | 'regions'
+type ProvisioningErrorKey
+  = | 'approverEmail'
+    | 'backupPolicy'
+    | 'budgetLimit'
+    | 'justification'
+    | 'ownerEmail'
+    | 'projectName'
+    | 'regions'
 type ProvisioningErrors = Partial<Record<ProvisioningErrorKey, string>>
 
 const regionOptions: readonly RegionId[] = ['ap-southeast', 'eu-central', 'us-east']
@@ -203,8 +203,10 @@ const databaseCostLabel = computed(() =>
 
 function updateRegion(region: RegionId, value: boolean | 'indeterminate'): void {
   const isSelected = request.regions.includes(region)
-  if (value === true && !isSelected) request.regions.push(region)
-  if (value !== true && isSelected) request.regions.splice(request.regions.indexOf(region), 1)
+  if (value === true && !isSelected)
+    request.regions.push(region)
+  if (value !== true && isSelected)
+    request.regions.splice(request.regions.indexOf(region), 1)
   delete errors.regions
 }
 
@@ -225,10 +227,12 @@ function updateBudgetLimit(event: Event): void {
 function validateRequest(): boolean {
   for (const errorKey of Object.keys(errors) as ProvisioningErrorKey[]) delete errors[errorKey]
 
-  if (request.projectName.trim().length < 3) errors.projectName = copy.value.errors.projectName
+  if (request.projectName.trim().length < 3)
+    errors.projectName = copy.value.errors.projectName
   if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(request.ownerEmail.trim()))
     errors.ownerEmail = copy.value.errors.ownerEmail
-  if (!request.regions.length) errors.regions = copy.value.errors.regions
+  if (!request.regions.length)
+    errors.regions = copy.value.errors.regions
   if (request.hasDatabase && request.backupPolicy === 'none')
     errors.backupPolicy = copy.value.errors.backupPolicy
   if (request.environment === 'production') {
@@ -265,7 +269,8 @@ async function submitRequest(): Promise<void> {
     // AI modified: the example exposes the pending boundary while keeping submission deterministic and offline-safe.
     await Promise.resolve()
     statusMessage.value = copy.value.success
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }
@@ -438,7 +443,7 @@ async function submitRequest(): Promise<void> {
               :aria-invalid="Boolean(errors.budgetLimit)"
               aria-describedby="super-budget-limit-error"
               @input="updateBudgetLimit"
-            />
+            >
             <p id="super-budget-limit-error" class="min-h-5 text-xs text-destructive" role="alert">
               {{ errors.budgetLimit }}
             </p>

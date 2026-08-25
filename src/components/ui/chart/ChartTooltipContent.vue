@@ -40,7 +40,8 @@ const payload = computed<TooltipEntry[]>(() => {
   return Object.entries(props.payload).flatMap(([key, value]) => {
     // const key = `${props.nameKey || item.name || item.dataKey || "value"}`
     const itemConfig = props.config[key]
-    if (!itemConfig) return []
+    if (!itemConfig)
+      return []
 
     return [
       {
@@ -57,7 +58,8 @@ const nestLabel = computed(
   () => Object.keys(props.payload).length === 1 && props.indicator !== 'dot',
 )
 const tooltipLabel = computed(() => {
-  if (props.hideLabel) return null
+  if (props.hideLabel)
+    return null
   if (props.labelFormatter && props.x !== undefined) {
     return props.labelFormatter(props.x)
   }
@@ -68,8 +70,10 @@ const tooltipLabel = computed(() => {
 
 // AI modified: unknown tooltip payload values are rendered safely while preserving numeric localization.
 function getValueLabel(value: unknown): string {
-  if (typeof value === 'number' || typeof value === 'bigint') return value.toLocaleString()
-  if (value instanceof Date) return value.toLocaleString()
+  if (typeof value === 'number' || typeof value === 'bigint')
+    return value.toLocaleString()
+  if (value instanceof Date)
+    return value.toLocaleString()
   return String(value)
 }
 </script>

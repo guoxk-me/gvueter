@@ -27,9 +27,9 @@ export interface AllowedUrlListStateOptions<
   emptyStateToken?: string
 }
 
-type AllowedUrlStateContract<TState extends string> =
-  | AllowedUrlStringStateOptions<TState>
-  | AllowedUrlListStateOptions<TState>
+type AllowedUrlStateContract<TState extends string>
+  = | AllowedUrlStringStateOptions<TState>
+    | AllowedUrlListStateOptions<TState>
 
 function assertSafeQueryKey(queryKey: string): void {
   if (!/^[A-Z][\w-]{0,63}$/i.test(queryKey))
@@ -39,8 +39,10 @@ function assertSafeQueryKey(queryKey: string): void {
 function getQueryTexts(
   queryEntry: LocationQueryValue | LocationQueryValue[] | undefined,
 ): string[] {
-  if (typeof queryEntry === 'string') return [queryEntry]
-  if (!Array.isArray(queryEntry)) return []
+  if (typeof queryEntry === 'string')
+    return [queryEntry]
+  if (!Array.isArray(queryEntry))
+    return []
   return queryEntry.filter((entry): entry is string => typeof entry === 'string')
 }
 
@@ -63,8 +65,10 @@ export function getAllowedUrlListState<TState extends string>(
   emptyStateToken?: string,
 ): readonly TState[] {
   const queryTexts = getQueryTexts(queryEntry)
-  if (queryTexts.length === 0) return [...defaultState]
-  if (emptyStateToken && queryTexts.length === 1 && queryTexts[0] === emptyStateToken) return []
+  if (queryTexts.length === 0)
+    return [...defaultState]
+  if (emptyStateToken && queryTexts.length === 1 && queryTexts[0] === emptyStateToken)
+    return []
   const acceptedStates = queryTexts.filter((requestedState): requestedState is TState =>
     allowedStates.includes(requestedState as TState),
   )
@@ -73,8 +77,10 @@ export function getAllowedUrlListState<TState extends string>(
 }
 
 function getComparableQueryEntry(queryEntry: LocationQueryRaw[string]): string[] {
-  if (Array.isArray(queryEntry)) return queryEntry.map((entry) => String(entry ?? ''))
-  if (queryEntry === undefined) return []
+  if (Array.isArray(queryEntry))
+    return queryEntry.map(entry => String(entry ?? ''))
+  if (queryEntry === undefined)
+    return []
   return [String(queryEntry ?? '')]
 }
 
@@ -85,8 +91,8 @@ function areQueryEntriesEqual(
   const currentTexts = getComparableQueryEntry(currentEntry)
   const nextTexts = getComparableQueryEntry(nextEntry)
   return (
-    currentTexts.length === nextTexts.length &&
-    currentTexts.every((queryText, index) => queryText === nextTexts[index])
+    currentTexts.length === nextTexts.length
+    && currentTexts.every((queryText, index) => queryText === nextTexts[index])
   )
 }
 
@@ -97,7 +103,8 @@ function getStringStateQuery<TState extends string>(
   defaultState: TState,
 ): LocationQueryRaw {
   const nextQuery: LocationQueryRaw = { ...currentQuery }
-  if (state === defaultState) delete nextQuery[queryKey]
+  if (state === defaultState)
+    delete nextQuery[queryKey]
   else nextQuery[queryKey] = state
   return nextQuery
 }
@@ -110,12 +117,13 @@ function getListStateQuery<TState extends string>(
   emptyStateToken?: string,
 ): LocationQueryRaw {
   const nextQuery: LocationQueryRaw = { ...currentQuery }
-  const isDefaultState =
-    states.length === defaultStates.length &&
-    states.every((state, index) => state === defaultStates[index])
+  const isDefaultState
+    = states.length === defaultStates.length
+      && states.every((state, index) => state === defaultStates[index])
   if (isDefaultState || (states.length === 0 && defaultStates.length === 0))
     delete nextQuery[queryKey]
-  else if (states.length === 0 && emptyStateToken) nextQuery[queryKey] = emptyStateToken
+  else if (states.length === 0 && emptyStateToken)
+    nextQuery[queryKey] = emptyStateToken
   else nextQuery[queryKey] = [...states]
   return nextQuery
 }
@@ -135,7 +143,8 @@ function useAllowedUrlStringState<TState extends string>(
       nextState,
       options.defaultState,
     )
-    if (areQueryEntriesEqual(route.query[options.queryKey], nextQuery[options.queryKey])) return
+    if (areQueryEntriesEqual(route.query[options.queryKey], nextQuery[options.queryKey]))
+      return
     void router[history]({ query: nextQuery })
   }
 
@@ -146,7 +155,8 @@ function useAllowedUrlStringState<TState extends string>(
       () => options.isReady === undefined || toValue(options.isReady),
     ],
     ([queryEntry, allowedStates, isReady]) => {
-      if (!isReady) return
+      if (!isReady)
+        return
       const routeState = getAllowedUrlStringState(queryEntry, allowedStates, options.defaultState)
       isApplyingRoute = true
       state.value = routeState
@@ -160,10 +170,11 @@ function useAllowedUrlStringState<TState extends string>(
   watch(
     state,
     (nextState) => {
-      if (isApplyingRoute || (options.isReady !== undefined && !toValue(options.isReady))) return
+      if (isApplyingRoute || (options.isReady !== undefined && !toValue(options.isReady)))
+        return
       const allowedStates = toValue(options.allowedStates)
-      const acceptedState =
-        nextState === options.defaultState || allowedStates.includes(nextState)
+      const acceptedState
+        = nextState === options.defaultState || allowedStates.includes(nextState)
           ? nextState
           : options.defaultState
       if (acceptedState !== nextState) {
@@ -198,7 +209,8 @@ function useAllowedUrlListState<TState extends string>(
       defaultState,
       emptyStateToken,
     )
-    if (areQueryEntriesEqual(route.query[options.queryKey], nextQuery[options.queryKey])) return
+    if (areQueryEntriesEqual(route.query[options.queryKey], nextQuery[options.queryKey]))
+      return
     void router[history]({ query: nextQuery })
   }
 
@@ -209,7 +221,8 @@ function useAllowedUrlListState<TState extends string>(
       () => options.isReady === undefined || toValue(options.isReady),
     ],
     ([queryEntry, allowedStates, isReady]) => {
-      if (!isReady) return
+      if (!isReady)
+        return
       const routeStates = getAllowedUrlListState(
         queryEntry,
         allowedStates,
@@ -228,15 +241,16 @@ function useAllowedUrlListState<TState extends string>(
   watch(
     states,
     (nextStates) => {
-      if (isApplyingRoute || (options.isReady !== undefined && !toValue(options.isReady))) return
+      if (isApplyingRoute || (options.isReady !== undefined && !toValue(options.isReady)))
+        return
       const allowedStates = toValue(options.allowedStates)
       const acceptedStates = [
-        ...new Set(nextStates.filter((state) => allowedStates.includes(state))),
+        ...new Set(nextStates.filter(state => allowedStates.includes(state))),
       ]
       const safeStates = nextStates.length === 0 ? [] : acceptedStates
-      const hasRejectedState =
-        safeStates.length !== nextStates.length ||
-        safeStates.some((state, index) => state !== nextStates[index])
+      const hasRejectedState
+        = safeStates.length !== nextStates.length
+          || safeStates.some((state, index) => state !== nextStates[index])
       if (hasRejectedState) {
         states.value = safeStates
         return

@@ -16,7 +16,8 @@ import { recordMockOperation } from './operation-logs'
 
 export const listRolesHandler = http.get('/api/roles', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'RolePolicy')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<RoleListResponse>>({
     code: 0,
@@ -33,7 +34,8 @@ export const updateRolePermissionsHandler = http.put<{ roleKey: string }, Record
   '/api/roles/:roleKey',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'RolePolicy')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     if (!isRoleKey(params.roleKey)) {
       return HttpResponse.json<ApiResponse<null>>(
@@ -45,14 +47,15 @@ export const updateRolePermissionsHandler = http.put<{ roleKey: string }, Record
       code: 'INVALID_ROLE_POLICY',
       message: '角色策略无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const permissionKeys = new Set(
-      input.permissions.map((permission) => `${permission.action}:${permission.subject}`),
+      input.permissions.map(permission => `${permission.action}:${permission.subject}`),
     )
-    const hasInvalidPermissions =
-      input.permissions.some((permission) => !isRolePermission(permission)) ||
-      permissionKeys.size !== input.permissions.length
+    const hasInvalidPermissions
+      = input.permissions.some(permission => !isRolePermission(permission))
+        || permissionKeys.size !== input.permissions.length
     if (hasInvalidPermissions) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'INVALID_PERMISSION_SET', message: '权限配置无效', data: null },
@@ -73,11 +76,11 @@ export const updateRolePermissionsHandler = http.put<{ roleKey: string }, Record
 
     const departmentIds = input.dataScope.departmentIds ?? []
     const availableDepartmentIds = new Set(getMockDepartmentIds())
-    const hasInvalidDataScope =
-      input.dataScope.scope === 'custom'
-        ? departmentIds.length === 0 ||
-          new Set(departmentIds).size !== departmentIds.length ||
-          departmentIds.some((departmentId) => !availableDepartmentIds.has(departmentId))
+    const hasInvalidDataScope
+      = input.dataScope.scope === 'custom'
+        ? departmentIds.length === 0
+        || new Set(departmentIds).size !== departmentIds.length
+        || departmentIds.some(departmentId => !availableDepartmentIds.has(departmentId))
         : departmentIds.length > 0
     if (hasInvalidDataScope) {
       return HttpResponse.json<ApiResponse<null>>(

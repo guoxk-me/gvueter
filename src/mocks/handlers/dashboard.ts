@@ -24,10 +24,10 @@ const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000
 const WEEK_IN_MILLISECONDS = 7 * DAY_IN_MILLISECONDS
 
 const departmentNames: Readonly<Record<string, string>> = {
-  company: 'GVUETER',
-  finance: 'Finance',
-  operations: 'Operations',
-  product: 'Product',
+  'company': 'GVUETER',
+  'finance': 'Finance',
+  'operations': 'Operations',
+  'product': 'Product',
   'product-design': 'Design',
   'product-engineering': 'Engineering',
 }
@@ -152,7 +152,7 @@ function getRegistrationTrend(referenceDate: Date): RegistrationTrendPoint[] {
       const createdAt = new Date(user.createdAt)
       return createdAt >= weekStart && createdAt < nextWeekStart
     }).length
-    const totalUsers = mockUsers.filter((user) => new Date(user.createdAt) < nextWeekStart).length
+    const totalUsers = mockUsers.filter(user => new Date(user.createdAt) < nextWeekStart).length
 
     return {
       weekIndex,
@@ -165,7 +165,7 @@ function getRegistrationTrend(referenceDate: Date): RegistrationTrendPoint[] {
 
 function getRoleDistribution(): RoleDistributionEntry[] {
   return USER_ROLES.map((role: UserRole) => {
-    const userCount = mockUsers.filter((user) => user.role === role).length
+    const userCount = mockUsers.filter(user => user.role === role).length
     return {
       role,
       userCount,
@@ -177,7 +177,8 @@ function getRoleDistribution(): RoleDistributionEntry[] {
 function getDepartmentRanking(): DepartmentRankingEntry[] {
   const activeUsersByDepartment = new Map<string, number>()
   for (const user of mockUsers) {
-    if (user.status !== 'active') continue
+    if (user.status !== 'active')
+      continue
     const departmentId = user.departmentId ?? 'unassigned'
     activeUsersByDepartment.set(departmentId, (activeUsersByDepartment.get(departmentId) ?? 0) + 1)
   }
@@ -189,15 +190,15 @@ function getDepartmentRanking(): DepartmentRankingEntry[] {
   }))
     .sort(
       (leftDepartment, rightDepartment) =>
-        rightDepartment.activeUsers - leftDepartment.activeUsers ||
-        leftDepartment.departmentName.localeCompare(rightDepartment.departmentName),
+        rightDepartment.activeUsers - leftDepartment.activeUsers
+        || leftDepartment.departmentName.localeCompare(rightDepartment.departmentName),
     )
     .slice(0, 5)
 }
 
 function getDashboardTasks(): DashboardTask[] {
   return dashboardTasks.map((task) => {
-    const assignee = mockUsers.find((user) => user.id === task.assigneeId)
+    const assignee = mockUsers.find(user => user.id === task.assigneeId)
     return {
       ...task,
       assigneeName: assignee?.name ?? String(task.assigneeId),
@@ -210,7 +211,7 @@ function getRecentOperations(): DashboardOperation[] {
   return [...getMockOperationLogSnapshot()]
     .sort((leftLog, rightLog) => rightLog.occurredAt.localeCompare(leftLog.occurredAt))
     .slice(0, 5)
-    .map((operationLog) => ({
+    .map(operationLog => ({
       id: operationLog.id,
       actorName: operationLog.actorName,
       summary: operationLog.summary,
@@ -223,7 +224,7 @@ function getDashboardAnnouncements(): DashboardAnnouncement[] {
   // AI modified: publication state now flows from the same collection managed by content administration.
   return getPublishedMockAnnouncements()
     .slice(0, 3)
-    .map((announcement) => ({
+    .map(announcement => ({
       id: announcement.id,
       title: announcement.title,
       body: getAnnouncementTextPreview(announcement.content),
@@ -238,12 +239,12 @@ export function createDashboardOverview(referenceDate = new Date()): DashboardOv
   const recentSuccessfulLogins = getMockLoginActivities().filter((activity) => {
     const occurredAt = new Date(activity.occurredAt).getTime()
     return (
-      activity.status === 'success' &&
-      occurredAt <= referenceTime &&
-      occurredAt >= referenceTime - DAY_IN_MILLISECONDS
+      activity.status === 'success'
+      && occurredAt <= referenceTime
+      && occurredAt >= referenceTime - DAY_IN_MILLISECONDS
     )
   })
-  const openTasks = tasks.filter((task) => task.status !== 'done')
+  const openTasks = tasks.filter(task => task.status !== 'done')
   const dueSoonLimit = referenceTime + DAY_IN_MILLISECONDS
 
   // AI modified: every headline metric reconciles to named mock business records.
@@ -251,17 +252,17 @@ export function createDashboardOverview(referenceDate = new Date()): DashboardOv
     generatedAt: referenceDate.toISOString(),
     summary: {
       totalUsers: mockUsers.length,
-      activeUsers: mockUsers.filter((user) => user.status === 'active').length,
+      activeUsers: mockUsers.filter(user => user.status === 'active').length,
       activeUserRate:
         mockUsers.length === 0
           ? 0
-          : (mockUsers.filter((user) => user.status === 'active').length / mockUsers.length) * 100,
+          : (mockUsers.filter(user => user.status === 'active').length / mockUsers.length) * 100,
       registrationsLast30Days: mockUsers.filter((user) => {
         const createdAt = new Date(user.createdAt).getTime()
         return createdAt <= referenceTime && createdAt >= referenceTime - 30 * DAY_IN_MILLISECONDS
       }).length,
       successfulLogins24Hours: recentSuccessfulLogins.length,
-      uniqueLoginUsers24Hours: new Set(recentSuccessfulLogins.map((activity) => activity.userId))
+      uniqueLoginUsers24Hours: new Set(recentSuccessfulLogins.map(activity => activity.userId))
         .size,
       openTasks: openTasks.length,
       tasksDueSoon: openTasks.filter((task) => {
@@ -273,16 +274,17 @@ export function createDashboardOverview(referenceDate = new Date()): DashboardOv
     roleDistribution: getRoleDistribution(),
     departmentRanking: getDepartmentRanking(),
     tasks,
-    quickActions: dashboardQuickActions.map((action) => ({ ...action })),
+    quickActions: dashboardQuickActions.map(action => ({ ...action })),
     announcements: getDashboardAnnouncements(),
     recentOperations: getRecentOperations(),
-    notifications: dashboardNotifications.map((notification) => ({ ...notification })),
+    notifications: dashboardNotifications.map(notification => ({ ...notification })),
   }
 }
 
 export const dashboardOverviewHandler = http.get('/api/dashboard/overview', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Dashboard')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<DashboardOverview>>({
     code: 0,

@@ -39,7 +39,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  node?: (props: { node: TreeNode<TValue>; depth: number; isSelected: boolean }) => unknown
+  node?: (props: { node: TreeNode<TValue>, depth: number, isSelected: boolean }) => unknown
   empty?: () => unknown
 }>()
 
@@ -75,15 +75,16 @@ function getNodeChildren(node: TreeNode<TValue>): readonly TreeNode<TValue>[] {
 }
 
 function hasExpandableChildren(node: TreeNode<TValue>): boolean {
-  if (loadedChildren.value.has(node.id)) return getNodeChildren(node).length > 0
+  if (loadedChildren.value.has(node.id))
+    return getNodeChildren(node).length > 0
   return node.hasChildren === true || getNodeChildren(node).length > 0
 }
 
 watch(
   visibleNodes,
   (nodes) => {
-    if (!nodes.some((item) => item.node.id === activeId.value))
-      activeId.value = nodes.find((item) => !item.node.disabled)?.node.id ?? null
+    if (!nodes.some(item => item.node.id === activeId.value))
+      activeId.value = nodes.find(item => !item.node.disabled)?.node.id ?? null
   },
   { immediate: true },
 )
@@ -91,7 +92,8 @@ watch(
 watch(
   () => props.nodes,
   (nodes) => {
-    if (!props.expandAll || expandedIds.value.length > 0) return
+    if (!props.expandAll || expandedIds.value.length > 0)
+      return
 
     // AI modified: initialize expanded state once from the data tree without mutating caller-owned nodes.
     expandedIds.value = collectExpandableIds(nodes)
@@ -139,7 +141,8 @@ function collectExpandableIds(nodes: readonly TreeNode<TValue>[]): TValue[] {
   const collectedIds: TValue[] = []
   for (const node of nodes) {
     const children = getNodeChildren(node)
-    if (children.length === 0) continue
+    if (children.length === 0)
+      continue
 
     collectedIds.push(node.id, ...collectExpandableIds(children))
   }
@@ -147,20 +150,24 @@ function collectExpandableIds(nodes: readonly TreeNode<TValue>[]): TValue[] {
 }
 
 function collectCheckableNodeIds(node: TreeNode<TValue>): TValue[] {
-  if (node.disabled) return []
+  if (node.disabled)
+    return []
   const children = getNodeChildren(node)
-  if (children.length === 0) return hasExpandableChildren(node) ? [] : [node.id]
+  if (children.length === 0)
+    return hasExpandableChildren(node) ? [] : [node.id]
 
-  const descendantIds = children.flatMap((child) => collectCheckableNodeIds(child))
+  const descendantIds = children.flatMap(child => collectCheckableNodeIds(child))
   // AI modified: organization scopes can include the selected branch root as well as descendants.
   return props.includeParentWhenChecked ? [node.id, ...descendantIds] : descendantIds
 }
 
 function getCheckedState(node: TreeNode<TValue>): boolean | 'indeterminate' {
   const checkableIds = collectCheckableNodeIds(node)
-  const checkedNodeCount = checkableIds.filter((id) => checkedSet.value.has(id)).length
-  if (checkedNodeCount === 0) return false
-  if (checkedNodeCount === checkableIds.length) return true
+  const checkedNodeCount = checkableIds.filter(id => checkedSet.value.has(id)).length
+  if (checkedNodeCount === 0)
+    return false
+  if (checkedNodeCount === checkableIds.length)
+    return true
   return 'indeterminate'
 }
 
@@ -170,23 +177,25 @@ function getAriaChecked(node: TreeNode<TValue>): boolean | 'mixed' {
 }
 
 async function toggleExpanded(item: VisibleTreeNode<TValue>): Promise<void> {
-  if (!item.hasChildren) return
+  if (!item.hasChildren)
+    return
 
   if (expandedSet.value.has(item.node.id)) {
-    expandedIds.value = expandedIds.value.filter((id) => id !== item.node.id)
+    expandedIds.value = expandedIds.value.filter(id => id !== item.node.id)
     return
   }
 
   const shouldLoadChildren = Boolean(
-    props.loadChildren &&
-    item.node.children === undefined &&
-    !loadedChildren.value.has(item.node.id),
+    props.loadChildren
+    && item.node.children === undefined
+    && !loadedChildren.value.has(item.node.id),
   )
   if (!shouldLoadChildren) {
     expandedIds.value = [...expandedIds.value, item.node.id]
     return
   }
-  if (loadingIds.value.has(item.node.id)) return
+  if (loadingIds.value.has(item.node.id))
+    return
 
   loadingIds.value = new Set([...loadingIds.value, item.node.id])
   const requestedRevision = nodeRevision
@@ -200,30 +209,33 @@ async function toggleExpanded(item: VisibleTreeNode<TValue>): Promise<void> {
   try {
     const children = await props.loadChildren!(item.node)
     if (
-      !isMounted ||
-      requestedRevision !== nodeRevision ||
-      activeLoadOperations.get(item.node.id) !== loadOperation
+      !isMounted
+      || requestedRevision !== nodeRevision
+      || activeLoadOperations.get(item.node.id) !== loadOperation
     ) {
       return
     }
     const nextLoadedChildren = new Map(loadedChildren.value)
     nextLoadedChildren.set(item.node.id, children)
     loadedChildren.value = nextLoadedChildren
-    if (children.length > 0) expandedIds.value = [...expandedIds.value, item.node.id]
+    if (children.length > 0)
+      expandedIds.value = [...expandedIds.value, item.node.id]
     loadStatusMessage.value = ''
     emit('load', item.node, children)
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     if (
-      !isMounted ||
-      requestedRevision !== nodeRevision ||
-      activeLoadOperations.get(item.node.id) !== loadOperation
+      !isMounted
+      || requestedRevision !== nodeRevision
+      || activeLoadOperations.get(item.node.id) !== loadOperation
     ) {
       return
     }
     failedLoadIds.value = new Set([...failedLoadIds.value, item.node.id])
     loadStatusMessage.value = `${retryLoadActionLabel.value}: ${item.node.label}`
     emit('loadError', item.node, error)
-  } finally {
+  }
+  finally {
     if (activeLoadOperations.get(item.node.id) === loadOperation) {
       activeLoadOperations.delete(item.node.id)
       const nextLoadingIds = new Set(loadingIds.value)
@@ -234,17 +246,20 @@ async function toggleExpanded(item: VisibleTreeNode<TValue>): Promise<void> {
 }
 
 function getExpansionLabel(item: VisibleTreeNode<TValue>): string {
-  if (loadingIds.value.has(item.node.id)) return `${loadingActionLabel.value}: ${item.node.label}`
+  if (loadingIds.value.has(item.node.id))
+    return `${loadingActionLabel.value}: ${item.node.label}`
   if (failedLoadIds.value.has(item.node.id))
     return `${retryLoadActionLabel.value}: ${item.node.label}`
   return `${expandedSet.value.has(item.node.id) ? collapseActionLabel.value : expandActionLabel.value}: ${item.node.label}`
 }
 
 function selectNode(item: VisibleTreeNode<TValue>): void {
-  if (item.node.disabled) return
+  if (item.node.disabled)
+    return
 
   activeId.value = item.node.id
-  if (props.selectable) selectedId.value = item.node.id
+  if (props.selectable)
+    selectedId.value = item.node.id
   emit('select', item.node)
 }
 
@@ -253,12 +268,14 @@ function setActiveNode(item: VisibleTreeNode<TValue>): void {
 }
 
 function updateChecked(item: VisibleTreeNode<TValue>, value: boolean | 'indeterminate'): void {
-  if (item.node.disabled) return
+  if (item.node.disabled)
+    return
 
   const checkableIds = collectCheckableNodeIds(item.node)
   const nextCheckedIds = new Set(checkedIds.value)
   for (const id of checkableIds) {
-    if (value === true) nextCheckedIds.add(id)
+    if (value === true)
+      nextCheckedIds.add(id)
     else nextCheckedIds.delete(id)
   }
 
@@ -273,19 +290,22 @@ async function moveFocus(index: number, direction: 1 | -1 = 1): Promise<void> {
     candidateIndex += direction
     item = visibleNodes.value[candidateIndex]
   }
-  if (!item) return
+  if (!item)
+    return
 
   activeId.value = item.node.id
   await nextTick()
-  treeItemRefs.value.find((element) => element.dataset.treeNodeId === item.node.id)?.focus()
+  treeItemRefs.value.find(element => element.dataset.treeNodeId === item.node.id)?.focus()
 }
 
 function findParentIndex(index: number): number {
   const currentDepth = visibleNodes.value[index]?.depth
-  if (currentDepth === undefined || currentDepth === 0) return index
+  if (currentDepth === undefined || currentDepth === 0)
+    return index
 
   for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {
-    if (visibleNodes.value[candidateIndex]?.depth === currentDepth - 1) return candidateIndex
+    if (visibleNodes.value[candidateIndex]?.depth === currentDepth - 1)
+      return candidateIndex
   }
   return index
 }
@@ -313,7 +333,8 @@ function handleKeydown(event: KeyboardEvent, item: VisibleTreeNode<TValue>, inde
   }
   if (event.key === 'ArrowRight' && item.hasChildren) {
     event.preventDefault()
-    if (!expandedSet.value.has(item.node.id)) void toggleExpanded(item)
+    if (!expandedSet.value.has(item.node.id))
+      void toggleExpanded(item)
     else void moveFocus(index + 1, 1)
     return
   }

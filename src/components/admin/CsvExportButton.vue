@@ -23,12 +23,13 @@ const emit = defineEmits<{
 }>()
 
 function downloadCsv(): void {
-  if (props.disabled || props.rows.length === 0) return
+  if (props.disabled || props.rows.length === 0)
+    return
 
   const csvLines = [
-    props.columns.map((column) => escapeCsvCell(column.label)).join(','),
-    ...props.rows.map((row) =>
-      props.columns.map((column) => escapeCsvCell(column.getValue(row))).join(','),
+    props.columns.map(column => escapeCsvCell(column.label)).join(','),
+    ...props.rows.map(row =>
+      props.columns.map(column => escapeCsvCell(column.getValue(row))).join(','),
     ),
   ]
   const exportBlob = new Blob([`\uFEFF${csvLines.join('\n')}`], { type: 'text/csv;charset=utf-8' })
@@ -48,8 +49,8 @@ function escapeCsvCell(cellValue: string | number | boolean | null | undefined):
     const characterCode = character.charCodeAt(0)
     return characterCode > 32 && character !== '\u00A0' && character !== '\uFEFF'
   })
-  const safeValue =
-    firstMeaningfulCharacter && '=+-@'.includes(firstMeaningfulCharacter)
+  const safeValue
+    = firstMeaningfulCharacter && '=+-@'.includes(firstMeaningfulCharacter)
       ? `'${rawValue}`
       : rawValue
   return `"${safeValue.replace(/"/g, '""')}"`

@@ -61,7 +61,7 @@ defineSlots<{
 const draggedColumnId = shallowRef<string>()
 const columnOrderAnnouncement = shallowRef('')
 
-const densityOptions: readonly { id: ProTableDensity; label: keyof ProTableLabels }[] = [
+const densityOptions: readonly { id: ProTableDensity, label: keyof ProTableLabels }[] = [
   { id: 'compact', label: 'densityCompact' },
   { id: 'standard', label: 'densityStandard' },
   { id: 'comfortable', label: 'densityComfortable' },
@@ -78,21 +78,23 @@ function updateColumnVisibility(column: Column<TData>, value: boolean | 'indeter
 function startColumnDrag(columnId: string, event: DragEvent): void {
   draggedColumnId.value = columnId
   event.dataTransfer?.setData('text/plain', columnId)
-  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+  if (event.dataTransfer)
+    event.dataTransfer.effectAllowed = 'move'
 }
 
 function getOrderedColumnIds(): string[] {
-  const allColumnIds = props.table.getAllLeafColumns().map((column) => column.id)
-  const orderedKnownIds = props.columnOrder.filter((columnId) => allColumnIds.includes(columnId))
+  const allColumnIds = props.table.getAllLeafColumns().map(column => column.id)
+  const orderedKnownIds = props.columnOrder.filter(columnId => allColumnIds.includes(columnId))
   return [
     ...orderedKnownIds,
-    ...allColumnIds.filter((columnId) => !orderedKnownIds.includes(columnId)),
+    ...allColumnIds.filter(columnId => !orderedKnownIds.includes(columnId)),
   ]
 }
 
 function announceColumnPosition(columnId: string, orderedColumnIds: readonly string[]): void {
   const column = props.table.getColumn(columnId)
-  if (!column) return
+  if (!column)
+    return
 
   const announcement = props.labels.columnMoved
     .replace('{column}', getColumnLabel(column))
@@ -108,7 +110,8 @@ function setColumnPosition(sourceColumnId: string, targetIndex: number): void {
   const nextOrder = getOrderedColumnIds()
   const sourceIndex = nextOrder.indexOf(sourceColumnId)
   const safeTargetIndex = Math.min(Math.max(targetIndex, 0), nextOrder.length - 1)
-  if (sourceIndex < 0 || sourceIndex === safeTargetIndex) return
+  if (sourceIndex < 0 || sourceIndex === safeTargetIndex)
+    return
 
   // AI modified: pointer and keyboard ordering share one state transition and live announcement.
   nextOrder.splice(sourceIndex, 1)
@@ -126,17 +129,20 @@ function canMoveColumn(columnId: string, offset: -1 | 1): boolean {
 
 function moveColumn(columnId: string, offset: -1 | 1): void {
   const columnIndex = getOrderedColumnIds().indexOf(columnId)
-  if (columnIndex < 0) return
+  if (columnIndex < 0)
+    return
   setColumnPosition(columnId, columnIndex + offset)
 }
 
 function reorderColumn(targetColumnId: string): void {
   const sourceColumnId = draggedColumnId.value
   draggedColumnId.value = undefined
-  if (!sourceColumnId || sourceColumnId === targetColumnId) return
+  if (!sourceColumnId || sourceColumnId === targetColumnId)
+    return
 
   const targetIndex = getOrderedColumnIds().indexOf(targetColumnId)
-  if (targetIndex < 0) return
+  if (targetIndex < 0)
+    return
   setColumnPosition(sourceColumnId, targetIndex)
 }
 </script>

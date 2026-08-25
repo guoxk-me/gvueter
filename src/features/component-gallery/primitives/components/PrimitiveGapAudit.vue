@@ -21,7 +21,7 @@ const props = defineProps<{
 }>()
 
 const decisionSummary = computed(() => {
-  const deferredCount = props.decisions.filter((decision) => decision.status === 'defer').length
+  const deferredCount = props.decisions.filter(decision => decision.status === 'defer').length
   const notApplicableCount = props.decisions.length - deferredCount
 
   return props.copy.gaps.summary
@@ -59,7 +59,9 @@ function decisionLabel(status: PrimitiveGapDecisionStatus): string {
       <Table aria-describedby="primitive-gap-audit-description">
         <TableHeader>
           <TableRow>
-            <TableHead scope="col"> Primitive </TableHead>
+            <TableHead scope="col">
+              Primitive
+            </TableHead>
             <TableHead scope="col">
               {{ copy.gaps.statusLabel }}
             </TableHead>

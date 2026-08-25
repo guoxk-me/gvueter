@@ -32,7 +32,7 @@ defineSlots<{
   default?: () => unknown
   loading?: () => unknown
   empty?: () => unknown
-  error?: (props: { message: string; nextAction?: string; requestId?: string }) => unknown
+  error?: (props: { message: string, nextAction?: string, requestId?: string }) => unknown
 }>()
 
 const { t } = useI18n()

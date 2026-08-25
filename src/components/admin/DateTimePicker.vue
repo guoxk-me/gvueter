@@ -61,7 +61,8 @@ const dateTimeFormatter = computed(
 )
 const dateTimeLabel = computed(() => {
   const selection = readDateTime(dateTime.value)
-  if (!selection) return props.placeholder
+  if (!selection)
+    return props.placeholder
 
   const hours = Number(selection.time.slice(0, 2))
   const minutes = Number(selection.time.slice(3, 5))
@@ -83,11 +84,13 @@ function readDateTime(value: string): DateTimeSelection | undefined {
   const match = /^(\d{4}-\d{2}-\d{2})T((?:[01]\d|2[0-3]):[0-5]\d)$/.exec(value)
   const dateSource = match?.[1]
   const time = match?.[2]
-  if (!dateSource || !time) return undefined
+  if (!dateSource || !time)
+    return undefined
 
   try {
     return { date: parseDate(dateSource), time }
-  } catch {
+  }
+  catch {
     return undefined
   }
 }
@@ -95,7 +98,8 @@ function readDateTime(value: string): DateTimeSelection | undefined {
 watch(
   isOpen,
   (isNowOpen) => {
-    if (!isNowOpen) return
+    if (!isNowOpen)
+      return
 
     const selection = readDateTime(dateTime.value)
     // AI modified: the popover edits a draft so incomplete date/time changes never leak into the form.
@@ -110,7 +114,8 @@ function updateDraftTime(value: string | number): void {
 }
 
 function applyDateTime(): void {
-  if (isApplyDisabled.value || !draftDate.value) return
+  if (isApplyDisabled.value || !draftDate.value)
+    return
 
   dateTime.value = `${draftDate.value.toString()}T${draftTime.value}`
   isOpen.value = false
@@ -131,7 +136,7 @@ function clearDateTime(): void {
     :class="cn('w-full', props.class)"
   >
     <!-- AI modified: the visible trigger owns label/error ARIA while a hidden input preserves form submission. -->
-    <input v-if="name" type="hidden" :name="name" :value="dateTime" :disabled="disabled" />
+    <input v-if="name" type="hidden" :name="name" :value="dateTime" :disabled="disabled">
     <Popover v-model:open="isOpen">
       <PopoverTrigger as-child>
         <Button

@@ -5,7 +5,7 @@ const defaultPageSize = 10
 // AI modified: ProTable and DataTable share one validation and clamping contract.
 export function getAllowedPageSizes(pageSizeOptions: readonly number[]): readonly number[] {
   const allowedPageSizes = [...new Set(pageSizeOptions)]
-    .filter((pageSize) => Number.isSafeInteger(pageSize) && pageSize > 0)
+    .filter(pageSize => Number.isSafeInteger(pageSize) && pageSize > 0)
     .sort((left, right) => left - right)
 
   return allowedPageSizes.length > 0 ? allowedPageSizes : [defaultPageSize]
@@ -15,7 +15,8 @@ export function getAcceptedPageSize(
   pageSizeInput: unknown,
   allowedPageSizes: readonly number[],
 ): number | undefined {
-  if (!['bigint', 'number', 'string'].includes(typeof pageSizeInput)) return undefined
+  if (!['bigint', 'number', 'string'].includes(typeof pageSizeInput))
+    return undefined
 
   const pageSize = Number(pageSizeInput)
   return Number.isSafeInteger(pageSize) && allowedPageSizes.includes(pageSize)

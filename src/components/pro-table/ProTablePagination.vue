@@ -42,7 +42,8 @@ const canGoNext = computed(() => props.pagination.pageIndex < props.pageCount - 
 
 function updatePageSize(value: AcceptableValue): void {
   const nextPageSize = getAcceptedPageSize(value, allowedPageSizes.value)
-  if (nextPageSize === undefined || nextPageSize === props.pagination.pageSize) return
+  if (nextPageSize === undefined || nextPageSize === props.pagination.pageSize)
+    return
 
   // AI modified: reset page and page size together so no intermediate request can escape.
   emit('update:pagination', { pageIndex: 0, pageSize: nextPageSize })

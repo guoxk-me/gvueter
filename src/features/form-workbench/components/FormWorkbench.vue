@@ -84,7 +84,7 @@ const pendingRoutePath = shallowRef('')
 const lastValidatedTitle = shallowRef('')
 let titleValidationRevision = 0
 let pendingTitleValidation:
-  | { promise: Promise<boolean>; revision: number; title: string }
+  | { promise: Promise<boolean>, revision: number, title: string }
   | undefined
 const canManage = computed(() => canAccess('update', 'Settings'))
 const validationSchema = computed(() => toTypedSchema(getFormWorkbenchSchema(t)))
@@ -120,18 +120,18 @@ const saveSubmissionMutation = useMutation({
 })
 const activeRangeModel = computed<DateRangeValue | null>({
   get: () => values.activeRange,
-  set: (activeRange) => setFieldValue('activeRange', activeRange),
+  set: activeRange => setFieldValue('activeRange', activeRange),
 })
 const richContentModel = computed({
   get: () => values.richContent,
-  set: (richContent) => setFieldValue('richContent', richContent),
+  set: richContent => setFieldValue('richContent', richContent),
 })
 const markdownModel = computed({
   get: () => values.markdown,
-  set: (markdown) => setFieldValue('markdown', markdown),
+  set: markdown => setFieldValue('markdown', markdown),
 })
-const attachmentNames = computed(() => attachments.value.map((entry) => entry.file.name))
-const imageNames = computed(() => images.value.map((entry) => entry.file.name))
+const attachmentNames = computed(() => attachments.value.map(entry => entry.file.name))
+const imageNames = computed(() => images.value.map(entry => entry.file.name))
 const draftAttachmentNames = computed(() =>
   attachmentNames.value.length ? attachmentNames.value : restoredAttachmentNames.value,
 )
@@ -164,7 +164,8 @@ const hasUnsavedChanges = computed(() =>
 watchDebounced(
   currentDraftSubmission,
   (submission) => {
-    if (!canManage.value || currentFingerprint.value === committedFingerprint.value) return
+    if (!canManage.value || currentFingerprint.value === committedFingerprint.value)
+      return
     // AI modified: changed values auto-save after a quiet interval while committed/cleared forms stay draft-free.
     saveDraft(submission)
   },
@@ -191,14 +192,16 @@ watch(
   () => values.category,
   (category) => {
     const linkedBudget = getLinkedBudget(category, values.budget)
-    if (linkedBudget !== values.budget) setFieldValue('budget', linkedBudget)
+    if (linkedBudget !== values.budget)
+      setFieldValue('budget', linkedBudget)
   },
 )
 watch(
   () => values.province,
   (province) => {
     const validCity = getValidWorkbenchCity(province, values.city)
-    if (validCity !== values.city) setFieldValue('city', validCity)
+    if (validCity !== values.city)
+      setFieldValue('city', validCity)
   },
 )
 watch(
@@ -222,13 +225,15 @@ function applyBasicChanges(changes: Partial<FormWorkbenchValues>): void {
 
 async function validateTitleAvailability(): Promise<boolean> {
   const titleResult = await validateField('title')
-  if (!titleResult.valid) return false
+  if (!titleResult.valid)
+    return false
 
   const title = values.title.trim()
-  if (lastValidatedTitle.value === title && titleAvailability.value === 'available') return true
+  if (lastValidatedTitle.value === title && titleAvailability.value === 'available')
+    return true
   if (
-    pendingTitleValidation?.title === title &&
-    pendingTitleValidation.revision === titleValidationRevision
+    pendingTitleValidation?.title === title
+    && pendingTitleValidation.revision === titleValidationRevision
   ) {
     return pendingTitleValidation.promise
   }
@@ -255,7 +260,8 @@ async function validateTitleAvailability(): Promise<boolean> {
       if (!availability.isAvailable)
         setFieldError('title', t('formWorkbench.validation.titleExists'))
       return availability.isAvailable
-    } catch (error: unknown) {
+    }
+    catch (error: unknown) {
       if (validationRevision !== titleValidationRevision || values.title.trim() !== title)
         return false
       toast.error(getErrorMessage(error))
@@ -270,21 +276,26 @@ async function validateTitleAvailability(): Promise<boolean> {
 
   try {
     return await availabilityPromise
-  } finally {
-    if (pendingTitleValidation?.promise === availabilityPromise) pendingTitleValidation = undefined
-    if (validationRevision === titleValidationRevision) isCheckingTitle.value = false
+  }
+  finally {
+    if (pendingTitleValidation?.promise === availabilityPromise)
+      pendingTitleValidation = undefined
+    if (validationRevision === titleValidationRevision)
+      isCheckingTitle.value = false
   }
 }
 
 async function validateCurrentStep(): Promise<boolean> {
   const stepFields = FORM_WORKBENCH_STEP_FIELDS[currentStep.value] ?? []
-  const results = await Promise.all(stepFields.map((fieldName) => validateField(fieldName)))
-  if (results.some((result) => !result.valid)) return false
+  const results = await Promise.all(stepFields.map(fieldName => validateField(fieldName)))
+  if (results.some(result => !result.valid))
+    return false
   return currentStep.value === 0 ? validateTitleAvailability() : true
 }
 
 async function goToNextStep(): Promise<void> {
-  if (isAdvancingStep.value) return
+  if (isAdvancingStep.value)
+    return
   isAdvancingStep.value = true
   try {
     if (!canManage.value || (await validateCurrentStep())) {
@@ -295,7 +306,8 @@ async function goToNextStep(): Promise<void> {
     await nextTick()
     // AI modified: step validation moves focus to the first actionable error instead of only rendering text.
     focusFirstInvalidControl(workbenchForm.value)
-  } finally {
+  }
+  finally {
     isAdvancingStep.value = false
   }
 }
@@ -331,8 +343,10 @@ function clearDraftAndForm(): void {
 
 const submitForm = handleSubmit(
   async (validatedValues) => {
-    if (!canManage.value || saveSubmissionMutation.isPending.value) return
-    if (!(await validateTitleAvailability())) return
+    if (!canManage.value || saveSubmissionMutation.isPending.value)
+      return
+    if (!(await validateTitleAvailability()))
+      return
 
     const submission = getWorkbenchSubmission(
       validatedValues,
@@ -346,7 +360,8 @@ const submitForm = handleSubmit(
       restoredImageNames.value = []
       committedFingerprint.value = getFormWorkbenchFingerprint(submission)
       toast.success(t('formWorkbench.submitSuccess'), { description: savedSubmission.id })
-    } catch (error: unknown) {
+    }
+    catch (error: unknown) {
       if (error instanceof ApiError && error.code === 'FORM_TITLE_EXISTS') {
         // AI modified: write-time uniqueness races return to the originating field instead of becoming a detached toast.
         currentStep.value = 0
@@ -367,14 +382,16 @@ const submitForm = handleSubmit(
 
 function confirmLeave(): void {
   const routePath = pendingRoutePath.value
-  if (!routePath) return
+  if (!routePath)
+    return
   isLeaveApproved.value = true
   isLeaveDialogOpen.value = false
   void router.push(routePath)
 }
 
 onBeforeRouteLeave((to) => {
-  if (!hasUnsavedChanges.value || isLeaveApproved.value) return true
+  if (!hasUnsavedChanges.value || isLeaveApproved.value)
+    return true
   // AI modified: pause navigation and use the accessible app dialog instead of a blocking browser prompt.
   pendingRoutePath.value = to.fullPath
   isLeaveDialogOpen.value = true

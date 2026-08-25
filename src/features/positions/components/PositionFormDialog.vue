@@ -49,7 +49,8 @@ const { handleSubmit, resetForm } = useForm<PositionInput>({ validationSchema: f
 watch(
   [open, () => props.position],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     resetForm({
       values: {
@@ -112,9 +113,9 @@ const submitPosition = handleSubmit((values) => {
       <FormField v-slot="{ componentField }" name="order">
         <FormItem>
           <FormLabel>{{ t('positions.order') }}</FormLabel>
-          <FormControl
-            ><Input v-bind="componentField" type="number" min="0" :disabled="isSaving"
-          /></FormControl>
+          <FormControl>
+            <Input v-bind="componentField" type="number" min="0" :disabled="isSaving" />
+          </FormControl>
           <FormMessage />
         </FormItem>
       </FormField>

@@ -54,13 +54,13 @@ src/
 ## Core contracts
 
 ```ts
-type LayoutMode =
-  | 'sidebar'
-  | 'top'
-  | 'mixed'
-  | 'sidebar-hybrid-header-first'
-  | 'header-hybrid-sidebar-first'
-  | 'header-hybrid-header-first'
+type LayoutMode
+  = | 'sidebar'
+    | 'top'
+    | 'mixed'
+    | 'sidebar-hybrid-header-first'
+    | 'header-hybrid-sidebar-first'
+    | 'header-hybrid-header-first'
 
 type ComponentSize = 'default' | 'sm' | 'md' | 'lg'
 type DataScope = 'self' | 'department' | 'departmentTree' | 'custom' | 'all'
@@ -88,7 +88,7 @@ interface BackendMenuNode {
   order?: number
   keepAlive?: boolean
   cacheKey?: string
-  requiredAbility?: { action: AppAction; subject: AppSubject }
+  requiredAbility?: { action: AppAction, subject: AppSubject }
   permissionIdentifier?: string
   children?: BackendMenuNode[]
 }
@@ -103,7 +103,7 @@ interface ManagedMenuInput {
   componentKey: ManagedMenuComponentKey | ''
   icon: ManagedMenuIconKey
   permissionIdentifier: string
-  requiredAbility?: { action: AppAction; subject: AppSubject }
+  requiredAbility?: { action: AppAction, subject: AppSubject }
   hidden: boolean
   keepAlive: boolean
   order: number

@@ -65,20 +65,25 @@ const columns = computed(() => [
   }),
 ])
 const saveStateMessage = computed(() => {
-  if (saveState.value === 'saving') return props.copy.editing.saving
-  if (saveState.value === 'saved') return props.copy.editing.saved
-  if (saveState.value === 'failed') return props.copy.editing.failedRollback
+  if (saveState.value === 'saving')
+    return props.copy.editing.saving
+  if (saveState.value === 'saved')
+    return props.copy.editing.saved
+  if (saveState.value === 'failed')
+    return props.copy.editing.failedRollback
   return props.copy.editing.failureHint
 })
 
 function freshRows(): TableWorkOrder[] {
-  return TABLE_WORK_ORDERS.slice(0, 5).map((row) => ({ ...row }))
+  return TABLE_WORK_ORDERS.slice(0, 5).map(row => ({ ...row }))
 }
 
 function getRowEditErrors(title: string, owner: string): RowEditErrors {
   const nextErrors: RowEditErrors = {}
-  if (title.trim().length < 5) nextErrors.title = props.copy.editing.titleRequired
-  if (owner.trim().length < 2) nextErrors.owner = props.copy.editing.ownerRequired
+  if (title.trim().length < 5)
+    nextErrors.title = props.copy.editing.titleRequired
+  if (owner.trim().length < 2)
+    nextErrors.owner = props.copy.editing.ownerRequired
   return nextErrors
 }
 
@@ -89,13 +94,15 @@ function saveOptimisticRows(
 ): void {
   saveSequence += 1
   const activeSave = saveSequence
-  if (saveTimer) globalThis.clearTimeout(saveTimer)
+  if (saveTimer)
+    globalThis.clearTimeout(saveTimer)
   saveState.value = 'saving'
   lastEdit.value = editDescription
 
   // AI modified: deterministic optimistic mutation and rollback make server-failure ownership explicit in the Gallery.
   saveTimer = globalThis.setTimeout(() => {
-    if (activeSave !== saveSequence) return
+    if (activeSave !== saveSequence)
+      return
     if (changedRow.title.toLowerCase().includes('[fail]')) {
       rows.value = previousRows
       saveState.value = 'failed'
@@ -106,52 +113,60 @@ function saveOptimisticRows(
 }
 
 function commitEdit(change: ProTableEditCommit<TableWorkOrder>): void {
-  if (change.columnId !== 'title' && change.columnId !== 'owner') return
+  if (change.columnId !== 'title' && change.columnId !== 'owner')
+    return
 
   const changedText = change.value.trim()
-  const changedRow = rows.value.find((row) => row.id === change.rowId)
-  if (!changedRow) return
+  const changedRow = rows.value.find(row => row.id === change.rowId)
+  if (!changedRow)
+    return
 
   const nextTitle = change.columnId === 'title' ? changedText : changedRow.title
   const nextOwner = change.columnId === 'owner' ? changedText : changedRow.owner
   const nextErrors = getRowEditErrors(nextTitle, nextOwner)
   rowEditErrors.value = nextErrors
-  if (Object.keys(nextErrors).length > 0) return
+  if (Object.keys(nextErrors).length > 0)
+    return
 
-  const previousRows = rows.value.map((row) => ({ ...row }))
+  const previousRows = rows.value.map(row => ({ ...row }))
   const nextRow: TableWorkOrder = { ...changedRow, title: nextTitle, owner: nextOwner }
-  rows.value = rows.value.map((row) => (row.id === change.rowId ? nextRow : row))
+  rows.value = rows.value.map(row => (row.id === change.rowId ? nextRow : row))
   saveOptimisticRows(previousRows, nextRow, `${change.rowId}.${change.columnId} = ${changedText}`)
 }
 
 function beginRowEdit(): void {
   const firstRow = rows.value[0]
-  if (!firstRow) return
+  if (!firstRow)
+    return
   rowEditDraft.value = { rowId: firstRow.id, title: firstRow.title, owner: firstRow.owner }
   rowEditErrors.value = {}
 }
 
 function updateRowDraft(field: 'title' | 'owner', nextValue: string | number): void {
-  if (!rowEditDraft.value) return
+  if (!rowEditDraft.value)
+    return
   rowEditDraft.value = { ...rowEditDraft.value, [field]: String(nextValue) }
 }
 
 function saveRowEdit(): void {
   const draft = rowEditDraft.value
-  if (!draft) return
+  if (!draft)
+    return
   const nextErrors = getRowEditErrors(draft.title, draft.owner)
   rowEditErrors.value = nextErrors
-  if (Object.keys(nextErrors).length > 0) return
+  if (Object.keys(nextErrors).length > 0)
+    return
 
-  const changedRow = rows.value.find((row) => row.id === draft.rowId)
-  if (!changedRow) return
-  const previousRows = rows.value.map((row) => ({ ...row }))
+  const changedRow = rows.value.find(row => row.id === draft.rowId)
+  if (!changedRow)
+    return
+  const previousRows = rows.value.map(row => ({ ...row }))
   const nextRow: TableWorkOrder = {
     ...changedRow,
     title: draft.title.trim(),
     owner: draft.owner.trim(),
   }
-  rows.value = rows.value.map((row) => (row.id === draft.rowId ? nextRow : row))
+  rows.value = rows.value.map(row => (row.id === draft.rowId ? nextRow : row))
   rowEditDraft.value = undefined
   saveOptimisticRows(
     previousRows,
@@ -162,7 +177,8 @@ function saveRowEdit(): void {
 
 function refreshRows(): void {
   saveSequence += 1
-  if (saveTimer) globalThis.clearTimeout(saveTimer)
+  if (saveTimer)
+    globalThis.clearTimeout(saveTimer)
   rows.value = freshRows()
   rowEditDraft.value = undefined
   rowEditErrors.value = {}
@@ -173,7 +189,8 @@ function refreshRows(): void {
 }
 
 onUnmounted(() => {
-  if (saveTimer) globalThis.clearTimeout(saveTimer)
+  if (saveTimer)
+    globalThis.clearTimeout(saveTimer)
 })
 </script>
 
@@ -268,6 +285,8 @@ onUnmounted(() => {
         <span v-else>{{ cell.getValue() }}</span>
       </template>
     </ProTable>
-    <template #note> {{ copy.messages.editHint }} {{ copy.editing.failureHint }} </template>
+    <template #note>
+      {{ copy.messages.editHint }} {{ copy.editing.failureHint }}
+    </template>
   </TableExampleCard>
 </template>

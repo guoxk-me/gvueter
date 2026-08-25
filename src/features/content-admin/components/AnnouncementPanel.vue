@@ -87,7 +87,8 @@ async function save(input: AnnouncementInput): Promise<void> {
     await saveAnnouncement({ announcement: editingAnnouncement.value, input })
     isDialogOpen.value = false
     toast.success(t('contentAdmin.announcements.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -97,7 +98,8 @@ async function changeStatus(announcement: AnnouncementRecord): Promise<void> {
   try {
     await updateAnnouncementStatus({ announcement, input: { status } })
     toast.success(t(`contentAdmin.announcements.${status}Success`))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -106,7 +108,8 @@ async function remove(announcement: AnnouncementRecord): Promise<void> {
   try {
     await deleteAnnouncement(announcement)
     toast.success(t('contentAdmin.announcements.deleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

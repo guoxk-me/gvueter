@@ -38,7 +38,7 @@ const formSchema = computed(() =>
       content: z
         .string()
         .refine(
-          (content) => Boolean(getAnnouncementTextPreview(content)),
+          content => Boolean(getAnnouncementTextPreview(content)),
           t('contentAdmin.announcements.validation.content'),
         ),
       priority: z.enum(ANNOUNCEMENT_PRIORITIES),
@@ -50,13 +50,14 @@ const { handleSubmit, resetForm, setFieldValue, values } = useForm<AnnouncementI
 })
 const contentModel = computed({
   get: () => values.content,
-  set: (content) => setFieldValue('content', content),
+  set: content => setFieldValue('content', content),
 })
 
 watch(
   [open, () => props.announcement],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
     // AI modified: the dialog edits a fresh copy so cancellation never mutates a cached record.
     resetForm({
       values: {
@@ -69,7 +70,7 @@ watch(
   { immediate: true },
 )
 
-const submitAnnouncement = handleSubmit((input) =>
+const submitAnnouncement = handleSubmit(input =>
   emit('save', {
     title: input.title.trim(),
     content: input.content,

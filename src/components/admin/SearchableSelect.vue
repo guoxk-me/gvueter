@@ -64,7 +64,8 @@ const listboxId = `${useId()}-listbox`
 
 const filteredOptions = computed<SearchableSelectOption<TValue>[]>(() => {
   const searchTerm = query.value.trim().toLocaleLowerCase()
-  if (!searchTerm) return [...props.options]
+  if (!searchTerm)
+    return [...props.options]
 
   return props.options.filter((option) => {
     const searchableText = [option.label, ...(option.keywords ?? [])].join(' ').toLocaleLowerCase()
@@ -72,7 +73,7 @@ const filteredOptions = computed<SearchableSelectOption<TValue>[]>(() => {
   })
 })
 const selectedOption = computed(() =>
-  props.options.find((option) => option.value === selectedValue.value),
+  props.options.find(option => option.value === selectedValue.value),
 )
 const {
   list: virtualOptions,
@@ -84,13 +85,15 @@ const {
   overscan: 5,
 })
 const activeOptionId = computed(() => {
-  if (!isOpen.value || highlightedIndex.value < 0) return undefined
+  if (!isOpen.value || highlightedIndex.value < 0)
+    return undefined
 
   const highlightedOption = filteredOptions.value[highlightedIndex.value]
   const isRendered = virtualOptions.value.some(
-    (virtualOption) => virtualOption.index === highlightedIndex.value,
+    virtualOption => virtualOption.index === highlightedIndex.value,
   )
-  if (!highlightedOption || highlightedOption.disabled || !isRendered) return undefined
+  if (!highlightedOption || highlightedOption.disabled || !isRendered)
+    return undefined
 
   return getOptionId(highlightedOption)
 })
@@ -107,7 +110,8 @@ watchDebounced(
 watch(isOpen, async (isNowOpen) => {
   if (isNowOpen) {
     await nextTick()
-    if (!isOpen.value) return
+    if (!isOpen.value)
+      return
 
     // AI modified: the editable combobox keeps DOM focus on its input while one option owns visual and assistive active state.
     highlightOption(getOpeningHighlightIndex())
@@ -129,7 +133,8 @@ watch(filteredOptions, () => {
 })
 
 function chooseOption(option: SearchableSelectOption<TValue>): void {
-  if (option.disabled) return
+  if (option.disabled)
+    return
 
   selectedValue.value = option.value
   emit('select', option)
@@ -141,26 +146,27 @@ function clearSelection(): void {
 }
 
 function getFirstEnabledIndex(): number {
-  return filteredOptions.value.findIndex((option) => !option.disabled)
+  return filteredOptions.value.findIndex(option => !option.disabled)
 }
 
 function getLastEnabledIndex(): number {
   for (let optionIndex = filteredOptions.value.length - 1; optionIndex >= 0; optionIndex -= 1) {
-    if (!filteredOptions.value[optionIndex]?.disabled) return optionIndex
+    if (!filteredOptions.value[optionIndex]?.disabled)
+      return optionIndex
   }
   return -1
 }
 
 function getOpeningHighlightIndex(): number {
   const selectedIndex = filteredOptions.value.findIndex(
-    (option) => option.value === selectedValue.value && !option.disabled,
+    option => option.value === selectedValue.value && !option.disabled,
   )
   return selectedIndex >= 0 ? selectedIndex : getFirstEnabledIndex()
 }
 
 function getOptionId(option: SearchableSelectOption<TValue>): string {
-  const encodedValue =
-    Array.from(option.value, (character) => character.codePointAt(0)?.toString(16) ?? '').join(
+  const encodedValue
+    = Array.from(option.value, character => character.codePointAt(0)?.toString(16) ?? '').join(
       '-',
     ) || 'empty'
   return `${listboxId}-option-${encodedValue}`
@@ -168,15 +174,17 @@ function getOptionId(option: SearchableSelectOption<TValue>): string {
 
 function highlightOption(optionIndex: number): void {
   highlightedIndex.value = optionIndex
-  if (optionIndex >= 0) scrollTo(optionIndex)
+  if (optionIndex >= 0)
+    scrollTo(optionIndex)
 }
 
 function moveHighlight(direction: 1 | -1): void {
   const optionCount = filteredOptions.value.length
-  if (optionCount === 0) return
+  if (optionCount === 0)
+    return
 
-  let candidateIndex =
-    highlightedIndex.value >= 0 ? highlightedIndex.value : direction === 1 ? -1 : 0
+  let candidateIndex
+    = highlightedIndex.value >= 0 ? highlightedIndex.value : direction === 1 ? -1 : 0
   for (let attempt = 0; attempt < optionCount; attempt += 1) {
     candidateIndex = (candidateIndex + direction + optionCount) % optionCount
     if (!filteredOptions.value[candidateIndex]?.disabled) {
@@ -214,7 +222,8 @@ function handleSearchKeydown(event: KeyboardEvent): void {
   if (event.key === 'Enter') {
     event.preventDefault()
     const highlightedOption = filteredOptions.value[highlightedIndex.value]
-    if (highlightedOption) chooseOption(highlightedOption)
+    if (highlightedOption)
+      chooseOption(highlightedOption)
     return
   }
 
@@ -264,7 +273,7 @@ function handleSearchKeydown(event: KeyboardEvent): void {
             class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent py-1 pr-3 pl-8 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
             role="combobox"
             @keydown="handleSearchKeydown"
-          />
+          >
         </div>
         <p v-if="isLoading" class="px-2 py-3 text-sm text-muted-foreground" role="status">
           {{ loadingStateLabel }}

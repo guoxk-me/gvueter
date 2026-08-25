@@ -55,16 +55,16 @@ export function useRoleManagement() {
         const activeRoute = router.currentRoute.value
         const routeWithAbility = [...activeRoute.matched]
           .reverse()
-          .find((routeRecord) => routeRecord.meta.requiredAbility)
+          .find(routeRecord => routeRecord.meta.requiredAbility)
         const requiredAbility = routeWithAbility?.meta.requiredAbility
-        const isCurrentPageDenied =
-          permissionStore.isPathDenied(activeRoute.path) ||
-          Boolean(requiredAbility && !appAbility.can(requiredAbility[0], requiredAbility[1])) ||
-          Boolean(
-            activeRoute.meta.isDynamic &&
-            typeof activeRoute.name === 'string' &&
-            !router.hasRoute(activeRoute.name),
-          )
+        const isCurrentPageDenied
+          = permissionStore.isPathDenied(activeRoute.path)
+            || Boolean(requiredAbility && !appAbility.can(requiredAbility[0], requiredAbility[1]))
+            || Boolean(
+              activeRoute.meta.isDynamic
+              && typeof activeRoute.name === 'string'
+              && !router.hasRoute(activeRoute.name),
+            )
         if (isCurrentPageDenied && activeRoute.name !== 'forbidden')
           await router.replace({ name: 'forbidden', replace: true })
       }

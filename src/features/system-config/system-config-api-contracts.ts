@@ -15,10 +15,12 @@ const SECRET_MASK_SCHEMA = z.union([z.literal(SECRET_MASK), z.null()])
 function isSafeHttpUrl(urlText: string): boolean {
   try {
     // AI modified: reject URL-parser shorthands so runtime input matches the absolute OpenAPI contract.
-    if (urlText !== urlText.trim() || !/^https?:\/\//.test(urlText)) return false
+    if (urlText !== urlText.trim() || !/^https?:\/\//.test(urlText))
+      return false
     const url = new URL(urlText)
     return (url.protocol === 'http:' || url.protocol === 'https:') && !url.username && !url.password
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -48,8 +50,10 @@ const S3_PATH_PREFIX_SCHEMA = z.union([
 ])
 
 function isSafeS3BucketName(bucketName: string): boolean {
-  if (!/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(bucketName)) return false
-  if (bucketName.length < 3 || bucketName.length > 63 || bucketName.includes('..')) return false
+  if (!/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(bucketName))
+    return false
+  if (bucketName.length < 3 || bucketName.length > 63 || bucketName.includes('..'))
+    return false
   return !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(bucketName)
 }
 
@@ -57,7 +61,7 @@ const S3_BUCKET_NAME_SCHEMA = z
   .string()
   .trim()
   .max(63)
-  .refine((bucketName) => !bucketName || isSafeS3BucketName(bucketName), 'Invalid S3 bucket name')
+  .refine(bucketName => !bucketName || isSafeS3BucketName(bucketName), 'Invalid S3 bucket name')
 
 interface S3ConfigurationFields {
   provider: UploadProvider
@@ -68,7 +72,8 @@ interface S3ConfigurationFields {
 }
 
 function requireS3Configuration(upload: S3ConfigurationFields, context: z.RefinementCtx): void {
-  if (upload.provider !== 's3') return
+  if (upload.provider !== 's3')
+    return
 
   for (const field of ['endpointUrl', 'region', 'bucketName', 'accessKeyId'] as const) {
     if (!upload[field]) {

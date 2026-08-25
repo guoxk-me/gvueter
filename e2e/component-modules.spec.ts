@@ -10,7 +10,7 @@ interface ModuleVisualCase {
   screenshotPath: '/components/form' | '/components/table'
   snapshotName: string
   theme: ThemeMode
-  viewport: { height: number; width: number }
+  viewport: { height: number, width: number }
 }
 
 const componentModulePaths = [
@@ -195,7 +195,7 @@ async function expectModuleLayout(
         }
       })
       .filter(
-        (element) =>
+        element =>
           element.right > mainRectangle.right + 1 || element.scrollWidth > element.clientWidth + 1,
       )
       .slice(0, 20)
@@ -244,7 +244,8 @@ for (const visualCase of visualCases) {
     }
 
     const rootElement = page.locator('html')
-    if (visualCase.theme === 'dark') await expect(rootElement).toHaveClass(/dark/)
+    if (visualCase.theme === 'dark')
+      await expect(rootElement).toHaveClass(/dark/)
     else await expect(rootElement).not.toHaveClass(/dark/)
   })
 }
@@ -372,9 +373,10 @@ test('keeps representative module interactions keyboard reachable with reduced m
   const activeModuleLink = page
     .getByRole('navigation', { name: 'Component center modules' })
     .locator('a[aria-current="page"]')
-  const transitionDurationsInMilliseconds = await activeModuleLink.evaluate((element) =>
+  const transitionDurationsInMilliseconds = await activeModuleLink.evaluate(element =>
     getComputedStyle(element)
-      .transitionDuration.split(',')
+      .transitionDuration
+      .split(',')
       .map((duration) => {
         const requestedDuration = duration.trim()
         return requestedDuration.endsWith('ms')

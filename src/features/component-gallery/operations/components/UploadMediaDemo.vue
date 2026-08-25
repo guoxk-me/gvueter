@@ -60,12 +60,14 @@ function clearImages(): void {
 }
 
 function showCroppedImage(image: Blob): void {
-  if (croppedImageUrl.value) URL.revokeObjectURL(croppedImageUrl.value)
+  if (croppedImageUrl.value)
+    URL.revokeObjectURL(croppedImageUrl.value)
   croppedImageUrl.value = URL.createObjectURL(image)
 }
 
 onBeforeUnmount(() => {
-  if (croppedImageUrl.value) URL.revokeObjectURL(croppedImageUrl.value)
+  if (croppedImageUrl.value)
+    URL.revokeObjectURL(croppedImageUrl.value)
 })
 </script>
 
@@ -127,7 +129,7 @@ onBeforeUnmount(() => {
         :src="croppedImageUrl"
         :alt="copy.result"
         class="max-h-48 max-w-full rounded-md border"
-      />
+      >
     </section>
 
     <aside class="rounded-lg border bg-muted/30 p-4">

@@ -134,14 +134,14 @@ function showInvalidJson(): void {
 
 function showPastedRichText(): void {
   // AI modified: unsafe pasted markup makes the client sanitation boundary observable in the live example.
-  richText.value =
-    '<h2 onclick="alert(1)">Pasted briefing</h2><script>alert(1)</scr' +
-    'ipt><p>Review <strong>access</strong>.</p>'
+  richText.value
+    = '<h2 onclick="alert(1)">Pasted briefing</h2><script>alert(1)</scr'
+      + 'ipt><p>Review <strong>access</strong>.</p>'
 }
 
 function showRichTextMedia(): void {
-  richText.value =
-    '<h2>Architecture</h2><p>Approved local media:</p><img src="/mock-assets/architecture.png" alt="Architecture diagram">'
+  richText.value
+    = '<h2>Architecture</h2><p>Approved local media:</p><img src="/mock-assets/architecture.png" alt="Architecture diagram">'
 }
 
 function showLongRichText(): void {
@@ -211,8 +211,7 @@ function showLongRichText(): void {
       <pre
         class="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted p-3 text-xs"
         translate="no"
-        >{{ richText }}</pre
-      >
+      >{{ richText }}</pre>
       <template #usage>
         Client allowlist + server sanitation boundary; scripts, event handlers, unsafe URLs, and
         unapproved images are removed.
@@ -226,9 +225,15 @@ function showLongRichText(): void {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="typescript"> TypeScript </SelectItem>
-            <SelectItem value="json"> JSON </SelectItem>
-            <SelectItem value="sql"> SQL </SelectItem>
+            <SelectItem value="typescript">
+              TypeScript
+            </SelectItem>
+            <SelectItem value="json">
+              JSON
+            </SelectItem>
+            <SelectItem value="sql">
+              SQL
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

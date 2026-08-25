@@ -42,7 +42,8 @@ const canGoNext = computed(() => props.pagination.pageIndex < props.pageCount - 
 
 function updatePageSize(value: AcceptableValue): void {
   const nextPageSize = getAcceptedPageSize(value, allowedPageSizes.value)
-  if (nextPageSize === undefined || nextPageSize === props.pagination.pageSize) return
+  if (nextPageSize === undefined || nextPageSize === props.pagination.pageSize)
+    return
 
   // AI modified: page-size changes use one atomic state update and always return to page one.
   emit('update:pagination', { pageIndex: 0, pageSize: nextPageSize })

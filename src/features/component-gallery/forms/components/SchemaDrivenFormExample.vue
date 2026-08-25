@@ -188,7 +188,8 @@ watch(
   },
 )
 watch(isSensitiveReadOnly, (isReadOnly) => {
-  if (!isReadOnly) return
+  if (!isReadOnly)
+    return
   // AI modified: revoking sensitive-field access clears stale input before validation or submission.
   values.approverEmail = ''
   delete errors.approverEmail
@@ -211,12 +212,12 @@ function hasValidEmailShape(email: string): boolean {
   const domain = segments[1] ?? ''
   // AI modified: bounded string checks avoid pathological email-regex backtracking in an interactive validation path.
   return (
-    segments.length === 2 &&
-    Boolean(segments[0]) &&
-    !email.includes(' ') &&
-    domain.includes('.') &&
-    !domain.startsWith('.') &&
-    !domain.endsWith('.')
+    segments.length === 2
+    && Boolean(segments[0])
+    && !email.includes(' ')
+    && domain.includes('.')
+    && !domain.startsWith('.')
+    && !domain.endsWith('.')
   )
 }
 
@@ -239,18 +240,22 @@ async function loadOwnerOptions(environment = values.environment): Promise<void>
         responseSchema: SCHEMA_OWNER_OPTIONS_RESPONSE_SCHEMA,
       },
     )
-    if (response.environment !== values.environment) return
+    if (response.environment !== values.environment)
+      return
     ownerOptions.value = response.options
     ownerRequestStatus.value = 'ready'
-  } catch (error: unknown) {
-    if (isCanceledRequest(error)) return
+  }
+  catch (error: unknown) {
+    if (isCanceledRequest(error))
+      return
     // AI modified: a failed remote option request remains recoverable without discarding other form input.
     ownerRequestStatus.value = 'error'
   }
 }
 
 function updateSelectValue(fieldName: 'environment' | 'urgency', fieldValue: string): void {
-  if (fieldName === 'environment') values.environment = fieldValue as SchemaEnvironment
+  if (fieldName === 'environment')
+    values.environment = fieldValue as SchemaEnvironment
   else values.urgency = fieldValue as SchemaUrgency
 }
 
@@ -264,14 +269,17 @@ function isFieldDisabled(field: SchemaDrivenField): boolean {
 
 function validate(): boolean {
   for (const errorName of Object.keys(errors) as SchemaErrorName[]) delete errors[errorName]
-  if (values.requestName.trim().length < 3) errors.requestName = copy.value.errors.requestName
-  if (!values.serviceOwner) errors.serviceOwner = copy.value.errors.serviceOwner
+  if (values.requestName.trim().length < 3)
+    errors.requestName = copy.value.errors.requestName
+  if (!values.serviceOwner)
+    errors.serviceOwner = copy.value.errors.serviceOwner
   if (
-    values.environment === 'production' &&
-    !isSensitiveReadOnly.value &&
-    !hasValidEmailShape(values.approverEmail)
-  )
+    values.environment === 'production'
+    && !isSensitiveReadOnly.value
+    && !hasValidEmailShape(values.approverEmail)
+  ) {
     errors.approverEmail = copy.value.errors.approverEmail
+  }
   if (values.requiresEvidence && evidence.value.length === 0)
     errors.evidence = copy.value.errors.evidence
   if (!values.richBrief.replace(/<[^>]+>/g, '').trim())
@@ -282,7 +290,8 @@ function validate(): boolean {
 async function focusFirstError(): Promise<void> {
   await nextTick()
   const invalidField = formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]')
-  if (!invalidField) return
+  if (!invalidField)
+    return
   const focusTarget = invalidField.matches('button, input, select, textarea, [tabindex]')
     ? invalidField
     : invalidField.querySelector<HTMLElement>('button, input, select, textarea, [tabindex]')
@@ -294,12 +303,14 @@ function getServerFieldErrors(error: unknown): Partial<Record<ServerSchemaErrorN
     return {}
   }
   const fieldErrors = Reflect.get(error.details, 'fieldErrors')
-  if (typeof fieldErrors !== 'object' || fieldErrors === null) return {}
+  if (typeof fieldErrors !== 'object' || fieldErrors === null)
+    return {}
 
   const serverErrors: Partial<Record<ServerSchemaErrorName, string>> = {}
   for (const errorName of SERVER_SCHEMA_ERROR_NAMES) {
     const message = Reflect.get(fieldErrors, errorName)
-    if (typeof message === 'string' && message.trim()) serverErrors[errorName] = message.trim()
+    if (typeof message === 'string' && message.trim())
+      serverErrors[errorName] = message.trim()
   }
   return serverErrors
 }
@@ -324,7 +335,7 @@ async function submit(): Promise<void> {
       requiresEvidence: values.requiresEvidence,
       richBrief: values.richBrief,
       notes: values.notes,
-      ...(submissionFields.some((field) => field.name === 'approverEmail')
+      ...(submissionFields.some(field => field.name === 'approverEmail')
         ? { approverEmail: values.approverEmail }
         : {}),
     }
@@ -348,7 +359,8 @@ async function submit(): Promise<void> {
       savedSubmission.submissionId,
       savedSubmission.evidence.length,
     )
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     if (error instanceof ApiError && error.code === 'SCHEMA_SUBMISSION_CONFLICT') {
       // AI modified: write-time conflicts return to the originating field before focus recovery.
       errors.requestName = copy.value.errors.conflict
@@ -364,7 +376,8 @@ async function submit(): Promise<void> {
     }
     isStatusError.value = true
     statusMessage.value = error instanceof ApiError ? error.message : copy.value.errors.submit
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }

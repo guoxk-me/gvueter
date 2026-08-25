@@ -44,17 +44,22 @@ const fadeSurfaceClass = computed(() =>
 const hasOverflow = computed(() => canScrollLeft.value || canScrollRight.value)
 const overflowStatus = computed(() => {
   void locale.value
-  if (canScrollLeft.value && canScrollRight.value) return t('nav.tabsOverflowBoth')
-  if (canScrollLeft.value) return t('nav.tabsOverflowLeft')
-  if (canScrollRight.value) return t('nav.tabsOverflowRight')
+  if (canScrollLeft.value && canScrollRight.value)
+    return t('nav.tabsOverflowBoth')
+  if (canScrollLeft.value)
+    return t('nav.tabsOverflowLeft')
+  if (canScrollRight.value)
+    return t('nav.tabsOverflowRight')
   return ''
 })
 
 function updateOverflowIndicators(): void {
-  if (isUnmounted) return
+  if (isUnmounted)
+    return
 
   const currentTabList = tabList.value
-  if (!currentTabList) return
+  if (!currentTabList)
+    return
 
   const maximumScrollLeft = Math.max(0, currentTabList.scrollWidth - currentTabList.clientWidth)
   const currentScrollLeft = Math.min(maximumScrollLeft, Math.max(0, currentTabList.scrollLeft))
@@ -62,12 +67,13 @@ function updateOverflowIndicators(): void {
 
   // AI modified: real scroll geometry keeps long and translated tab labels discoverable at every zoom level.
   canScrollLeft.value = isOverflowing && currentScrollLeft > SCROLL_EDGE_TOLERANCE_PX
-  canScrollRight.value =
-    isOverflowing && maximumScrollLeft - currentScrollLeft > SCROLL_EDGE_TOLERANCE_PX
+  canScrollRight.value
+    = isOverflowing && maximumScrollLeft - currentScrollLeft > SCROLL_EDGE_TOLERANCE_PX
 }
 
 function observeTabGeometry(): void {
-  if (!resizeObserver || !tabList.value) return
+  if (!resizeObserver || !tabList.value)
+    return
 
   resizeObserver.disconnect()
   resizeObserver.observe(tabList.value)
@@ -76,15 +82,16 @@ function observeTabGeometry(): void {
 }
 
 function refreshTabGeometry(): void {
-  if (isUnmounted) return
+  if (isUnmounted)
+    return
   observeTabGeometry()
   updateOverflowIndicators()
 }
 
 function tabClass(tab: NavigationTab): string[] {
   const isActive = tabsStore.activeTabId === tab.id
-  const commonClass =
-    'group flex h-8 shrink-0 items-center gap-1 whitespace-nowrap px-2 text-xs font-medium transition-colors'
+  const commonClass
+    = 'group flex h-8 shrink-0 items-center gap-1 whitespace-nowrap px-2 text-xs font-medium transition-colors'
 
   if (appearance.tabStyle === 'minimal') {
     return [
@@ -121,7 +128,8 @@ function getTabLabel(tab: NavigationTab): string {
 
 async function activateTab(tab: NavigationTab): Promise<void> {
   tabsStore.activateTab(tab.id)
-  if (route.fullPath !== tab.fullPath) await router.push(tab.fullPath)
+  if (route.fullPath !== tab.fullPath)
+    await router.push(tab.fullPath)
 }
 
 function getTabButtons(): HTMLButtonElement[] {
@@ -131,7 +139,8 @@ function getTabButtons(): HTMLButtonElement[] {
 async function focusAndActivateTab(tabIndex: number): Promise<void> {
   const tab = tabsStore.tabs[tabIndex]
   const tabButton = getTabButtons()[tabIndex]
-  if (!tab || !tabButton) return
+  if (!tab || !tabButton)
+    return
 
   tabButton.focus()
   await activateTab(tab)
@@ -140,7 +149,8 @@ async function focusAndActivateTab(tabIndex: number): Promise<void> {
 async function closeTab(tab: NavigationTab): Promise<void> {
   const wasActive = tabsStore.activeTabId === tab.id
   const nextPath = tabsStore.closeTab(tab.id)
-  if (wasActive && nextPath && nextPath !== route.fullPath) await router.push(nextPath)
+  if (wasActive && nextPath && nextPath !== route.fullPath)
+    await router.push(nextPath)
 }
 
 async function closeTabAndRestoreFocus(tab: NavigationTab): Promise<void> {
@@ -148,7 +158,7 @@ async function closeTabAndRestoreFocus(tab: NavigationTab): Promise<void> {
   await nextTick()
 
   const activeTabIndex = tabsStore.tabs.findIndex(
-    (candidate) => candidate.id === tabsStore.activeTabId,
+    candidate => candidate.id === tabsStore.activeTabId,
   )
   getTabButtons()[activeTabIndex]?.focus()
 }
@@ -156,9 +166,9 @@ async function closeTabAndRestoreFocus(tab: NavigationTab): Promise<void> {
 function handleTabClick(event: MouseEvent, tab: NavigationTab): void {
   // AI modified: the visual close target shares one semantic tab button; keyboard users use Delete.
   if (
-    !tab.isAffix &&
-    event.target instanceof Element &&
-    event.target.closest('[data-admin-tab-close]')
+    !tab.isAffix
+    && event.target instanceof Element
+    && event.target.closest('[data-admin-tab-close]')
   ) {
     void closeTabAndRestoreFocus(tab)
     return
@@ -167,8 +177,9 @@ function handleTabClick(event: MouseEvent, tab: NavigationTab): void {
 }
 
 function handleTabKeydown(event: KeyboardEvent, tab: NavigationTab): void {
-  const currentTabIndex = tabsStore.tabs.findIndex((candidate) => candidate.id === tab.id)
-  if (currentTabIndex < 0) return
+  const currentTabIndex = tabsStore.tabs.findIndex(candidate => candidate.id === tab.id)
+  if (currentTabIndex < 0)
+    return
 
   let targetTabIndex: number | undefined
   switch (event.key) {
@@ -210,7 +221,8 @@ onMounted(() => {
     if (typeof ResizeObserver === 'function') {
       resizeObserver = new ResizeObserver(updateOverflowIndicators)
       observeTabGeometry()
-    } else {
+    }
+    else {
       // AI modified: embedded browsers without ResizeObserver still refresh tab overflow on viewport changes.
       window.addEventListener('resize', updateOverflowIndicators)
       hasWindowResizeFallback = true
@@ -224,7 +236,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   isUnmounted = true
   resizeObserver?.disconnect()
-  if (hasWindowResizeFallback) window.removeEventListener('resize', updateOverflowIndicators)
+  if (hasWindowResizeFallback)
+    window.removeEventListener('resize', updateOverflowIndicators)
 })
 </script>
 

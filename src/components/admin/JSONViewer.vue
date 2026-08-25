@@ -68,7 +68,6 @@ const visibleJson = computed(() =>
       class="max-h-80 overflow-auto whitespace-pre-wrap break-words px-3 py-3 font-mono text-xs leading-5 text-foreground"
       data-testid="json-content"
       translate="no"
-      >{{ visibleJson }}</pre
-    >
+    >{{ visibleJson }}</pre>
   </div>
 </template>

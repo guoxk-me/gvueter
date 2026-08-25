@@ -51,7 +51,8 @@ onErrorCaptured((failure, instance, lifecycleInfo) => {
 watch(
   applicationFailure,
   async (failure) => {
-    if (!failure) return
+    if (!failure)
+      return
     await nextTick()
     recoveryPanel.value?.focus()
   },

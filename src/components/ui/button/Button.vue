@@ -21,7 +21,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const attrs = useAttrs()
 function getNativeTitle(): string | undefined {
-  if (typeof attrs.title === 'string') return attrs.title
+  if (typeof attrs.title === 'string')
+    return attrs.title
   // AI modified: resolve on every render because fallthrough attributes are intentionally non-reactive.
   return props.size?.startsWith('icon') && typeof attrs['aria-label'] === 'string'
     ? attrs['aria-label']

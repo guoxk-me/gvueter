@@ -29,20 +29,20 @@ const catalogMetrics = computed<CatalogMetric[]>(() => [
     id: 'stable',
     icon: CircleCheckBig,
     label: t('components.center.summary.stable'),
-    count: documentedCatalog.filter((component) => component.maturity === 'stable').length,
+    count: documentedCatalog.filter(component => component.maturity === 'stable').length,
   },
   {
     id: 'without-demo',
     icon: FlaskConical,
     label: t('components.center.summary.withoutDemo'),
-    count: documentedCatalog.filter((component) => component.availability.demo === 'missing')
+    count: documentedCatalog.filter(component => component.availability.demo === 'missing')
       .length,
   },
   {
     id: 'enhancement',
     icon: Wrench,
     label: t('components.center.summary.enhancement'),
-    count: documentedCatalog.filter((component) => component.availability.enhancement !== 'none')
+    count: documentedCatalog.filter(component => component.availability.enhancement !== 'none')
       .length,
   },
   {
@@ -50,7 +50,7 @@ const catalogMetrics = computed<CatalogMetric[]>(() => [
     icon: CircleDashed,
     label: t('components.center.summary.missingImplementation'),
     count: documentedCatalog.filter(
-      (component) => component.availability.implementation === 'missing',
+      component => component.availability.implementation === 'missing',
     ).length,
   },
 ])

@@ -41,8 +41,8 @@ const chevronTransition = useAdminMotionTransition(ADMIN_MOTION_TRANSITIONS.fast
 const hasChildren = computed(() => props.node.children.length > 0)
 const isDestinationActive = computed(
   () =>
-    Boolean(props.node.to) &&
-    (route.path === props.node.to || route.path.startsWith(`${props.node.to}/`)),
+    Boolean(props.node.to)
+    && (route.path === props.node.to || route.path.startsWith(`${props.node.to}/`)),
 )
 const isBranchActive = computed(
   () => isDestinationActive.value || branchContainsPath(props.node, route.path),
@@ -80,19 +80,21 @@ const childrenClass = computed(() => [
 
 function branchContainsPath(menuNode: NavigationMenuNode, path: string): boolean {
   return menuNode.children.some(
-    (childNode) =>
-      (Boolean(childNode.to) && (path === childNode.to || path.startsWith(`${childNode.to}/`))) ||
-      branchContainsPath(childNode, path),
+    childNode =>
+      (Boolean(childNode.to) && (path === childNode.to || path.startsWith(`${childNode.to}/`)))
+      || branchContainsPath(childNode, path),
   )
 }
 
 function selectBranch(event: MouseEvent): void {
   emit('nodeSelected', props.node)
-  if (props.variant !== 'rail') isExpanded.value = !isExpanded.value
+  if (props.variant !== 'rail')
+    isExpanded.value = !isExpanded.value
 
   const branchTrigger = event.currentTarget
   // AI modified: Safari pointer clicks retain a keyboard target so Escape can close the flyout.
-  if (props.variant === 'horizontal' && branchTrigger instanceof HTMLElement) branchTrigger.focus()
+  if (props.variant === 'horizontal' && branchTrigger instanceof HTMLElement)
+    branchTrigger.focus()
 }
 
 function selectCompactBranch(): void {
@@ -110,30 +112,36 @@ function selectDestination(): void {
 }
 
 function relaySelection(menuNode: NavigationMenuNode): void {
-  if (props.variant === 'horizontal') isExpanded.value = false
+  if (props.variant === 'horizontal')
+    isExpanded.value = false
   emit('nodeSelected', menuNode)
 }
 
 function relayFlyoutSelection(menuNode: NavigationMenuNode): void {
   // AI modified: branch clicks keep the flyout open so users can traverse inactive deep menus.
-  if (menuNode.to || menuNode.href) isFlyoutOpen.value = false
+  if (menuNode.to || menuNode.href)
+    isFlyoutOpen.value = false
   emit('nodeSelected', menuNode)
 }
 
 function closeHorizontalBranch(event: FocusEvent): void {
-  if (props.variant !== 'horizontal') return
+  if (props.variant !== 'horizontal')
+    return
 
   const currentTarget = event.currentTarget as HTMLElement
   const nextTarget = event.relatedTarget
-  if (!(nextTarget instanceof Node) || !currentTarget.contains(nextTarget)) isExpanded.value = false
+  if (!(nextTarget instanceof Node) || !currentTarget.contains(nextTarget))
+    isExpanded.value = false
 }
 
 watch(
   [isBranchActive, () => props.variant],
   ([isActive, variant]) => {
     // AI modified: only inline navigation reveals active ancestors; top flyouts remain user-controlled.
-    if (isActive && variant === 'vertical') isExpanded.value = true
-    if (variant === 'horizontal') isExpanded.value = false
+    if (isActive && variant === 'vertical')
+      isExpanded.value = true
+    if (variant === 'horizontal')
+      isExpanded.value = false
   },
   { immediate: true },
 )

@@ -16,10 +16,10 @@ interface MockTokenRecord {
   tenantId: string | null
 }
 
-export type MockTokenSession =
-  | { status: 'valid'; userId: number; expiresAt: number; tenantId: string | null }
-  | { status: 'expired'; userId: number; expiresAt: number; tenantId: string | null }
-  | { status: 'invalid' }
+export type MockTokenSession
+  = | { status: 'valid', userId: number, expiresAt: number, tenantId: string | null }
+    | { status: 'expired', userId: number, expiresAt: number, tenantId: string | null }
+    | { status: 'invalid' }
 
 const MAX_MOCK_TOKEN_SESSIONS = 500
 const MOCK_TOKEN_SESSION_STORAGE_KEY = '__gvueter_mock_token_sessions__'
@@ -42,32 +42,38 @@ function saveMockTokenSessions(): void {
 }
 
 function restoreMockTokenSessions(): void {
-  if (hasRestoredMockTokenSessions) return
+  if (hasRestoredMockTokenSessions)
+    return
   hasRestoredMockTokenSessions = true
   const storage = getMockSessionStorage()
-  if (!storage) return
+  if (!storage)
+    return
 
   try {
     const storedSessions = safeStorageGet(storage, MOCK_TOKEN_SESSION_STORAGE_KEY)
-    if (!storedSessions) return
+    if (!storedSessions)
+      return
     const sessionEntries: unknown = JSON.parse(storedSessions)
-    if (!Array.isArray(sessionEntries)) throw new Error('Invalid Mock session registry')
+    if (!Array.isArray(sessionEntries))
+      throw new Error('Invalid Mock session registry')
     for (const entry of sessionEntries) {
-      if (!Array.isArray(entry) || entry.length !== 2) continue
+      if (!Array.isArray(entry) || entry.length !== 2)
+        continue
       const [token, record] = entry
       if (
-        typeof token !== 'string' ||
-        !token.startsWith('mock-session-') ||
-        typeof record !== 'object' ||
-        record === null ||
-        !('userId' in record) ||
-        !('expiresAt' in record) ||
-        typeof record.userId !== 'number' ||
-        !Number.isInteger(record.userId) ||
-        typeof record.expiresAt !== 'number' ||
-        !Number.isFinite(record.expiresAt)
-      )
+        typeof token !== 'string'
+        || !token.startsWith('mock-session-')
+        || typeof record !== 'object'
+        || record === null
+        || !('userId' in record)
+        || !('expiresAt' in record)
+        || typeof record.userId !== 'number'
+        || !Number.isInteger(record.userId)
+        || typeof record.expiresAt !== 'number'
+        || !Number.isFinite(record.expiresAt)
+      ) {
         continue
+      }
       mockTokenSessions.set(token, {
         userId: Number(record.userId),
         expiresAt: record.expiresAt,
@@ -76,7 +82,8 @@ function restoreMockTokenSessions(): void {
           'tenantId' in record && typeof record.tenantId === 'string' ? record.tenantId : null,
       })
     }
-  } catch {
+  }
+  catch {
     // AI modified: privacy/storage failures degrade the demo to memory instead of breaking authentication.
     safeStorageDiscard(storage, MOCK_TOKEN_SESSION_STORAGE_KEY)
   }
@@ -194,16 +201,17 @@ export const mockUsers: MockUser[] = [
   },
 ]
 
-const initialMockUsers = mockUsers.map((user) => ({ ...user }))
+const initialMockUsers = mockUsers.map(user => ({ ...user }))
 
 export function resetMockUsers() {
-  mockUsers.splice(0, mockUsers.length, ...initialMockUsers.map((user) => ({ ...user })))
+  mockUsers.splice(0, mockUsers.length, ...initialMockUsers.map(user => ({ ...user })))
 }
 
 /** 根据 email 查找用户（不含 password） */
 export function findUserByEmail(email: string): AdminUser | undefined {
-  const found = mockUsers.find((u) => u.email === email)
-  if (!found) return undefined
+  const found = mockUsers.find(u => u.email === email)
+  if (!found)
+    return undefined
   const { password: _password, ...user } = found
   return user
 }
@@ -224,7 +232,8 @@ export function generateMockToken(
   })
   while (mockTokenSessions.size > MAX_MOCK_TOKEN_SESSIONS) {
     const oldestToken = mockTokenSessions.keys().next().value
-    if (!oldestToken) break
+    if (!oldestToken)
+      break
     mockTokenSessions.delete(oldestToken)
   }
   // AI modified: tab-scoped Mock records survive reload while production sessions remain backend-owned.
@@ -235,7 +244,8 @@ export function generateMockToken(
 export function readMockTokenSession(token: string): MockTokenSession {
   restoreMockTokenSessions()
   const session = mockTokenSessions.get(token)
-  if (!session) return { status: 'invalid' }
+  if (!session)
+    return { status: 'invalid' }
   if (session.expiresAt <= Date.now()) {
     mockTokenSessions.delete(token)
     saveMockTokenSessions()
@@ -251,7 +261,8 @@ export function revokeMockToken(token: string): void {
 
 export function revokeMockUserSessions(userId: number, retainedToken?: string): void {
   for (const [token, session] of mockTokenSessions) {
-    if (session.userId === userId && token !== retainedToken) mockTokenSessions.delete(token)
+    if (session.userId === userId && token !== retainedToken)
+      mockTokenSessions.delete(token)
   }
   saveMockTokenSessions()
 }

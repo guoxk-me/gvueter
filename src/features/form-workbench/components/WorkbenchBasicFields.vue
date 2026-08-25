@@ -65,11 +65,13 @@ function updateDynamicInput(field: DynamicWorkbenchField, value: string | number
     emit('change', { title: String(value) })
     return
   }
-  if (field.name === 'budget') emit('change', { budget: Number(value) || 0 })
+  if (field.name === 'budget')
+    emit('change', { budget: Number(value) || 0 })
 }
 
 function updateDynamicSelect(field: DynamicWorkbenchField, value: AcceptableValue): void {
-  if (field.name !== 'category' || typeof value !== 'string') return
+  if (field.name !== 'category' || typeof value !== 'string')
+    return
   emit('change', { category: value as WorkbenchCategory })
 }
 
@@ -77,10 +79,10 @@ function updateReviewer(
   reviewer: WorkbenchReviewer,
   checkedState: boolean | 'indeterminate',
 ): void {
-  const reviewers =
-    checkedState === true
+  const reviewers
+    = checkedState === true
       ? [...new Set([...props.values.reviewers, reviewer])]
-      : props.values.reviewers.filter((candidate) => candidate !== reviewer)
+      : props.values.reviewers.filter(candidate => candidate !== reviewer)
   emit('change', { reviewers })
 }
 
@@ -89,14 +91,16 @@ function getLocationSelectValue(value: string): string {
 }
 
 function updateProvince(value: AcceptableValue): void {
-  if (typeof value !== 'string') return
+  if (typeof value !== 'string')
+    return
   emit('change', {
     province: value === EMPTY_LOCATION_VALUE ? '' : (value as WorkbenchProvince),
   })
 }
 
 function updateCity(value: AcceptableValue): void {
-  if (typeof value !== 'string') return
+  if (typeof value !== 'string')
+    return
   emit('change', { city: value === EMPTY_LOCATION_VALUE ? '' : value })
 }
 </script>

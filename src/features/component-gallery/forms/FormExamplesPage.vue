@@ -104,9 +104,7 @@ const copy = computed(() =>
                 :href="`#${link.id}`"
                 class="group flex h-full min-w-0 items-start gap-2 rounded-lg border border-border bg-background px-3 py-2 text-left outline-none transition-[color,background-color,border-color,box-shadow] hover:border-primary/40 hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span class="font-mono text-[10px] font-semibold text-primary"
-                  >0{{ index + 1 }}</span
-                >
+                <span class="font-mono text-[10px] font-semibold text-primary">0{{ index + 1 }}</span>
                 <span class="min-w-0">
                   <span class="block break-words text-xs font-medium">{{ link.label }}</span>
                   <span class="mt-0.5 block break-words text-[10px] text-muted-foreground">{{

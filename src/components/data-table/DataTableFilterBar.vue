@@ -24,13 +24,13 @@ const filterValues = defineModel<DataTableFilterValues>({ required: true })
 
 const hasActiveFilters = computed(() =>
   props.filters.some(
-    (filter) => (filterValues.value[filter.key] ?? '') !== (filter.defaultValue ?? ''),
+    filter => (filterValues.value[filter.key] ?? '') !== (filter.defaultValue ?? ''),
   ),
 )
 
 function updateFilter(key: string, value: AcceptableValue): void {
   // AI modified: replace the values object so query keys and parent watchers update predictably.
-  const defaultValue = props.filters.find((filter) => filter.key === key)?.defaultValue ?? ''
+  const defaultValue = props.filters.find(filter => filter.key === key)?.defaultValue ?? ''
   filterValues.value = {
     ...filterValues.value,
     [key]: isFilterValue(value) ? String(value) : defaultValue,
@@ -43,7 +43,7 @@ function isFilterValue(value: AcceptableValue): value is string | number | bigin
 
 function clearFilters(): void {
   filterValues.value = Object.fromEntries(
-    props.filters.map((filter) => [filter.key, filter.defaultValue ?? '']),
+    props.filters.map(filter => [filter.key, filter.defaultValue ?? '']),
   )
 }
 </script>

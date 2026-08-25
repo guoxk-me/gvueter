@@ -31,7 +31,7 @@ export const usePermissionStore = defineStore('permission', () => {
     navigationRevision += 1
     navigationTask = null
     isLoading.value = false
-    const dynamicRouteNames = registeredRoutes.map((registeredRoute) => registeredRoute.routeName)
+    const dynamicRouteNames = registeredRoutes.map(registeredRoute => registeredRoute.routeName)
     for (const registeredRoute of [...registeredRoutes].reverse()) registeredRoute.removeRoute()
 
     registeredRoutes.splice(0)
@@ -49,11 +49,14 @@ export const usePermissionStore = defineStore('permission', () => {
   }
 
   async function loadNavigation(router: Router, authenticatedPrincipal: string): Promise<boolean> {
-    if (isReady.value && principalKey.value === authenticatedPrincipal) return false
+    if (isReady.value && principalKey.value === authenticatedPrincipal)
+      return false
 
-    if (navigationTask) return navigationTask
+    if (navigationTask)
+      return navigationTask
 
-    if (principalKey.value && principalKey.value !== authenticatedPrincipal) unloadNavigation()
+    if (principalKey.value && principalKey.value !== authenticatedPrincipal)
+      unloadNavigation()
 
     isLoading.value = true
     loadError.value = null
@@ -63,19 +66,22 @@ export const usePermissionStore = defineStore('permission', () => {
     })
       .then((navigationResponse) => {
         // AI modified: ignore a late menu response after logout or principal replacement.
-        if (loadRevision !== navigationRevision) return false
+        if (loadRevision !== navigationRevision)
+          return false
 
         const resolvedNavigation = resolveBackendNavigation(navigationResponse.menus, appAbility)
         const newlyRegisteredRoutes: RegisteredRoute[] = []
 
         try {
           for (const routeCandidate of resolvedNavigation.routes) {
-            if (router.hasRoute(routeCandidate.routeName)) continue
+            if (router.hasRoute(routeCandidate.routeName))
+              continue
 
             const removeRoute = router.addRoute('admin-root', routeCandidate.route)
             newlyRegisteredRoutes.push({ routeName: routeCandidate.routeName, removeRoute })
           }
-        } catch (error) {
+        }
+        catch (error) {
           for (const registeredRoute of [...newlyRegisteredRoutes].reverse())
             registeredRoute.removeRoute()
           throw error
@@ -84,7 +90,7 @@ export const usePermissionStore = defineStore('permission', () => {
         // AI modified: commit menu state only after all safe route records are registered.
         registeredRoutes.push(...newlyRegisteredRoutes)
         registeredRouteNames.value = registeredRoutes.map(
-          (registeredRoute) => registeredRoute.routeName,
+          registeredRoute => registeredRoute.routeName,
         )
         deniedPaths.value = resolvedNavigation.deniedPaths
         menuStore.replaceMenus(resolvedNavigation.menus)
@@ -93,7 +99,7 @@ export const usePermissionStore = defineStore('permission', () => {
 
         const availableRouteNames = router
           .getRoutes()
-          .flatMap((routeRecord) =>
+          .flatMap(routeRecord =>
             typeof routeRecord.name === 'string' ? [routeRecord.name] : [],
           )
         tabsStore.retainAvailableRoutes(availableRouteNames)

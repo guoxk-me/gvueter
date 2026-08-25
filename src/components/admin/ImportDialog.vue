@@ -39,11 +39,13 @@ const selectedEntries = shallowRef<FileUploadEntry[]>([])
 const selectedFile = computed(() => selectedEntries.value[0]?.file)
 
 watch(isOpen, (open) => {
-  if (!open) selectedEntries.value = []
+  if (!open)
+    selectedEntries.value = []
 })
 
 function submitImport(): void {
-  if (!selectedFile.value || props.isImporting) return
+  if (!selectedFile.value || props.isImporting)
+    return
 
   // AI modified: the parent owns request state and validation results; this component only submits a verified file.
   emit('import', selectedFile.value)

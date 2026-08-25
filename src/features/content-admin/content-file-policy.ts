@@ -3,8 +3,8 @@ import type { UploadBusinessRules } from '@/features/uploads/types'
 import { CONTENT_FILE_MIME_TYPES } from '@/features/content-admin/types/files'
 
 export const CONTENT_FILE_MAX_SIZE_BYTES = 5 * 1024 * 1024
-export const CONTENT_FILE_EXTENSIONS_BY_MIME_TYPE: Record<ContentFileMimeType, readonly string[]> =
-  {
+export const CONTENT_FILE_EXTENSIONS_BY_MIME_TYPE: Record<ContentFileMimeType, readonly string[]>
+  = {
     'application/pdf': ['pdf'],
     'image/jpeg': ['jpg', 'jpeg'],
     'image/png': ['png'],
@@ -37,8 +37,8 @@ export function getContentFileMimeTypes(
   allowedExtensions: readonly string[],
 ): ContentFileMimeType[] {
   const allowedExtensionSet = new Set(allowedExtensions)
-  return CONTENT_FILE_MIME_TYPES.filter((mimeType) =>
-    CONTENT_FILE_EXTENSIONS_BY_MIME_TYPE[mimeType].some((extension) =>
+  return CONTENT_FILE_MIME_TYPES.filter(mimeType =>
+    CONTENT_FILE_EXTENSIONS_BY_MIME_TYPE[mimeType].some(extension =>
       allowedExtensionSet.has(extension),
     ),
   )

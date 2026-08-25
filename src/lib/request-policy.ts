@@ -55,12 +55,12 @@ export async function notifySessionInvalidated(failure: RequestAccessFailure): P
   // AI modified: latch the notification until a new token is installed so concurrent 401s clear once.
   hasInvalidatedSession = true
   sessionInvalidationTask = Promise.allSettled(
-    [...sessionInvalidationHandlers.values()].map((handler) => handler(failure)),
+    [...sessionInvalidationHandlers.values()].map(handler => handler(failure)),
   ).then(() => undefined)
 
   await sessionInvalidationTask
 }
 
 export async function notifyForbidden(failure: RequestAccessFailure): Promise<void> {
-  await Promise.allSettled([...forbiddenHandlers.values()].map((handler) => handler(failure)))
+  await Promise.allSettled([...forbiddenHandlers.values()].map(handler => handler(failure)))
 }

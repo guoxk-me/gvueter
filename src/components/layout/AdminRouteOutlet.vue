@@ -27,7 +27,8 @@ function getRouteViewKey(route: RouteLocationNormalizedLoaded): string {
 }
 
 function hideLeavingRouteFromAccessibility(element: Element): void {
-  if (!(element instanceof HTMLElement)) return
+  if (!(element instanceof HTMLElement))
+    return
 
   // AI modified: parallel route animation must not expose two interactive pages to assistive technology.
   element.inert = true
@@ -35,7 +36,8 @@ function hideLeavingRouteFromAccessibility(element: Element): void {
 }
 
 function restoreEnteringRouteAccessibility(element: Element): void {
-  if (!(element instanceof HTMLElement)) return
+  if (!(element instanceof HTMLElement))
+    return
 
   // AI modified: KeepAlive reuses the same DOM node after a leave, so remove its temporary isolation.
   element.inert = false

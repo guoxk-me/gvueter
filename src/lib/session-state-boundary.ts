@@ -31,7 +31,7 @@ export function registerSessionStateBoundary({
   })
   const unregisterNotificationProjection = registerSessionBoundaryHandler(
     'notification-projection',
-    (change) => notificationStore.bindPrincipal(change.principalId),
+    change => notificationStore.bindPrincipal(change.principalId),
   )
   const unregisterPermissionProjection = registerSessionBoundaryHandler(
     'permission-navigation-projection',
@@ -42,12 +42,13 @@ export function registerSessionStateBoundary({
   )
   const unregisterTabProjection = registerSessionBoundaryHandler(
     'tab-navigation-projection',
-    (change) => tabsStore.bindPrincipal(change.principalId),
+    change => tabsStore.bindPrincipal(change.principalId),
   )
   const unregisterWorkbenchDraft = registerSessionBoundaryHandler(
     'form-workbench-draft',
     (change) => {
-      if (!change.previousPrincipalId) return
+      if (!change.previousPrincipalId)
+        return
       // AI modified: ending or replacing a principal removes its sensitive in-tab workbench draft.
       safeStorageDiscard(
         getBrowserStorage('session'),

@@ -25,13 +25,14 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   // AI modified: hash destinations such as the notification center remain keyboard- and link-reachable.
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) return savedPosition
+    if (savedPosition)
+      return savedPosition
     const anchorScrollTarget = getAnchorScrollTarget(to.hash)
     if (anchorScrollTarget) {
       // AI modified: programmatic scrolling follows the same reduced-motion preference as CSS.
-      const shouldReduceMotion =
-        typeof window !== 'undefined' &&
-        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      const shouldReduceMotion
+        = typeof window !== 'undefined'
+          && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       return { el: anchorScrollTarget, behavior: shouldReduceMotion ? 'auto' : 'smooth' }
     }
     return to.path !== from.path ? { top: 0 } : false
@@ -55,7 +56,7 @@ const titleRouters = new WeakSet<Router>()
 const requestPolicyRouters = new WeakSet<Router>()
 
 const routeTitleKeys: Readonly<Record<string, string>> = {
-  login: 'auth.login',
+  'login': 'auth.login',
   'forgot-password': 'auth.forgotPasswordTitle',
   'reset-password': 'auth.resetPasswordTitle',
   'sso-callback': 'auth.ssoCallbackTitle',
@@ -69,7 +70,8 @@ export function getLocalizedRouteTitle(route: RouteLocationNormalizedLoaded): st
 }
 
 function updateDocumentTitle(route: RouteLocationNormalizedLoaded): void {
-  if (typeof document === 'undefined') return
+  if (typeof document === 'undefined')
+    return
 
   const appTitle = i18n.global.t('common.appTitle')
   const pageTitle = getLocalizedRouteTitle(route)
@@ -77,9 +79,10 @@ function updateDocumentTitle(route: RouteLocationNormalizedLoaded): void {
 }
 
 export function setupDocumentTitle(targetRouter: Router): void {
-  if (titleRouters.has(targetRouter)) return
+  if (titleRouters.has(targetRouter))
+    return
 
-  targetRouter.afterEach((to) => updateDocumentTitle(to))
+  targetRouter.afterEach(to => updateDocumentTitle(to))
   // AI modified: locale changes retranslate the active route title without an extra navigation.
   watch(
     () => i18nComposer.locale.value,
@@ -91,11 +94,13 @@ export function setupDocumentTitle(targetRouter: Router): void {
 }
 
 export function setupRequestAccessHandlers(targetRouter: Router): void {
-  if (requestPolicyRouters.has(targetRouter)) return
+  if (requestPolicyRouters.has(targetRouter))
+    return
 
   registerSessionInvalidationHandler('router-session-redirect', async () => {
     const currentRoute = targetRouter.currentRoute.value
-    if (currentRoute.name === 'login') return
+    if (currentRoute.name === 'login')
+      return
 
     // AI modified: the auth store owns session cleanup; this boundary only restores navigation intent.
     await targetRouter.replace({
@@ -112,7 +117,8 @@ export function setupRequestAccessHandlers(targetRouter: Router): void {
 }
 
 export function setupNavigationProgress(targetRouter: Router): void {
-  if (progressRouters.has(targetRouter)) return
+  if (progressRouters.has(targetRouter))
+    return
 
   NProgress.configure({
     barSelector: '.bar',
@@ -124,7 +130,8 @@ export function setupNavigationProgress(targetRouter: Router): void {
   })
   targetRouter.beforeEach((to, from) => {
     // AI modified: this progress bar tracks route navigation only; requests keep local Vue Query loading.
-    if (to.fullPath !== from.fullPath) NProgress.start()
+    if (to.fullPath !== from.fullPath)
+      NProgress.start()
   })
   targetRouter.afterEach(() => NProgress.done())
   targetRouter.onError((failure, to) => {
@@ -139,7 +146,8 @@ export function setupNavigationProgress(targetRouter: Router): void {
 
 export async function bootstrapAuthenticatedNavigation(targetRouter: Router): Promise<boolean> {
   const authStore = useAuthStore()
-  if (!authStore.user || !authStore.principalId) return false
+  if (!authStore.user || !authStore.principalId)
+    return false
 
   const permissionStore = usePermissionStore()
   // AI modified: tenant identity participates in dynamic-menu ownership as well as the account role.
@@ -150,18 +158,21 @@ export async function bootstrapAuthenticatedNavigation(targetRouter: Router): Pr
 }
 
 export function setupNavigationAccessGuard(targetRouter: Router): void {
-  if (accessGuardRouters.has(targetRouter)) return
+  if (accessGuardRouters.has(targetRouter))
+    return
 
   targetRouter.beforeEach(async (to) => {
     const authStore = useAuthStore()
     const permissionStore = usePermissionStore()
-    const requiresAuth = to.matched.some((routeRecord) => routeRecord.meta.requiresAuth)
-    const requiresGuest = to.matched.some((routeRecord) => routeRecord.meta.requiresGuest)
+    const requiresAuth = to.matched.some(routeRecord => routeRecord.meta.requiresAuth)
+    const requiresGuest = to.matched.some(routeRecord => routeRecord.meta.requiresGuest)
     try {
       await authStore.restoreSession()
-    } catch {
+    }
+    catch {
       // AI modified: a transient identity outage must not turn public recovery routes into a blank page.
-      if (requiresAuth) return { name: 'login', query: { redirect: to.fullPath } }
+      if (requiresAuth)
+        return { name: 'login', query: { redirect: to.fullPath } }
       return true
     }
 
@@ -169,17 +180,20 @@ export function setupNavigationAccessGuard(targetRouter: Router): void {
       if (permissionStore.isReady || permissionStore.registeredRouteNames.length > 0)
         permissionStore.unloadNavigation()
 
-      if (requiresAuth) return { name: 'login', query: { redirect: to.fullPath } }
+      if (requiresAuth)
+        return { name: 'login', query: { redirect: to.fullPath } }
 
       return true
     }
 
-    if (requiresGuest) return { name: 'dashboard' }
+    if (requiresGuest)
+      return { name: 'dashboard' }
 
     let hasNewRoutes = false
     try {
       hasNewRoutes = await bootstrapAuthenticatedNavigation(targetRouter)
-    } catch {
+    }
+    catch {
       // A static route can still render when the optional backend navigation endpoint is unavailable.
     }
 
@@ -194,7 +208,7 @@ export function setupNavigationAccessGuard(targetRouter: Router): void {
 
     const routeWithAbility = [...to.matched]
       .reverse()
-      .find((routeRecord) => routeRecord.meta.requiredAbility)
+      .find(routeRecord => routeRecord.meta.requiredAbility)
     if (routeWithAbility?.meta.requiredAbility) {
       const [action, subject] = routeWithAbility.meta.requiredAbility
       if (!appAbility.can(action, subject) && to.name !== 'forbidden')

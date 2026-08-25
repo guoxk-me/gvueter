@@ -49,7 +49,7 @@ export function getDataScopeDepartmentIds(
   currentUser: AdminUser,
   departments: readonly DepartmentRecord[],
 ): ReadonlySet<string> {
-  const knownDepartmentIds = new Set(departments.map((department) => department.id))
+  const knownDepartmentIds = new Set(departments.map(department => department.id))
 
   switch (grant.scope) {
     case 'department':
@@ -68,7 +68,7 @@ export function getDataScopeDepartmentIds(
     }
     case 'custom':
       return new Set(
-        (grant.departmentIds ?? []).filter((departmentId) => knownDepartmentIds.has(departmentId)),
+        (grant.departmentIds ?? []).filter(departmentId => knownDepartmentIds.has(departmentId)),
       )
     case 'all':
     case 'self':

@@ -42,12 +42,14 @@ const buttonSize = computed<ButtonVariants['size']>(
 )
 
 async function copyValue(): Promise<void> {
-  if (!isSupported.value || props.disabled) return emit('error')
+  if (!isSupported.value || props.disabled)
+    return emit('error')
 
   try {
     await copy(props.value)
     emit('copied', props.value)
-  } catch {
+  }
+  catch {
     emit('error')
   }
 }

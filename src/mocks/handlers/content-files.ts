@@ -38,7 +38,7 @@ const initialFiles: ContentFileRecord[] = [
     uploadedAt: '2026-07-08T08:00:00.000Z',
   },
 ]
-const contentFiles = initialFiles.map((file) => ({ ...file }))
+const contentFiles = initialFiles.map(file => ({ ...file }))
 const fileBodies = new Map<string, ArrayBuffer>([
   ['file-access-policy', new TextEncoder().encode('Mock PDF content').buffer as ArrayBuffer],
   ['file-release-notes', new TextEncoder().encode('Release notes').buffer as ArrayBuffer],
@@ -57,15 +57,18 @@ function hasMatchingContentSignature(bytes: Uint8Array, mimeType: ContentFileMim
   const startsWith = (signature: readonly number[]) =>
     signature.every((byte, index) => bytes[index] === byte)
 
-  if (mimeType === 'image/png') return startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-  if (mimeType === 'image/jpeg') return startsWith([0xff, 0xd8, 0xff])
+  if (mimeType === 'image/png')
+    return startsWith([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+  if (mimeType === 'image/jpeg')
+    return startsWith([0xFF, 0xD8, 0xFF])
   if (mimeType === 'image/webp') {
     return (
-      startsWith([0x52, 0x49, 0x46, 0x46]) &&
-      [0x57, 0x45, 0x42, 0x50].every((byte, index) => bytes[index + 8] === byte)
+      startsWith([0x52, 0x49, 0x46, 0x46])
+      && [0x57, 0x45, 0x42, 0x50].every((byte, index) => bytes[index + 8] === byte)
     )
   }
-  if (mimeType === 'application/pdf') return startsWith([0x25, 0x50, 0x44, 0x46, 0x2d])
+  if (mimeType === 'application/pdf')
+    return startsWith([0x25, 0x50, 0x44, 0x46, 0x2D])
   return !bytes.includes(0)
 }
 
@@ -74,11 +77,11 @@ function getFileFailure(message: string, code: string, status = 400) {
 }
 
 function getContentFile(fileId: string): ContentFileRecord | undefined {
-  return contentFiles.find((file) => file.id === fileId)
+  return contentFiles.find(file => file.id === fileId)
 }
 
 export function resetMockContentFiles(): void {
-  contentFiles.splice(0, contentFiles.length, ...initialFiles.map((file) => ({ ...file })))
+  contentFiles.splice(0, contentFiles.length, ...initialFiles.map(file => ({ ...file })))
   fileBodies.clear()
   fileBodies.set(
     'file-access-policy',
@@ -93,17 +96,18 @@ export function resetMockContentFiles(): void {
 
 export const listContentFilesHandler = http.get('/api/content-files', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Content')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const url = new URL(request.url)
   const keyword = url.searchParams.get('keyword')?.trim().toLocaleLowerCase() ?? ''
   const requestedPage = Number(url.searchParams.get('page') ?? 1)
   const requestedPageSize = Number(url.searchParams.get('pageSize') ?? 10)
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
-  const pageSize =
-    Number.isInteger(requestedPageSize) && requestedPageSize > 0
+  const pageSize
+    = Number.isInteger(requestedPageSize) && requestedPageSize > 0
       ? Math.min(requestedPageSize, 100)
       : 10
-  const matchedFiles = contentFiles.filter((file) =>
+  const matchedFiles = contentFiles.filter(file =>
     file.name.toLocaleLowerCase().includes(keyword),
   )
   const startIndex = (page - 1) * pageSize
@@ -123,18 +127,22 @@ export const listContentFilesHandler = http.get('/api/content-files', ({ request
 export const uploadContentFileHandler = http.post('/api/content-files', async ({ request }) => {
   // AI modified: file writes use the same Content actions exposed through CASL.
   const authentication = authorizeMockPermission(request, 'create', 'Content')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const encodedFileName = request.headers.get('X-File-Name')
   const mimeType = request.headers.get('Content-Type') ?? ''
-  if (!encodedFileName) return getFileFailure('请选择要上传的文件', 'CONTENT_FILE_REQUIRED')
+  if (!encodedFileName)
+    return getFileFailure('请选择要上传的文件', 'CONTENT_FILE_REQUIRED')
   let requestedFileName = encodedFileName
   try {
     requestedFileName = decodeURIComponent(encodedFileName)
-  } catch {
+  }
+  catch {
     return getFileFailure('文件名无效', 'INVALID_CONTENT_FILE_NAME')
   }
   const fileName = getSafeFileName(requestedFileName)
-  if (!fileName) return getFileFailure('文件名无效', 'INVALID_CONTENT_FILE_NAME')
+  if (!fileName)
+    return getFileFailure('文件名无效', 'INVALID_CONTENT_FILE_NAME')
   if (!isContentFileMimeType(mimeType))
     return getFileFailure('文件类型不受支持', 'UNSUPPORTED_CONTENT_FILE_TYPE', 415)
   if (!isContentFileExtensionCompatible(fileName, mimeType))
@@ -191,10 +199,12 @@ export const downloadContentFileHandler = http.get<{ fileId: string }>(
   '/api/content-files/:fileId/download',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
     const file = getContentFile(params.fileId)
     const body = file ? fileBodies.get(file.id) : undefined
-    if (!file || !body) return getFileFailure('文件不存在', 'CONTENT_FILE_NOT_FOUND', 404)
+    if (!file || !body)
+      return getFileFailure('文件不存在', 'CONTENT_FILE_NOT_FOUND', 404)
 
     return new HttpResponse(body, {
       headers: {
@@ -211,7 +221,8 @@ export const previewContentFileHandler = http.get<{ fileId: string }>(
   '/api/content-files/:fileId/preview',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
     const file = getContentFile(params.fileId)
     const body = file ? fileBodies.get(file.id) : undefined
     if (!file || !body || !file.mimeType.startsWith('image/'))
@@ -230,9 +241,11 @@ export const deleteContentFileHandler = http.delete<{ fileId: string }>(
   '/api/content-files/:fileId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
     const file = getContentFile(params.fileId)
-    if (!file) return getFileFailure('文件不存在', 'CONTENT_FILE_NOT_FOUND', 404)
+    if (!file)
+      return getFileFailure('文件不存在', 'CONTENT_FILE_NOT_FOUND', 404)
     contentFiles.splice(contentFiles.indexOf(file), 1)
     fileBodies.delete(file.id)
     recordMockOperation(authentication.user, {

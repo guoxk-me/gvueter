@@ -36,7 +36,7 @@ const columns = computed(() => [
   }),
 ])
 
-const stateOptions = computed<readonly { id: DemoState; label: string }[]>(() => [
+const stateOptions = computed<readonly { id: DemoState, label: string }[]>(() => [
   { id: 'ready', label: props.copy.actions.ready },
   { id: 'loading', label: props.copy.actions.loading },
   { id: 'empty', label: props.copy.actions.empty },

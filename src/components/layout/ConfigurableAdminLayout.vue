@@ -52,36 +52,37 @@ const isEffectiveSidebarCollapsed = computed(
   () => hasCollapsibleSidebar.value && isSidebarCollapsed.value,
 )
 const activeRootMenu = computed(() =>
-  menuStore.visibleMenus.find((menuNode) => branchContainsPath(menuNode, route.path)),
+  menuStore.visibleMenus.find(menuNode => branchContainsPath(menuNode, route.path)),
 )
 const selectedRootMenu = computed(
   () =>
-    menuStore.visibleMenus.find((menuNode) => menuNode.id === selectedRootMenuId.value) ??
-    activeRootMenu.value ??
-    menuStore.visibleMenus[0],
+    menuStore.visibleMenus.find(menuNode => menuNode.id === selectedRootMenuId.value)
+    ?? activeRootMenu.value
+    ?? menuStore.visibleMenus[0],
 )
 const secondaryMenuNodes = computed<NavigationMenuNode[]>(() => {
   const selectedMenu = selectedRootMenu.value
-  if (!selectedMenu) return []
+  if (!selectedMenu)
+    return []
   return selectedMenu.children.length ? selectedMenu.children : [selectedMenu]
 })
 const hasHeaderNavigation = computed(() => layoutDefinition.value.primaryNavigation === 'header')
 const hasDesktopHeaderBrand = computed(() => layoutDefinition.value.brandPlacement === 'header')
 const primaryOwnsMainBoundary = computed(
   () =>
-    layoutDefinition.value.primaryNavigation !== 'header' &&
-    (layoutDefinition.value.secondaryNavigation !== 'sidebar' || isEffectiveSidebarCollapsed.value),
+    layoutDefinition.value.primaryNavigation !== 'header'
+    && (layoutDefinition.value.secondaryNavigation !== 'sidebar' || isEffectiveSidebarCollapsed.value),
 )
 const secondaryOwnsMainBoundary = computed(
   // AI modified: a collapsed secondary rail still owns the boundary when no primary rail is rendered.
   () =>
-    layoutDefinition.value.secondaryNavigation === 'sidebar' &&
-    (!isEffectiveSidebarCollapsed.value || layoutDefinition.value.primaryNavigation === 'header'),
+    layoutDefinition.value.secondaryNavigation === 'sidebar'
+    && (!isEffectiveSidebarCollapsed.value || layoutDefinition.value.primaryNavigation === 'header'),
 )
 const showsPrimaryCollapseControl = computed(
   () =>
-    layoutDefinition.value.collapseTarget === 'primary' ||
-    (appearance.layout === 'mixed' && layoutDefinition.value.collapseTarget === 'secondary'),
+    layoutDefinition.value.collapseTarget === 'primary'
+    || (appearance.layout === 'mixed' && layoutDefinition.value.collapseTarget === 'secondary'),
 )
 const showsSecondaryCollapseControl = computed(
   () => layoutDefinition.value.collapseTarget === 'secondary' && appearance.layout !== 'mixed',
@@ -112,20 +113,20 @@ const collapseActionLabel = computed(() =>
 
 function branchContainsPath(menuNode: NavigationMenuNode, path: string): boolean {
   return (
-    (Boolean(menuNode.to) && (path === menuNode.to || path.startsWith(`${menuNode.to}/`))) ||
-    menuNode.children.some((childNode) => branchContainsPath(childNode, path))
+    (Boolean(menuNode.to) && (path === menuNode.to || path.startsWith(`${menuNode.to}/`)))
+    || menuNode.children.some(childNode => branchContainsPath(childNode, path))
   )
 }
 
 function rootMenuForNode(nodeId: string): NavigationMenuNode | undefined {
   return menuStore.visibleMenus.find(
-    (rootMenu) => rootMenu.id === nodeId || branchContainsNode(rootMenu, nodeId),
+    rootMenu => rootMenu.id === nodeId || branchContainsNode(rootMenu, nodeId),
   )
 }
 
 function branchContainsNode(menuNode: NavigationMenuNode, nodeId: string): boolean {
   return menuNode.children.some(
-    (childNode) => childNode.id === nodeId || branchContainsNode(childNode, nodeId),
+    childNode => childNode.id === nodeId || branchContainsNode(childNode, nodeId),
   )
 }
 
@@ -135,11 +136,13 @@ function selectPrimaryNode(menuNode: NavigationMenuNode): void {
 
 function selectMobileNode(menuNode: NavigationMenuNode): void {
   selectPrimaryNode(menuNode)
-  if (menuNode.to || menuNode.href) isMobileNavigationOpen.value = false
+  if (menuNode.to || menuNode.href)
+    isMobileNavigationOpen.value = false
 }
 
 function toggleSidebar(): void {
-  if (!hasCollapsibleSidebar.value) return
+  if (!hasCollapsibleSidebar.value)
+    return
   // AI modified: manual collapse is current Shell state; sidebarDefault remains the startup preference.
   isSidebarMotionEnabled.value = true
   isSidebarCollapsed.value = !isSidebarCollapsed.value
@@ -158,7 +161,8 @@ watch(
 watch(
   [() => route.path, () => menuStore.visibleMenus],
   () => {
-    if (activeRootMenu.value) selectedRootMenuId.value = activeRootMenu.value.id
+    if (activeRootMenu.value)
+      selectedRootMenuId.value = activeRootMenu.value.id
     else if (!rootMenuForNode(selectedRootMenuId.value ?? ''))
       selectedRootMenuId.value = menuStore.visibleMenus[0]?.id
   },

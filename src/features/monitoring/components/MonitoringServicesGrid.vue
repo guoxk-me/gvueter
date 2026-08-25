@@ -72,7 +72,9 @@ function getLatencyLabel(latencyMs: number): string {
             <dt class="text-xs text-muted-foreground">
               {{ t('monitoring.services.latency') }}
             </dt>
-            <dd class="font-semibold">{{ getLatencyLabel(service.latencyMs) }} ms</dd>
+            <dd class="font-semibold">
+              {{ getLatencyLabel(service.latencyMs) }} ms
+            </dd>
           </div>
         </dl>
         <p class="text-xs text-muted-foreground">

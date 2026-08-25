@@ -21,7 +21,8 @@ export function applyAppSettingsToDocument(
   settings: AppSettings,
   resolvedTheme: ResolvedTheme = resolveThemeMode(settings.themeMode),
 ): void {
-  if (typeof document === 'undefined') return
+  if (typeof document === 'undefined')
+    return
 
   const root = document.documentElement
   const isDark = resolvedTheme === 'dark'
@@ -70,7 +71,8 @@ let activeAppearanceStore: AppearanceStore | undefined
 let settingsEffectScope: EffectScope | undefined
 
 function startSettingsSync(appearance: AppearanceStore): void {
-  if (activeAppearanceStore === appearance && settingsEffectScope?.active) return
+  if (activeAppearanceStore === appearance && settingsEffectScope?.active)
+    return
 
   settingsEffectScope?.stop()
   activeAppearanceStore = appearance
@@ -79,11 +81,12 @@ function startSettingsSync(appearance: AppearanceStore): void {
   settingsEffectScope.run(() => {
     watch(
       () => appearance.settings,
-      (settings) => applyAppSettingsToDocument(settings),
+      settings => applyAppSettingsToDocument(settings),
       { immediate: true, flush: 'sync' },
     )
 
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function')
+      return
 
     const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleColorSchemeChange = (): void => {
@@ -109,6 +112,7 @@ export function useThemeColor() {
  * Applies persisted settings before Vue mounts to avoid theme, density, and layout flashes.
  */
 export function hydrateThemeColorEarly(): void {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined')
+    return
   applyAppSettingsToDocument(readStoredAppSettings())
 }

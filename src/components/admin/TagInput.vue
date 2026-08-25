@@ -29,7 +29,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  tag?: (props: { tag: string; remove: () => void }) => unknown
+  tag?: (props: { tag: string, remove: () => void }) => unknown
 }>()
 
 const tags = defineModel<string[]>({ default: () => [] })
@@ -49,11 +49,12 @@ function addDraftTag(): void {
 }
 
 function addTags(candidateTags: readonly string[]): void {
-  if (props.disabled) return
+  if (props.disabled)
+    return
 
   const acceptedTags: string[] = []
   const rejections: TagInputRejection[] = []
-  const existingTags = new Set(tags.value.map((tag) => tag.toLocaleLowerCase()))
+  const existingTags = new Set(tags.value.map(tag => tag.toLocaleLowerCase()))
 
   for (const candidate of candidateTags) {
     const tag = candidate.trim()
@@ -76,12 +77,14 @@ function addTags(candidateTags: readonly string[]): void {
   }
 
   // AI modified: replace the tag array so controlled parents and form libraries observe each accepted batch once.
-  if (acceptedTags.length > 0) tags.value = [...tags.value, ...acceptedTags]
-  if (rejections.length > 0) emit('rejected', rejections)
+  if (acceptedTags.length > 0)
+    tags.value = [...tags.value, ...acceptedTags]
+  if (rejections.length > 0)
+    emit('rejected', rejections)
 }
 
 function removeTag(tagToRemove: string): void {
-  tags.value = tags.value.filter((tag) => tag !== tagToRemove)
+  tags.value = tags.value.filter(tag => tag !== tagToRemove)
   focused.value = true
 }
 
@@ -94,20 +97,23 @@ function handleKeydown(event: KeyboardEvent): void {
 
   if (event.key === 'Backspace' && draftTag.value.length === 0) {
     const lastTag = tags.value[tags.value.length - 1]
-    if (lastTag) removeTag(lastTag)
+    if (lastTag)
+      removeTag(lastTag)
   }
 }
 
 function handlePaste(event: ClipboardEvent): void {
   const pastedText = event.clipboardData?.getData('text')
-  if (!pastedText) return
+  if (!pastedText)
+    return
 
   event.preventDefault()
   addTags(pastedText.split(','))
 }
 
 function focusInput(): void {
-  if (!props.disabled && !isAtLimit.value) focused.value = true
+  if (!props.disabled && !isAtLimit.value)
+    focused.value = true
 }
 </script>
 
@@ -151,6 +157,6 @@ function focusInput(): void {
       @keydown="handleKeydown"
       @paste="handlePaste"
       @blur="addDraftTag"
-    />
+    >
   </div>
 </template>

@@ -50,7 +50,8 @@ const { handleSubmit, resetForm } = useForm<DictionaryTypeInput>({
 watch(
   [open, () => props.dictionaryType],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     // AI modified: reset from the selected server record whenever this reusable dialog opens.
     resetForm({

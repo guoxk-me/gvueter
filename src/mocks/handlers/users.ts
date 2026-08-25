@@ -66,7 +66,7 @@ function toAdminUser(user: (typeof mockUsers)[number], canReadSensitiveFields = 
 
 function findMockUser(userId: string | readonly string[]): (typeof mockUsers)[number] | undefined {
   const id = Number(userId)
-  return Number.isInteger(id) ? mockUsers.find((user) => user.id === id) : undefined
+  return Number.isInteger(id) ? mockUsers.find(user => user.id === id) : undefined
 }
 
 const userSortFields: readonly UserSortField[] = ['createdAt', 'email', 'name', 'role', 'status']
@@ -111,11 +111,14 @@ function readCsvRecords(csvText: string): CsvRecord[] | undefined {
       if (character === '"' && nextCharacter === '"') {
         field += '"'
         index += 1
-      } else if (character === '"') {
+      }
+      else if (character === '"') {
         state = 'quoted-closed'
-      } else {
+      }
+      else {
         field += character
-        if (character === '\n') currentRow += 1
+        if (character === '\n')
+          currentRow += 1
       }
       continue
     }
@@ -128,17 +131,20 @@ function readCsvRecords(csvText: string): CsvRecord[] | undefined {
     }
 
     if (character === '\r' || character === '\n') {
-      if (character === '\r' && nextCharacter === '\n') index += 1
+      if (character === '\r' && nextCharacter === '\n')
+        index += 1
       finishRecord()
       currentRow += 1
       recordRow = currentRow
       continue
     }
 
-    if (state === 'quoted-closed') return undefined
+    if (state === 'quoted-closed')
+      return undefined
 
     if (character === '"') {
-      if (field.length > 0) return undefined
+      if (field.length > 0)
+        return undefined
       state = 'quoted'
       continue
     }
@@ -146,8 +152,10 @@ function readCsvRecords(csvText: string): CsvRecord[] | undefined {
     field += character
   }
 
-  if (state === 'quoted') return undefined
-  if (field.length > 0 || fields.length > 0) finishRecord()
+  if (state === 'quoted')
+    return undefined
+  if (field.length > 0 || fields.length > 0)
+    finishRecord()
   return records
 }
 
@@ -161,48 +169,49 @@ function hasUnsafeSpreadsheetValue(value: string): boolean {
 
 function isValidUserImportEmail(email: string): boolean {
   if (
-    email.length === 0 ||
-    email.length > 254 ||
-    [...email].some((character) => character.charCodeAt(0) < 32)
+    email.length === 0
+    || email.length > 254
+    || [...email].some(character => character.charCodeAt(0) < 32)
   ) {
     return false
   }
 
   const segments = email.split('@')
-  if (segments.length !== 2) return false
+  if (segments.length !== 2)
+    return false
   const [mailbox = '', domain = ''] = segments
   const domainLabels = domain.split('.')
   return (
-    mailbox.length > 0 &&
-    !/\s/.test(mailbox) &&
-    domainLabels.length >= 2 &&
-    domainLabels.every((label) => label.length > 0 && !/\s/.test(label))
+    mailbox.length > 0
+    && !/\s/.test(mailbox)
+    && domainLabels.length >= 2
+    && domainLabels.every(label => label.length > 0 && !/\s/.test(label))
   )
 }
 
 function canAssignUserRoles(role: UserRole): boolean {
   return getRolePermissions(role).some(
-    (permission) => permission.action === 'update' && permission.subject === 'RolePolicy',
+    permission => permission.action === 'update' && permission.subject === 'RolePolicy',
   )
 }
 
 function canReadSensitiveUserFields(role: UserRole): boolean {
   return getRolePermissions(role).some(
-    (permission) => permission.action === 'update' && permission.subject === 'User',
+    permission => permission.action === 'update' && permission.subject === 'User',
   )
 }
 
 function hasAnotherActiveAdministrator(userId: number): boolean {
   return mockUsers.some(
-    (user) => user.id !== userId && user.role === 'admin' && user.status === 'active',
+    user => user.id !== userId && user.role === 'admin' && user.status === 'active',
   )
 }
 
 function removesActiveAdministrator(user: (typeof mockUsers)[number], input: UserInput): boolean {
   return (
-    user.role === 'admin' &&
-    user.status === 'active' &&
-    (input.role !== 'admin' || input.status !== 'active')
+    user.role === 'admin'
+    && user.status === 'active'
+    && (input.role !== 'admin' || input.status !== 'active')
   )
 }
 
@@ -213,25 +222,30 @@ function getUserImportIssue(
   if (record.fields.length !== expectedColumnCount)
     return { row: record.row, code: 'INVALID_COLUMN_COUNT' }
 
-  const [requestedName = '', requestedEmail = '', requestedRole = '', requestedStatus = ''] =
-    record.fields
+  const [requestedName = '', requestedEmail = '', requestedRole = '', requestedStatus = '']
+    = record.fields
   const name = requestedName.trim()
   const email = requestedEmail.trim().toLowerCase()
   const role = requestedRole.trim().toLowerCase()
   const status = requestedStatus.trim().toLowerCase()
 
-  if (!name || name.length > 80 || [...name].some((character) => character.charCodeAt(0) < 32))
+  if (!name || name.length > 80 || [...name].some(character => character.charCodeAt(0) < 32))
     return { row: record.row, code: 'INVALID_NAME' }
-  if (hasUnsafeSpreadsheetValue(name)) return { row: record.row, code: 'UNSAFE_SPREADSHEET_VALUE' }
-  if (!isValidUserImportEmail(email)) return { row: record.row, code: 'INVALID_EMAIL' }
-  if (!isUserRole(role)) return { row: record.row, code: 'INVALID_ROLE' }
-  if (!isUserStatus(status)) return { row: record.row, code: 'INVALID_STATUS' }
+  if (hasUnsafeSpreadsheetValue(name))
+    return { row: record.row, code: 'UNSAFE_SPREADSHEET_VALUE' }
+  if (!isValidUserImportEmail(email))
+    return { row: record.row, code: 'INVALID_EMAIL' }
+  if (!isUserRole(role))
+    return { row: record.row, code: 'INVALID_ROLE' }
+  if (!isUserStatus(status))
+    return { row: record.row, code: 'INVALID_STATUS' }
   return undefined
 }
 
 export const listUsersHandler = http.get('/api/users', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'User')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   const dataScope = getRoleDataScope(authentication.user.role)
   const allowedDepartmentIds = getDataScopeDepartmentIds(
@@ -253,12 +267,12 @@ export const listUsersHandler = http.get('/api/users', ({ request }) => {
 
   const matchingUsers = mockUsers
     // AI modified: MSW applies the current hierarchy-backed data scope before client filters.
-    .filter((user) => isUserInDataScope(dataScope, authentication.user, user, allowedDepartmentIds))
+    .filter(user => isUserInDataScope(dataScope, authentication.user, user, allowedDepartmentIds))
     .filter((user) => {
-      const isKeywordMatch =
-        !keyword ||
-        user.name.toLowerCase().includes(keyword) ||
-        (canReadSensitiveFields && user.email.toLowerCase().includes(keyword))
+      const isKeywordMatch
+        = !keyword
+          || user.name.toLowerCase().includes(keyword)
+          || (canReadSensitiveFields && user.email.toLowerCase().includes(keyword))
       // AI modified: masked-list roles cannot use totals as an oracle for hidden email addresses.
       const isRoleMatch = !role || user.role === role
       const isStatusMatch = !status || user.status === status
@@ -271,7 +285,7 @@ export const listUsersHandler = http.get('/api/users', ({ request }) => {
   const startIndex = (page - 1) * pageSize
   const items = matchingUsers
     .slice(startIndex, startIndex + pageSize)
-    .map((user) => toAdminUser(user, canReadSensitiveFields))
+    .map(user => toAdminUser(user, canReadSensitiveFields))
 
   return HttpResponse.json<ApiResponse<UserListResponse>>({
     code: 0,
@@ -285,10 +299,12 @@ export const createUserHandler = http.post<never, Record<string, unknown>>(
   async ({ request }) => {
     // AI modified: User writes honor action grants while record mutations still enforce data scope.
     const authentication = authorizeMockPermission(request, 'create', 'User')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, USER_INPUT_SCHEMA)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     if (!input.temporaryPassword || !isStrongPassword(input.temporaryPassword))
       return getUserImportFailure('临时密码强度不足', 'WEAK_TEMPORARY_PASSWORD')
@@ -297,7 +313,7 @@ export const createUserHandler = http.post<never, Record<string, unknown>>(
     }
     const email = input.email.trim().toLowerCase()
 
-    if (mockUsers.some((user) => user.email.toLowerCase() === email)) {
+    if (mockUsers.some(user => user.email.toLowerCase() === email)) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'EMAIL_EXISTS', message: '该邮箱已被使用', data: null },
         { status: 409 },
@@ -309,7 +325,7 @@ export const createUserHandler = http.post<never, Record<string, unknown>>(
     }
 
     const user = {
-      id: Math.max(...mockUsers.map((item) => item.id), 0) + 1,
+      id: Math.max(...mockUsers.map(item => item.id), 0) + 1,
       name: input.name.trim(),
       email,
       password: input.temporaryPassword,
@@ -336,16 +352,19 @@ export const createUserHandler = http.post<never, Record<string, unknown>>(
 
 export const importUsersHandler = http.post('/api/users/import', async ({ request }) => {
   const authentication = authorizeMockPermission(request, 'create', 'User')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const effectiveUploadPolicy = applyUploadPolicy(getMockUploadPolicy(), USER_IMPORT_UPLOAD_RULES)
 
   const encodedFileName = request.headers.get('X-File-Name')
-  if (!encodedFileName) return getUserImportFailure('请选择 CSV 文件', 'USER_IMPORT_FILE_REQUIRED')
+  if (!encodedFileName)
+    return getUserImportFailure('请选择 CSV 文件', 'USER_IMPORT_FILE_REQUIRED')
 
   let requestedFileName: string
   try {
     requestedFileName = decodeURIComponent(encodedFileName)
-  } catch {
+  }
+  catch {
     return getUserImportFailure('文件名无效', 'INVALID_USER_IMPORT_FILE_NAME')
   }
   const fileName = getSafeFileName(requestedFileName)
@@ -369,23 +388,25 @@ export const importUsersHandler = http.post('/api/users/import', async ({ reques
   let csvText: string
   try {
     csvText = new TextDecoder('utf-8', { fatal: true }).decode(uploadedBytes).replace(/^\uFEFF/, '')
-  } catch {
+  }
+  catch {
     return getUserImportFailure('CSV 文件必须使用 UTF-8 编码', 'INVALID_USER_IMPORT_ENCODING')
   }
 
   const records = readCsvRecords(csvText)
-  if (!records) return getUserImportFailure('CSV 文件格式无效', 'INVALID_USER_IMPORT_CSV')
-  const header = records[0]?.fields.map((field) => field.trim().toLowerCase())
+  if (!records)
+    return getUserImportFailure('CSV 文件格式无效', 'INVALID_USER_IMPORT_CSV')
+  const header = records[0]?.fields.map(field => field.trim().toLowerCase())
   const hasRequiredHeaders = header
     ?.slice(0, userImportHeaders.length)
     .every((field, index) => field === userImportHeaders[index])
-  const hasOptionalCreatedAt =
-    header?.length === userImportHeaders.length + 1 &&
-    header[userImportHeaders.length] === optionalUserImportHeader
+  const hasOptionalCreatedAt
+    = header?.length === userImportHeaders.length + 1
+      && header[userImportHeaders.length] === optionalUserImportHeader
   if (
-    !header ||
-    !hasRequiredHeaders ||
-    (header.length !== userImportHeaders.length && !hasOptionalCreatedAt)
+    !header
+    || !hasRequiredHeaders
+    || (header.length !== userImportHeaders.length && !hasOptionalCreatedAt)
   ) {
     return getUserImportFailure(
       'CSV 表头必须为 name,email,role,status，可附加 createdAt',
@@ -395,13 +416,13 @@ export const importUsersHandler = http.post('/api/users/import', async ({ reques
 
   const userRecords = records
     .slice(1)
-    .filter((record) => record.fields.some((field) => field.trim()))
+    .filter(record => record.fields.some(field => field.trim()))
   if (userRecords.length === 0)
     return getUserImportFailure('CSV 文件没有可导入的用户', 'USER_IMPORT_EMPTY')
   if (userRecords.length > MAX_USER_IMPORT_ROWS)
     return getUserImportFailure('一次最多导入 200 位用户', 'USER_IMPORT_ROW_LIMIT', 413)
 
-  const existingEmails = new Set(mockUsers.map((user) => user.email.toLowerCase()))
+  const existingEmails = new Set(mockUsers.map(user => user.email.toLowerCase()))
   const issues: UserImportIssue[] = []
   const acceptedUsers: AcceptedUserImport[] = []
   const hasRoleAssignmentPermission = canAssignUserRoles(authentication.user.role)
@@ -414,8 +435,8 @@ export const importUsersHandler = http.post('/api/users/import', async ({ reques
       continue
     }
 
-    const [requestedName = '', requestedEmail = '', requestedRole = '', requestedStatus = ''] =
-      record.fields
+    const [requestedName = '', requestedEmail = '', requestedRole = '', requestedStatus = '']
+      = record.fields
     const email = requestedEmail.trim().toLowerCase()
     if (existingEmails.has(email)) {
       issues.push({ row: record.row, code: 'DUPLICATE_EMAIL' })
@@ -424,7 +445,8 @@ export const importUsersHandler = http.post('/api/users/import', async ({ reques
 
     const role = requestedRole.trim().toLowerCase()
     const status = requestedStatus.trim().toLowerCase()
-    if (!isUserRole(role) || !isUserStatus(status)) continue
+    if (!isUserRole(role) || !isUserStatus(status))
+      continue
     if (role !== 'viewer' && !hasRoleAssignmentPermission) {
       issues.push({ row: record.row, code: 'ROLE_ASSIGNMENT_FORBIDDEN' })
       continue
@@ -438,7 +460,7 @@ export const importUsersHandler = http.post('/api/users/import', async ({ reques
     return getUserImportFailure('导入后用户数量将超过演示环境上限', 'USER_CAPACITY_REACHED', 409)
   }
 
-  let nextUserId = Math.max(...mockUsers.map((user) => user.id), 0) + 1
+  let nextUserId = Math.max(...mockUsers.map(user => user.id), 0) + 1
   for (const user of acceptedUsers) {
     mockUsers.push({
       id: nextUserId,
@@ -475,7 +497,8 @@ export const updateUserHandler = http.put<{ userId: string }, Record<string, unk
   '/api/users/:userId',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'User')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const user = findMockUser(params.userId)
     if (!user) {
@@ -498,7 +521,8 @@ export const updateUserHandler = http.put<{ userId: string }, Record<string, unk
     }
 
     const requestBody = await readMockJsonBody(request, USER_INPUT_SCHEMA)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     if (removesActiveAdministrator(user, input) && !hasAnotherActiveAdministrator(user.id)) {
       // AI modified: preserve at least one active administrator at the authoritative API boundary.
@@ -509,8 +533,8 @@ export const updateUserHandler = http.put<{ userId: string }, Record<string, unk
       )
     }
     if (
-      user.id === authentication.user.id &&
-      (input.role !== user.role || input.status !== user.status)
+      user.id === authentication.user.id
+      && (input.role !== user.role || input.status !== user.status)
     ) {
       return getUserImportFailure(
         '当前账号不能修改自己的角色或状态',
@@ -523,7 +547,7 @@ export const updateUserHandler = http.put<{ userId: string }, Record<string, unk
     }
     const email = input.email.trim().toLowerCase()
     const hasDuplicateEmail = mockUsers.some(
-      (candidate) => candidate.id !== user.id && candidate.email === email,
+      candidate => candidate.id !== user.id && candidate.email === email,
     )
     if (hasDuplicateEmail) {
       return HttpResponse.json<ApiResponse<null>>(
@@ -537,7 +561,8 @@ export const updateUserHandler = http.put<{ userId: string }, Record<string, unk
     user.role = input.role
     user.status = input.status
     // AI modified: suspending an account revokes prior Mock sessions so reactivation cannot revive them.
-    if (user.status === 'suspended') revokeMockUserSessions(user.id)
+    if (user.status === 'suspended')
+      revokeMockUserSessions(user.id)
     recordMockOperation(authentication.user, {
       action: 'update',
       resource: 'user',
@@ -556,7 +581,8 @@ export const deleteUserHandler = http.delete<{ userId: string }>(
   '/api/users/:userId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'User')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const user = findMockUser(params.userId)
     if (!user) {
@@ -578,9 +604,9 @@ export const deleteUserHandler = http.delete<{ userId: string }>(
       )
     }
     if (
-      user.role === 'admin' &&
-      user.status === 'active' &&
-      !hasAnotherActiveAdministrator(user.id)
+      user.role === 'admin'
+      && user.status === 'active'
+      && !hasAnotherActiveAdministrator(user.id)
     ) {
       return getUserImportFailure(
         '系统必须保留至少一个启用的管理员',

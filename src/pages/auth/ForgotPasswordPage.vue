@@ -24,7 +24,8 @@ const successHeading = useTemplateRef<HTMLElement>('successHeading')
 const maskedEmail = computed(() => {
   const email = sentEmail.value
   const atIdx = email.indexOf('@')
-  if (atIdx <= 1) return email
+  if (atIdx <= 1)
+    return email
   return `${email[0]}***${email.slice(atIdx)}`
 })
 
@@ -43,7 +44,8 @@ const { handleSubmit, setFieldError } = useForm({ validationSchema: formSchema }
 
 const onSubmit = handleSubmit(
   async (values) => {
-    if (isLoading.value) return
+    if (isLoading.value)
+      return
 
     // AI modified: the pending guard prevents repeated reset-email mutations.
     isLoading.value = true
@@ -53,10 +55,12 @@ const onSubmit = handleSubmit(
       isSuccess.value = true
       await nextTick()
       successHeading.value?.focus()
-    } catch {
+    }
+    catch {
       setFieldError('email', t('errors.serverError'))
       await focusFirstInvalidControlAfterValidation(formElement.value)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   },

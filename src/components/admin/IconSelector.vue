@@ -31,22 +31,24 @@ const searchQuery = shallowRef('')
 const selectedCategory = shallowRef<AdminIconCategory | 'all'>('all')
 const listboxId = `admin-icon-options-${useId()}`
 const selectedIcon = computed(() =>
-  ADMIN_ICON_OPTIONS.find((option) => option.key === selectedIconKey.value),
+  ADMIN_ICON_OPTIONS.find(option => option.key === selectedIconKey.value),
 )
 // AI modified: search and category state derive one visible allow-listed set without changing the emitted key contract.
 const visibleIconOptions = computed(() => {
   const requestedText = searchQuery.value.trim().toLocaleLowerCase(locale.value)
 
   return ADMIN_ICON_OPTIONS.filter((option) => {
-    if (selectedCategory.value !== 'all' && option.category !== selectedCategory.value) return false
-    if (!requestedText) return true
+    if (selectedCategory.value !== 'all' && option.category !== selectedCategory.value)
+      return false
+    if (!requestedText)
+      return true
 
     return [
       option.key,
       option.lucideName,
       getIconLabel(option),
       getCategoryLabel(option.category),
-    ].some((searchableText) =>
+    ].some(searchableText =>
       searchableText.toLocaleLowerCase(locale.value).includes(requestedText),
     )
   })

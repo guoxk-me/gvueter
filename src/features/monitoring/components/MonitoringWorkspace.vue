@@ -73,8 +73,10 @@ function applyFilters(filters: MonitoringFilters): void {
 async function terminateOnlineSession(session: OnlineSession): Promise<void> {
   try {
     const hasTerminated = await terminateSession(session.id)
-    if (hasTerminated) toast.success(t('monitoring.sessions.terminateSuccess'))
-  } catch (error: unknown) {
+    if (hasTerminated)
+      toast.success(t('monitoring.sessions.terminateSuccess'))
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -82,8 +84,10 @@ async function terminateOnlineSession(session: OnlineSession): Promise<void> {
 async function runScheduledJob(job: ScheduledJob): Promise<void> {
   try {
     const hasRun = await runJob(job.id)
-    if (hasRun) toast.success(t('monitoring.jobsTable.runSuccess'))
-  } catch (error: unknown) {
+    if (hasRun)
+      toast.success(t('monitoring.jobsTable.runSuccess'))
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -91,8 +95,10 @@ async function runScheduledJob(job: ScheduledJob): Promise<void> {
 async function clearNamedCache(cache: CacheHealth): Promise<void> {
   try {
     const hasCleared = await clearCache(cache.name)
-    if (hasCleared) toast.success(t('monitoring.cachesTable.clearSuccess'))
-  } catch (error: unknown) {
+    if (hasCleared)
+      toast.success(t('monitoring.cachesTable.clearSuccess'))
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

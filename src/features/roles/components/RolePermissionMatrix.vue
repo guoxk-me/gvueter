@@ -62,8 +62,8 @@ const isEditable = computed(() => props.canEdit)
 
 const isDirty = computed(
   () =>
-    !hasSamePermissions(draftPermissions.value, props.role.permissions) ||
-    !hasSameDataScope(draftDataScope.value, props.role.dataScope),
+    !hasSamePermissions(draftPermissions.value, props.role.permissions)
+    || !hasSameDataScope(draftDataScope.value, props.role.dataScope),
 )
 const isDataScopeValid = computed(
   () =>
@@ -72,17 +72,18 @@ const isDataScopeValid = computed(
 const customDepartmentIds = computed<string[]>({
   get: () => draftDataScope.value.departmentIds ?? [],
   set: (departmentIds) => {
-    if (isEditable.value) draftDataScope.value = { scope: 'custom', departmentIds }
+    if (isEditable.value)
+      draftDataScope.value = { scope: 'custom', departmentIds }
   },
 })
 const unavailableDepartmentIds = computed(() =>
-  isEditable.value && !props.isSaving ? [] : props.departments.map((department) => department.id),
+  isEditable.value && !props.isSaving ? [] : props.departments.map(department => department.id),
 )
 
 watch(
   () => props.role,
   (role) => {
-    draftPermissions.value = role.permissions.map((permission) => ({ ...permission }))
+    draftPermissions.value = role.permissions.map(permission => ({ ...permission }))
     draftDataScope.value = {
       ...role.dataScope,
       departmentIds: role.dataScope.departmentIds ? [...role.dataScope.departmentIds] : undefined,
@@ -97,39 +98,41 @@ function getPermissionKey(permission: RolePermission): string {
 
 function hasPermission(permission: RolePermission): boolean {
   const permissionKey = getPermissionKey(permission)
-  return draftPermissions.value.some((candidate) => getPermissionKey(candidate) === permissionKey)
+  return draftPermissions.value.some(candidate => getPermissionKey(candidate) === permissionKey)
 }
 
 function hasSamePermissions(left: RolePermission[], right: RolePermission[]): boolean {
   return (
-    left.length === right.length &&
-    left.every((permission) =>
-      right.some((candidate) => getPermissionKey(candidate) === getPermissionKey(permission)),
+    left.length === right.length
+    && left.every(permission =>
+      right.some(candidate => getPermissionKey(candidate) === getPermissionKey(permission)),
     )
   )
 }
 
 function hasSameDataScope(left: DataScopeGrant, right: DataScopeGrant): boolean {
-  if (left.scope !== right.scope) return false
+  if (left.scope !== right.scope)
+    return false
   const leftDepartmentIds = [...(left.departmentIds ?? [])].sort()
   const rightDepartmentIds = [...(right.departmentIds ?? [])].sort()
   return (
-    leftDepartmentIds.length === rightDepartmentIds.length &&
-    leftDepartmentIds.every((departmentId, index) => departmentId === rightDepartmentIds[index])
+    leftDepartmentIds.length === rightDepartmentIds.length
+    && leftDepartmentIds.every((departmentId, index) => departmentId === rightDepartmentIds[index])
   )
 }
 
 function setDataScope(scope: unknown): void {
   if (!isEditable.value || typeof scope !== 'string' || !DATA_SCOPES.includes(scope as DataScope))
     return
-  draftDataScope.value =
-    scope === 'custom'
+  draftDataScope.value
+    = scope === 'custom'
       ? { scope, departmentIds: draftDataScope.value.departmentIds ?? [] }
       : { scope: scope as DataScope }
 }
 
 function setPermission(permission: RolePermission, checked: boolean | 'indeterminate'): void {
-  if (!isEditable.value || isRecoveryPermissionLocked(permission)) return
+  if (!isEditable.value || isRecoveryPermissionLocked(permission))
+    return
   const permissionKey = getPermissionKey(permission)
   if (checked === true && !hasPermission(permission)) {
     draftPermissions.value = [...draftPermissions.value, { ...permission }]
@@ -138,26 +141,27 @@ function setPermission(permission: RolePermission, checked: boolean | 'indetermi
 
   if (checked !== true) {
     draftPermissions.value = draftPermissions.value.filter(
-      (candidate) => getPermissionKey(candidate) !== permissionKey,
+      candidate => getPermissionKey(candidate) !== permissionKey,
     )
   }
 }
 
 function setAllPermissions(isGranted: boolean): void {
-  if (!isEditable.value) return
+  if (!isEditable.value)
+    return
 
   if (isGranted) {
     // AI modified: bulk grants use the same explicit action/subject matrix as individual checkboxes.
-    draftPermissions.value = PERMISSION_SUBJECTS.flatMap((subject) =>
-      PERMISSION_ACTIONS.map((action) => ({ action, subject })),
+    draftPermissions.value = PERMISSION_SUBJECTS.flatMap(subject =>
+      PERMISSION_ACTIONS.map(action => ({ action, subject })),
     )
     return
   }
 
   // AI modified: clearing an admin policy retains the minimum permissions needed to recover it.
-  draftPermissions.value =
-    props.role.key === 'admin'
-      ? ADMIN_ROLE_RECOVERY_PERMISSIONS.map((permission) => ({ ...permission }))
+  draftPermissions.value
+    = props.role.key === 'admin'
+      ? ADMIN_ROLE_RECOVERY_PERMISSIONS.map(permission => ({ ...permission }))
       : []
 }
 
@@ -197,7 +201,7 @@ const policyLayerPreviews = computed(() => [
 function savePolicy(): void {
   if (isDirty.value && isDataScopeValid.value && isEditable.value) {
     emit('save', {
-      permissions: draftPermissions.value.map((permission) => ({ ...permission })),
+      permissions: draftPermissions.value.map(permission => ({ ...permission })),
       dataScope: {
         ...draftDataScope.value,
         departmentIds: draftDataScope.value.departmentIds

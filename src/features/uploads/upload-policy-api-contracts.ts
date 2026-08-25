@@ -10,7 +10,7 @@ export const UPLOAD_POLICY_SCHEMA: z.ZodType<UploadPolicy> = z
       .min(1)
       .max(100)
       .refine(
-        (extensions) => new Set(extensions).size === extensions.length,
+        extensions => new Set(extensions).size === extensions.length,
         'Upload extensions must be unique',
       ),
     updatedAt: z.string().datetime({ offset: true }),

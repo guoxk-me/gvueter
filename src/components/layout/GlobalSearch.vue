@@ -37,8 +37,10 @@ let hasWindowResizeFallback = false
 const filteredItems = computed(() => {
   const q = query.value.trim().toLowerCase()
   return adminNavigationItems.filter((item) => {
-    if (!canAccess(item.ability[0], item.ability[1])) return false
-    if (!q) return true
+    if (!canAccess(item.ability[0], item.ability[1]))
+      return false
+    if (!q)
+      return true
     return t(item.labelKey).toLowerCase().includes(q)
   })
 })
@@ -63,9 +65,11 @@ function onKeydown(event: KeyboardEvent): void {
 
 function reportFullWidthReserve(): void {
   const measurement = fullTriggerMeasurement.value
-  if (!measurement) return
+  if (!measurement)
+    return
   const fullWidth = measurement.getBoundingClientRect().width || measurement.offsetWidth
-  if (fullWidth <= 0) return
+  if (fullWidth <= 0)
+    return
   emit('widthReserveChange', Math.max(0, Math.ceil(fullWidth) - 32))
 }
 
@@ -89,7 +93,8 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
   measurementResizeObserver?.disconnect()
-  if (hasWindowResizeFallback) window.removeEventListener('resize', reportFullWidthReserve)
+  if (hasWindowResizeFallback)
+    window.removeEventListener('resize', reportFullWidthReserve)
 })
 </script>
 
@@ -149,7 +154,7 @@ onUnmounted(() => {
           :aria-label="t('search.title')"
           :placeholder="t('search.placeholder')"
           autofocus
-        />
+        >
       </div>
 
       <!-- Results -->

@@ -55,7 +55,7 @@ export default {
     loginFailed: '用户名或密码错误',
     logoutConfirm: '确认退出登录？',
     usernamePlaceholder: '请输入用户名',
-    emailPlaceholder: "admin{'@'}example.com",
+    emailPlaceholder: 'admin{\'@\'}example.com',
     passwordPlaceholder: '请输入密码',
     welcomeBack: '欢迎回来',
     loginSubtitle: '请登录您的管理员账号',
@@ -475,8 +475,8 @@ export default {
         },
       },
       kind: {
-        business: '业务组件',
-        table: '表格组件',
+        'business': '业务组件',
+        'table': '表格组件',
         'ui-primitive': 'Primitive',
       },
       maturity: {
@@ -1914,10 +1914,10 @@ export default {
       bootstrapDescription: '管理后台暂时无法启动。请刷新应用；未保存的更改可能会丢失。',
     },
     actions: {
-      retry: '请重试当前请求。',
+      'retry': '请重试当前请求。',
       'sign-in': '请重新登录后再试。',
       'request-access': '请向管理员申请所需权限。',
-      refresh: '请刷新数据后重新提交更改。',
+      'refresh': '请刷新数据后重新提交更改。',
       'review-input': '请检查提交内容并修正标记的字段。',
       'contact-support': '如果问题持续，请联系技术支持。',
     },

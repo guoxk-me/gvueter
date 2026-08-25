@@ -46,7 +46,7 @@ const initialPositions: PositionRecord[] = [
   },
 ]
 
-const mockPositions = initialPositions.map((position) => ({ ...position }))
+const mockPositions = initialPositions.map(position => ({ ...position }))
 let nextPositionId = 5
 const MAX_MOCK_POSITIONS = 200
 
@@ -55,36 +55,37 @@ function copyPosition(position: PositionRecord): PositionRecord {
 }
 
 function getPosition(positionId: string | readonly string[]): PositionRecord | undefined {
-  return mockPositions.find((position) => position.id === String(positionId))
+  return mockPositions.find(position => position.id === String(positionId))
 }
 
 export function resetMockPositions(): void {
   mockPositions.splice(
     0,
     mockPositions.length,
-    ...initialPositions.map((position) => ({ ...position })),
+    ...initialPositions.map(position => ({ ...position })),
   )
   nextPositionId = 5
 }
 
 export const listPositionsHandler = http.get('/api/positions', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   const url = new URL(request.url)
   const keyword = url.searchParams.get('keyword')?.trim().toLowerCase() ?? ''
   const requestedStatus = url.searchParams.get('status')
   const status: PositionStatus | undefined = POSITION_STATUSES.find(
-    (positionStatus) => positionStatus === requestedStatus,
+    positionStatus => positionStatus === requestedStatus,
   )
   const items = mockPositions
     .filter(
-      (position) =>
-        !keyword ||
-        position.name.toLowerCase().includes(keyword) ||
-        position.code.toLowerCase().includes(keyword),
+      position =>
+        !keyword
+        || position.name.toLowerCase().includes(keyword)
+        || position.code.toLowerCase().includes(keyword),
     )
-    .filter((position) => !status || position.status === status)
+    .filter(position => !status || position.status === status)
     .sort((leftPosition, rightPosition) => leftPosition.order - rightPosition.order)
     .map(copyPosition)
 
@@ -100,16 +101,18 @@ export const createPositionHandler = http.post<never, PositionInput>(
   async ({ request }) => {
     // AI modified: Settings CRUD follows action-level role grants rather than the admin role name.
     const authentication = authorizeMockPermission(request, 'create', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, POSITION_INPUT_SCHEMA, {
       code: 'INVALID_POSITION',
       message: '岗位信息无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const code = input.code.trim().toLowerCase()
-    if (mockPositions.some((position) => position.code === code)) {
+    if (mockPositions.some(position => position.code === code)) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'POSITION_CODE_EXISTS', message: '岗位编码已存在', data: null },
         { status: 409 },
@@ -144,7 +147,8 @@ export const updatePositionHandler = http.put<{ positionId: string }, PositionIn
   '/api/positions/:positionId',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const position = getPosition(params.positionId)
     if (!position) {
@@ -158,11 +162,12 @@ export const updatePositionHandler = http.put<{ positionId: string }, PositionIn
       code: 'INVALID_POSITION',
       message: '岗位信息无效',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const code = input.code.trim().toLowerCase()
     if (
-      mockPositions.some((candidate) => candidate.id !== position.id && candidate.code === code)
+      mockPositions.some(candidate => candidate.id !== position.id && candidate.code === code)
     ) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'POSITION_CODE_EXISTS', message: '岗位编码已存在', data: null },
@@ -187,7 +192,8 @@ export const deletePositionHandler = http.delete<{ positionId: string }>(
   '/api/positions/:positionId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const position = getPosition(params.positionId)
     if (!position) {

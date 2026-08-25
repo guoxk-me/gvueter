@@ -28,7 +28,8 @@ export function useSystemConfig() {
   async function saveConfig(input: SystemConfigInput): Promise<SystemConfig> {
     try {
       return await saveConfigMutation.mutateAsync(input)
-    } finally {
+    }
+    finally {
       // AI modified: clear mutation variables so newly entered secret values are not retained in cache state.
       saveConfigMutation.reset()
     }

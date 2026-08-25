@@ -43,7 +43,7 @@ const emit = defineEmits<{
   bulkDelete: []
   import: []
   refresh: []
-  inlineEdit: [change: { user: AdminUser; columnId: string; value: string }]
+  inlineEdit: [change: { user: AdminUser, columnId: string, value: string }]
 }>()
 
 const pagination = defineModel<PaginationState>('pagination', { required: true })

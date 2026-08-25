@@ -32,13 +32,16 @@ export function useRemoteOptionSearch(
         phase.value = 'loading'
         try {
           const remoteOptions = await source.value(searchTerm, controller.signal)
-          if (controller.signal.aborted || requestSequence !== latestRequestSequence) return
+          if (controller.signal.aborted || requestSequence !== latestRequestSequence)
+            return
 
           // AI modified: only the newest request can publish options after rapid remote searches.
           options.value = remoteOptions
           phase.value = remoteOptions.length > 0 ? 'ready' : 'empty'
-        } catch {
-          if (controller.signal.aborted || requestSequence !== latestRequestSequence) return
+        }
+        catch {
+          if (controller.signal.aborted || requestSequence !== latestRequestSequence)
+            return
 
           options.value = []
           phase.value = 'error'

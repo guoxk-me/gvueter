@@ -143,11 +143,12 @@ test('keeps user pagination UI, request parameters, rows, buttons, and URL synch
   page,
 }) => {
   await signInAsAdmin(page)
-  const requestSnapshots: Array<{ page: number; pageSize: number }> = []
+  const requestSnapshots: Array<{ page: number, pageSize: number }> = []
   let latestUserRequest: URL | undefined
   page.on('request', (request) => {
     const requestUrl = new URL(request.url())
-    if (request.method() !== 'GET' || requestUrl.pathname !== '/api/users') return
+    if (request.method() !== 'GET' || requestUrl.pathname !== '/api/users')
+      return
 
     latestUserRequest = requestUrl
     const pageNumber = Number(requestUrl.searchParams.get('page') ?? 1)
@@ -332,7 +333,7 @@ test('persists appearance settings and can restore defaults', async ({ page }) =
   // AI modified: large density sets a 56px floor while wrapped user content may grow the row.
   await expect(firstUserRow).toHaveCSS('min-height', '56px')
   await expect
-    .poll(() => firstUserRow.evaluate((row) => row.getBoundingClientRect().height))
+    .poll(() => firstUserRow.evaluate(row => row.getBoundingClientRect().height))
     .toBeGreaterThan(56)
 
   await page.getByRole('button', { name: 'Appearance' }).click()
@@ -419,7 +420,7 @@ test('renders a themed QR code and exports an actual image crop', async ({ page 
   const qrCode = page.locator('canvas[aria-label="Generated QR code"]')
   await expect(qrCode).toBeVisible()
   await expect
-    .poll(() => qrCode.evaluate((canvas) => (canvas as HTMLCanvasElement).width))
+    .poll(() => qrCode.evaluate(canvas => (canvas as HTMLCanvasElement).width))
     .toBe(192)
 
   await page.getByRole('button', { name: 'Crop image' }).click()

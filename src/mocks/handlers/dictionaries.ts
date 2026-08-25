@@ -102,10 +102,10 @@ const initialDictionaryEntries: DictionaryEntry[] = [
   },
 ]
 
-const dictionaryTypes: DictionaryType[] = initialDictionaryTypes.map((dictionaryType) => ({
+const dictionaryTypes: DictionaryType[] = initialDictionaryTypes.map(dictionaryType => ({
   ...dictionaryType,
 }))
-const dictionaryEntries: DictionaryEntry[] = initialDictionaryEntries.map((dictionaryEntry) => ({
+const dictionaryEntries: DictionaryEntry[] = initialDictionaryEntries.map(dictionaryEntry => ({
   ...dictionaryEntry,
 }))
 let dictionaryTypeSequence = 1
@@ -126,23 +126,23 @@ function getInputFailure(message: string, code = 'INVALID_DICTIONARY_INPUT', sta
 }
 
 function findDictionaryType(dictionaryTypeId: string): DictionaryType | undefined {
-  return dictionaryTypes.find((dictionaryType) => dictionaryType.id === dictionaryTypeId)
+  return dictionaryTypes.find(dictionaryType => dictionaryType.id === dictionaryTypeId)
 }
 
 function findDictionaryEntry(dictionaryEntryId: string): DictionaryEntry | undefined {
-  return dictionaryEntries.find((dictionaryEntry) => dictionaryEntry.id === dictionaryEntryId)
+  return dictionaryEntries.find(dictionaryEntry => dictionaryEntry.id === dictionaryEntryId)
 }
 
 export function resetMockDictionaries(): void {
   dictionaryTypes.splice(
     0,
     dictionaryTypes.length,
-    ...initialDictionaryTypes.map((dictionaryType) => ({ ...dictionaryType })),
+    ...initialDictionaryTypes.map(dictionaryType => ({ ...dictionaryType })),
   )
   dictionaryEntries.splice(
     0,
     dictionaryEntries.length,
-    ...initialDictionaryEntries.map((dictionaryEntry) => ({ ...dictionaryEntry })),
+    ...initialDictionaryEntries.map(dictionaryEntry => ({ ...dictionaryEntry })),
   )
   dictionaryTypeSequence = 1
   dictionaryEntrySequence = 1
@@ -150,7 +150,8 @@ export function resetMockDictionaries(): void {
 
 export const listDictionaryTypesHandler = http.get('/api/dictionaries/types', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<DictionaryTypeListResponse>>({
     code: 0,
@@ -164,17 +165,19 @@ export const createDictionaryTypeHandler = http.post<never, DictionaryTypeInput>
   async ({ request }) => {
     // AI modified: dictionary management follows the editable Settings action policy.
     const authentication = authorizeMockPermission(request, 'create', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, DICTIONARY_TYPE_INPUT_SCHEMA, {
       code: 'INVALID_DICTIONARY_INPUT',
       message: '字典类型信息不完整',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
 
     const code = input.code.trim()
-    if (dictionaryTypes.some((dictionaryType) => dictionaryType.code === code))
+    if (dictionaryTypes.some(dictionaryType => dictionaryType.code === code))
       return getInputFailure('字典编码已存在', 'DICTIONARY_CODE_EXISTS', 409)
     if (dictionaryTypes.length >= MAX_MOCK_DICTIONARY_TYPES) {
       // AI modified: mutable dictionaries stay inside their executable list bounds.
@@ -202,25 +205,29 @@ export const updateDictionaryTypeHandler = http.put<
   DictionaryTypeInput
 >('/api/dictionaries/types/:dictionaryTypeId', async ({ params, request }) => {
   const authentication = authorizeMockPermission(request, 'update', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   const dictionaryType = findDictionaryType(params.dictionaryTypeId)
-  if (!dictionaryType) return getInputFailure('字典类型不存在', 'DICTIONARY_TYPE_NOT_FOUND', 404)
+  if (!dictionaryType)
+    return getInputFailure('字典类型不存在', 'DICTIONARY_TYPE_NOT_FOUND', 404)
 
   const requestBody = await readMockJsonBody(request, DICTIONARY_TYPE_INPUT_SCHEMA, {
     code: 'INVALID_DICTIONARY_INPUT',
     message: '字典类型信息不完整',
   })
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const input = requestBody.body
 
   const code = input.code.trim()
   if (
     dictionaryTypes.some(
-      (candidate) => candidate.id !== dictionaryType.id && candidate.code === code,
+      candidate => candidate.id !== dictionaryType.id && candidate.code === code,
     )
-  )
+  ) {
     return getInputFailure('字典编码已存在', 'DICTIONARY_CODE_EXISTS', 409)
+  }
 
   dictionaryType.code = code
   dictionaryType.name = input.name.trim()
@@ -238,11 +245,13 @@ export const deleteDictionaryTypeHandler = http.delete<{ dictionaryTypeId: strin
   '/api/dictionaries/types/:dictionaryTypeId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const dictionaryType = findDictionaryType(params.dictionaryTypeId)
-    if (!dictionaryType) return getInputFailure('字典类型不存在', 'DICTIONARY_TYPE_NOT_FOUND', 404)
-    if (dictionaryEntries.some((dictionaryEntry) => dictionaryEntry.typeId === dictionaryType.id))
+    if (!dictionaryType)
+      return getInputFailure('字典类型不存在', 'DICTIONARY_TYPE_NOT_FOUND', 404)
+    if (dictionaryEntries.some(dictionaryEntry => dictionaryEntry.typeId === dictionaryType.id))
       return getInputFailure('请先删除该类型下的字典项', 'DICTIONARY_TYPE_IN_USE', 409)
 
     dictionaryTypes.splice(dictionaryTypes.indexOf(dictionaryType), 1)
@@ -254,12 +263,13 @@ export const listDictionaryEntriesHandler = http.get<{ dictionaryTypeId: string 
   '/api/dictionaries/types/:dictionaryTypeId/entries',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
     if (!findDictionaryType(params.dictionaryTypeId))
       return getInputFailure('字典类型不存在', 'DICTIONARY_TYPE_NOT_FOUND', 404)
 
     const items = dictionaryEntries
-      .filter((dictionaryEntry) => dictionaryEntry.typeId === params.dictionaryTypeId)
+      .filter(dictionaryEntry => dictionaryEntry.typeId === params.dictionaryTypeId)
       .sort((leftEntry, rightEntry) => leftEntry.order - rightEntry.order)
       .map(copyDictionaryEntry)
     return HttpResponse.json<ApiResponse<DictionaryEntryListResponse>>({
@@ -275,7 +285,8 @@ export const createDictionaryEntryHandler = http.post<
   DictionaryEntryInput
 >('/api/dictionaries/types/:dictionaryTypeId/entries', async ({ params, request }) => {
   const authentication = authorizeMockPermission(request, 'create', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   if (!findDictionaryType(params.dictionaryTypeId))
     return getInputFailure('字典类型不存在', 'DICTIONARY_TYPE_NOT_FOUND', 404)
 
@@ -283,15 +294,17 @@ export const createDictionaryEntryHandler = http.post<
     code: 'INVALID_DICTIONARY_INPUT',
     message: '字典项信息不完整',
   })
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const input = requestBody.body
   const entryValue = input.value.trim()
   if (
     dictionaryEntries.some(
-      (entry) => entry.typeId === params.dictionaryTypeId && entry.value === entryValue,
+      entry => entry.typeId === params.dictionaryTypeId && entry.value === entryValue,
     )
-  )
+  ) {
     return getInputFailure('字典值已存在', 'DICTIONARY_VALUE_EXISTS', 409)
+  }
   if (dictionaryEntries.length >= MAX_MOCK_DICTIONARY_ENTRIES) {
     // AI modified: the shared dictionary entry store is globally bounded across types.
     return getInputFailure('字典项数量已达到演示环境上限', 'DICTIONARY_CAPACITY_REACHED', 409)
@@ -318,24 +331,27 @@ export const updateDictionaryEntryHandler = http.put<
   DictionaryEntryInput
 >('/api/dictionaries/entries/:dictionaryEntryId', async ({ params, request }) => {
   const authentication = authorizeMockPermission(request, 'update', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   const dictionaryEntry = findDictionaryEntry(params.dictionaryEntryId)
-  if (!dictionaryEntry) return getInputFailure('字典项不存在', 'DICTIONARY_ENTRY_NOT_FOUND', 404)
+  if (!dictionaryEntry)
+    return getInputFailure('字典项不存在', 'DICTIONARY_ENTRY_NOT_FOUND', 404)
 
   const requestBody = await readMockJsonBody(request, DICTIONARY_ENTRY_INPUT_SCHEMA, {
     code: 'INVALID_DICTIONARY_INPUT',
     message: '字典项信息不完整',
   })
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const input = requestBody.body
   const entryValue = input.value.trim()
   if (
     dictionaryEntries.some(
-      (candidate) =>
-        candidate.id !== dictionaryEntry.id &&
-        candidate.typeId === dictionaryEntry.typeId &&
-        candidate.value === entryValue,
+      candidate =>
+        candidate.id !== dictionaryEntry.id
+        && candidate.typeId === dictionaryEntry.typeId
+        && candidate.value === entryValue,
     )
   ) {
     return getInputFailure('字典值已存在', 'DICTIONARY_VALUE_EXISTS', 409)
@@ -357,10 +373,12 @@ export const deleteDictionaryEntryHandler = http.delete<{ dictionaryEntryId: str
   '/api/dictionaries/entries/:dictionaryEntryId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const dictionaryEntry = findDictionaryEntry(params.dictionaryEntryId)
-    if (!dictionaryEntry) return getInputFailure('字典项不存在', 'DICTIONARY_ENTRY_NOT_FOUND', 404)
+    if (!dictionaryEntry)
+      return getInputFailure('字典项不存在', 'DICTIONARY_ENTRY_NOT_FOUND', 404)
     dictionaryEntries.splice(dictionaryEntries.indexOf(dictionaryEntry), 1)
     return HttpResponse.json<ApiResponse<null>>({ code: 0, message: 'deleted', data: null })
   },
@@ -370,17 +388,18 @@ export const dictionaryOptionsHandler = http.get<{ code: string }>(
   '/api/dictionaries/options/:code',
   ({ params, request }) => {
     const authentication = authenticateMockRequest(request)
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
-    const dictionaryType = dictionaryTypes.find((candidate) => candidate.code === params.code)
+    const dictionaryType = dictionaryTypes.find(candidate => candidate.code === params.code)
     if (!dictionaryType || dictionaryType.status === 'disabled')
       return getInputFailure('字典类型不存在或已停用', 'DICTIONARY_TYPE_NOT_FOUND', 404)
 
     // AI modified: consumers receive a stable option projection without management identifiers.
     const options = dictionaryEntries
-      .filter((entry) => entry.typeId === dictionaryType.id)
+      .filter(entry => entry.typeId === dictionaryType.id)
       .sort((leftEntry, rightEntry) => leftEntry.order - rightEntry.order)
-      .map((entry) => ({
+      .map(entry => ({
         label: entry.label,
         value: entry.value,
         color: entry.color,

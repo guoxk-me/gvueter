@@ -139,7 +139,8 @@ async function submitRequest(): Promise<void> {
       return
     }
     statusMessage.value = copy.value.success
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }

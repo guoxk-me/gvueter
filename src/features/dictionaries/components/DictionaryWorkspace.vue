@@ -49,17 +49,18 @@ const {
 } = useDictionaryManagement(selectedDictionaryTypeId)
 const selectedDictionaryType = computed(() =>
   dictionaryTypes.value.find(
-    (dictionaryType) => dictionaryType.id === selectedDictionaryTypeId.value,
+    dictionaryType => dictionaryType.id === selectedDictionaryTypeId.value,
   ),
 )
 
 watch(
   [dictionaryTypes, isLoadingTypes],
   ([availableDictionaryTypes, areTypesLoading]) => {
-    if (areTypesLoading) return
+    if (areTypesLoading)
+      return
     emit(
       'dictionaryTypeOptionsReady',
-      availableDictionaryTypes.map((dictionaryType) => dictionaryType.id),
+      availableDictionaryTypes.map(dictionaryType => dictionaryType.id),
     )
     // AI modified: selection survives refreshes and safely advances when a type is deleted.
     selectedDictionaryTypeId.value = getSelectedDictionaryTypeId(
@@ -103,7 +104,8 @@ async function saveType(input: DictionaryTypeInput): Promise<void> {
     selectedDictionaryTypeId.value = savedDictionaryType.id
     isTypeDialogOpen.value = false
     toast.success(t('dictionaries.typeSaveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -112,7 +114,8 @@ async function removeDictionaryType(dictionaryType: DictionaryType): Promise<voi
   try {
     await deleteDictionaryType(dictionaryType)
     toast.success(t('dictionaries.typeDeleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -122,7 +125,8 @@ async function saveEntry(input: DictionaryEntryInput): Promise<void> {
     await saveDictionaryEntry({ dictionaryEntry: editingDictionaryEntry.value, input })
     isEntryDialogOpen.value = false
     toast.success(t('dictionaries.entrySaveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -131,7 +135,8 @@ async function removeDictionaryEntry(dictionaryEntry: DictionaryEntry): Promise<
   try {
     await deleteDictionaryEntry(dictionaryEntry)
     toast.success(t('dictionaries.entryDeleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

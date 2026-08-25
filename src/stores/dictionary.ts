@@ -28,14 +28,14 @@ export const useDictionaryStore = defineStore(
         delete optionsByCode.value[code]
         return undefined
       }
-      return cacheEntry.options.map((option) => ({ ...option }))
+      return cacheEntry.options.map(option => ({ ...option }))
     }
 
     function cacheOptions(code: string, options: DictionaryOption[]): void {
       // AI modified: persist only the stable option contract; management records remain in Vue Query.
       optionsByCode.value[code] = {
         expiresAt: Date.now() + DICTIONARY_CACHE_LIFETIME_MS,
-        options: options.map((option) => ({ ...option })),
+        options: options.map(option => ({ ...option })),
       }
     }
 

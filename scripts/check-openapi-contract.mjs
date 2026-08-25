@@ -52,11 +52,11 @@ function getContractPath(apiPath) {
 }
 
 function getMockOperations(handlerSource) {
-  const handlerPattern =
-    /\bhttp\.(delete|get|patch|post|put)(?:<[^(]{0,500}>)?\s*\(\s*['"`](\/api\/[^'"`?\s]+)['"`]/g
+  const handlerPattern
+    = /\bhttp\.(delete|get|patch|post|put)(?:<[^(]{0,500}>)?\s*\(\s*['"`](\/api\/[^'"`?\s]+)['"`]/g
   return new Set(
     [...handlerSource.matchAll(handlerPattern)].map(
-      (match) => `${match[1]} ${getContractPath(match[2])}`,
+      match => `${match[1]} ${getContractPath(match[2])}`,
     ),
   )
 }
@@ -76,15 +76,15 @@ function validateMockJsonRequestSchemas(handlerSources) {
 
     function visit(node) {
       if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'readMockJsonBody'
+        ts.isCallExpression(node)
+        && ts.isIdentifier(node.expression)
+        && node.expression.text === 'readMockJsonBody'
       ) {
         validatedRequestCount += 1
         const schemaArgument = node.arguments[1]
         if (
-          !schemaArgument ||
-          (ts.isIdentifier(schemaArgument) && schemaArgument.text === 'undefined')
+          !schemaArgument
+          || (ts.isIdentifier(schemaArgument) && schemaArgument.text === 'undefined')
         ) {
           const { line, character } = sourceFile.getLineAndCharacterOfPosition(
             node.getStart(sourceFile),
@@ -123,7 +123,8 @@ function getReferenceTarget(openApi, reference) {
 }
 
 function resolveReference(openApi, value) {
-  if (!isObject(value) || typeof value.$ref !== 'string') return value
+  if (!isObject(value) || typeof value.$ref !== 'string')
+    return value
   const target = getReferenceTarget(openApi, value.$ref)
   if (!isObject(target))
     throw new Error(`OpenAPI reference must resolve to an object: ${value.$ref}.`)
@@ -136,8 +137,10 @@ function validateReferenceTargets(openApi, value = openApi) {
     for (const entry of value) validateReferenceTargets(openApi, entry)
     return
   }
-  if (!isObject(value)) return
-  if (typeof value.$ref === 'string') getReferenceTarget(openApi, value.$ref)
+  if (!isObject(value))
+    return
+  if (typeof value.$ref === 'string')
+    getReferenceTarget(openApi, value.$ref)
   for (const nestedValue of Object.values(value)) validateReferenceTargets(openApi, nestedValue)
 }
 
@@ -145,10 +148,12 @@ function getDocumentedOperations(openApi) {
   const operations = new Map()
   for (const [apiPath, unresolvedPathItem] of Object.entries(openApi.paths)) {
     const pathItem = resolveReference(openApi, unresolvedPathItem)
-    if (!isObject(pathItem)) throw new Error(`OpenAPI path item ${apiPath} must be an object.`)
+    if (!isObject(pathItem))
+      throw new Error(`OpenAPI path item ${apiPath} must be an object.`)
     for (const method of httpMethods) {
       const operation = pathItem[method]
-      if (!operation) continue
+      if (!operation)
+        continue
       if (!isObject(operation))
         throw new Error(`${method.toUpperCase()} ${apiPath} must be an object.`)
       operations.set(`${method} ${getContractPath(apiPath)}`, {
@@ -164,7 +169,8 @@ function getDocumentedOperations(openApi) {
 
 function getResolvedRequestBody(openApi, operation) {
   const requestBody = resolveReference(openApi, operation.requestBody)
-  if (!isObject(requestBody)) return undefined
+  if (!isObject(requestBody))
+    return undefined
   return requestBody
 }
 
@@ -181,12 +187,12 @@ function validateOperationContracts(openApi, documentedOperations) {
     }
 
     const isFailureFixture = operationKey === 'get /contract-scenarios/failures/{parameter}'
-    const hasSuccessResponse = Object.keys(responses).some((status) => /^2\d\d$/.test(status))
+    const hasSuccessResponse = Object.keys(responses).some(status => /^2\d\d$/.test(status))
     if (!hasSuccessResponse && !isFailureFixture) {
       throw new Error(`${operationKey} must declare a 2xx response.`)
     }
     const hasFailureResponse = Object.keys(responses).some(
-      (status) => status === 'default' || /^[45]\d\d$/.test(status),
+      status => status === 'default' || /^[45]\d\d$/.test(status),
     )
     if (!hasFailureResponse && !isFailureFixture) {
       throw new Error(`${operationKey} must declare a default or explicit failure response.`)
@@ -214,9 +220,9 @@ function validateOperationContracts(openApi, documentedOperations) {
       if (jsonMediaType) {
         const jsonSchema = resolveReference(openApi, jsonMediaType.schema)
         if (
-          !isObject(jsonSchema) ||
-          jsonSchema.type !== 'object' ||
-          jsonSchema.additionalProperties !== false
+          !isObject(jsonSchema)
+          || jsonSchema.type !== 'object'
+          || jsonSchema.additionalProperties !== false
         ) {
           throw new Error(
             `${operationKey} JSON request body must resolve to a closed domain object schema.`,
@@ -226,14 +232,14 @@ function validateOperationContracts(openApi, documentedOperations) {
     }
 
     const declaredParameters = [...(pathItem.parameters ?? []), ...(operation.parameters ?? [])]
-      .map((parameter) => resolveReference(openApi, parameter))
+      .map(parameter => resolveReference(openApi, parameter))
       .filter(isObject)
-    for (const parameterName of [...apiPath.matchAll(/\{([^}]+)\}/g)].map((match) => match[1])) {
+    for (const parameterName of [...apiPath.matchAll(/\{([^}]+)\}/g)].map(match => match[1])) {
       const hasPathParameter = declaredParameters.some(
-        (parameter) =>
-          parameter.in === 'path' &&
-          parameter.name === parameterName &&
-          parameter.required === true,
+        parameter =>
+          parameter.in === 'path'
+          && parameter.name === parameterName
+          && parameter.required === true,
       )
       if (!hasPathParameter) {
         throw new Error(`${operationKey} is missing required path parameter ${parameterName}.`)
@@ -274,7 +280,8 @@ function validateBinaryContracts(openApi, documentedOperations) {
 
   for (const [operationKey, expectedMediaTypes] of expectedUploadMediaTypes) {
     const operation = documentedOperations.get(operationKey)?.operation
-    if (!operation) throw new Error(`Missing binary upload operation ${operationKey}.`)
+    if (!operation)
+      throw new Error(`Missing binary upload operation ${operationKey}.`)
     const requestBody = getResolvedRequestBody(openApi, operation)
     const actualMediaTypes = getMediaTypes(openApi, requestBody).sort()
     if (actualMediaTypes.join() !== [...expectedMediaTypes].sort().join()) {
@@ -311,7 +318,7 @@ const openApiSource = await readFile(resolve(projectRoot, 'docs/openapi.yaml'), 
 const openApiDocument = parseDocument(openApiSource, { prettyErrors: true, uniqueKeys: true })
 if (openApiDocument.errors.length > 0) {
   throw new Error(
-    `docs/openapi.yaml is invalid:\n${openApiDocument.errors.map((error) => error.message).join('\n')}`,
+    `docs/openapi.yaml is invalid:\n${openApiDocument.errors.map(error => error.message).join('\n')}`,
   )
 }
 const openApi = openApiDocument.toJS()
@@ -322,8 +329,8 @@ if (typeof openApi.openapi !== 'string' || !openApi.openapi.startsWith('3.1.')) 
   throw new Error('docs/openapi.yaml must declare OpenAPI 3.1.')
 }
 if (
-  !Array.isArray(openApi.servers) ||
-  !openApi.servers.some((server) => isObject(server) && server.url === '/api')
+  !Array.isArray(openApi.servers)
+  || !openApi.servers.some(server => isObject(server) && server.url === '/api')
 ) {
   throw new Error('docs/openapi.yaml must declare the same-origin /api server base.')
 }
@@ -338,9 +345,9 @@ const documentedOperations = getDocumentedOperations(openApi)
 validateOperationContracts(openApi, documentedOperations)
 validateBinaryContracts(openApi, documentedOperations)
 
-const handlerFiles = (await getFiles(handlersRoot)).filter((file) => file.endsWith('.ts'))
+const handlerFiles = (await getFiles(handlersRoot)).filter(file => file.endsWith('.ts'))
 const handlerSources = await Promise.all(
-  handlerFiles.map(async (filePath) => ({
+  handlerFiles.map(async filePath => ({
     filePath,
     source: await readFile(filePath, 'utf8'),
   })),
@@ -353,10 +360,10 @@ const validatedMockRequestCount = validateMockJsonRequestSchemas(handlerSources)
 const mockOperations = getMockOperations(handlerSource)
 const documentedOperationKeys = new Set(documentedOperations.keys())
 const undocumentedOperations = [...mockOperations]
-  .filter((operation) => !documentedOperationKeys.has(operation))
+  .filter(operation => !documentedOperationKeys.has(operation))
   .sort()
 const unimplementedOperations = [...documentedOperationKeys]
-  .filter((operation) => !mockOperations.has(operation))
+  .filter(operation => !mockOperations.has(operation))
   .sort()
 
 if (undocumentedOperations.length > 0) {

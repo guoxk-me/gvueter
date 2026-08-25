@@ -84,9 +84,9 @@ const effectiveUserImportPolicy = computed(() =>
 )
 const isUserImportDisabled = computed(
   () =>
-    isUploadPolicyLoading.value ||
-    (!uploadPolicyError.value &&
-      !effectiveUserImportPolicy.value?.allowedExtensions.includes('csv')),
+    isUploadPolicyLoading.value
+    || (!uploadPolicyError.value
+      && !effectiveUserImportPolicy.value?.allowedExtensions.includes('csv')),
 )
 const userImportDisabledReason = computed(() =>
   isUploadPolicyLoading.value ? t('users.importPolicyLoading') : t('users.importPolicyDisabled'),
@@ -111,7 +111,7 @@ useTableUrlState({
 watch(
   appliedFilters,
   // AI modified: restored URL filters also repopulate the visible query controls.
-  (filters) => (searchValues.value = { ...filters }),
+  filters => (searchValues.value = { ...filters }),
 )
 
 watch(
@@ -127,19 +127,21 @@ const canDeleteUsers = computed(() => canAccess('delete', 'User'))
 const canAssignUserRoles = computed(() => canAccess('update', 'RolePolicy'))
 
 function getTableDensity(componentSize: ComponentSize): ProTableDensity {
-  if (componentSize === 'sm') return 'compact'
-  if (componentSize === 'lg') return 'comfortable'
+  if (componentSize === 'sm')
+    return 'compact'
+  if (componentSize === 'lg')
+    return 'comfortable'
   return 'standard'
 }
 
 watch(
   () => appearance.componentSize,
   // AI modified: the global component-size preference sets the business table's starting density.
-  (componentSize) => (tableDensity.value = getTableDensity(componentSize)),
+  componentSize => (tableDensity.value = getTableDensity(componentSize)),
 )
 
 function getSortField(columnId: string | undefined): UserSortField | undefined {
-  return userSortFields.find((field) => field === columnId)
+  return userSortFields.find(field => field === columnId)
 }
 
 const userQuery = computed<UserListQuery>(() => {
@@ -183,7 +185,8 @@ const saveUserMutation = useMutation({
     // AI modified: editing the signed-in account keeps shell identity state aligned with the server.
     if (auth.user?.id === savedUser.id) {
       // AI modified: role changes require a fresh backend authorization snapshot before CASL changes.
-      if (auth.user.role !== savedUser.role) await auth.refreshPrincipal()
+      if (auth.user.role !== savedUser.role)
+        await auth.refreshPrincipal()
       else auth.setUser(savedUser)
     }
     await queryClient.invalidateQueries({ queryKey: ['users'] })
@@ -197,7 +200,7 @@ const deleteUsersMutation = useMutation({
   mutationFn: async (userIds: number[]): Promise<DeleteUsersOutcome> => {
     // AI modified: independent settlement preserves the exact partial-success boundary.
     const deleteRequests = await Promise.allSettled(
-      userIds.map((userId) =>
+      userIds.map(userId =>
         del<null>(`/users/${userId}`, { responseSchema: EMPTY_RESPONSE_SCHEMA }),
       ),
     )
@@ -207,8 +210,11 @@ const deleteUsersMutation = useMutation({
 
     deleteRequests.forEach((request, index) => {
       const userId = userIds[index]
-      if (userId === undefined) return
-      if (request.status === 'fulfilled') successfulUserIds.push(userId)
+      if (userId === undefined)
+        return
+      if (request.status === 'fulfilled') {
+        successfulUserIds.push(userId)
+      }
       else {
         failedUserIds.push(userId)
         firstFailure ??= request.reason
@@ -227,7 +233,7 @@ const deleteUsersMutation = useMutation({
       pagination.value = { ...pagination.value, pageIndex: lastPageIndex }
 
     selectedRowIds.value = Object.fromEntries(
-      outcome.failedUserIds.map((userId) => [String(userId), true]),
+      outcome.failedUserIds.map(userId => [String(userId), true]),
     )
     isDeleteOpen.value = false
     if (outcome.failedUserIds.length === 0) {
@@ -250,7 +256,8 @@ const deleteUsersMutation = useMutation({
         }),
         { description },
       )
-    } else {
+    }
+    else {
       toast.error(t('users.bulkDeleteFailed', { count: outcome.failedUserIds.length }), {
         description: `${description} ${getErrorMessage(outcome.firstFailure)}`,
       })
@@ -271,7 +278,7 @@ const importUsersMutation = useMutation({
     isImportOpen.value = false
     const description = summary.issues
       .slice(0, 3)
-      .map((issue) =>
+      .map(issue =>
         t('users.importIssue', {
           row: issue.row,
           reason: t(`users.importIssues.${issue.code}`),
@@ -284,7 +291,8 @@ const importUsersMutation = useMutation({
       created: summary.createdCount,
       skipped: summary.skippedCount,
     })
-    if (summary.skippedCount > 0) toast.warning(message, { description })
+    if (summary.skippedCount > 0)
+      toast.warning(message, { description })
     else toast.success(message)
   },
   onError: (error: unknown) => toast.error(getErrorMessage(error)),
@@ -366,10 +374,10 @@ async function openImportDialog(): Promise<void> {
 function importUsers(file: File): void {
   const policy = effectiveUserImportPolicy.value
   if (
-    uploadPolicyError.value ||
-    !policy ||
-    !policy.allowedExtensions.includes('csv') ||
-    file.size > policy.maxFileSizeBytes
+    uploadPolicyError.value
+    || !policy
+    || !policy.allowedExtensions.includes('csv')
+    || file.size > policy.maxFileSizeBytes
   ) {
     // AI modified: a policy refresh cannot leave a stale CSV selection eligible for submission.
     isImportOpen.value = false
@@ -380,15 +388,17 @@ function importUsers(file: File): void {
 }
 
 function reportImportRejections(rejections: FileUploadRejection[]): void {
-  if (rejections.length > 0) toast.error(t('users.importFileRejected'))
+  if (rejections.length > 0)
+    toast.error(t('users.importFileRejected'))
 }
 
 function saveUser(input: UserInput): void {
   saveUserMutation.mutate({ user: selectedUser.value, input })
 }
 
-function saveInlineUser(change: { user: AdminUser; columnId: string; value: string }): void {
-  if (change.columnId !== 'name') return
+function saveInlineUser(change: { user: AdminUser, columnId: string, value: string }): void {
+  if (change.columnId !== 'name')
+    return
   saveUserMutation.mutate({
     user: change.user,
     input: {
@@ -402,7 +412,8 @@ function saveInlineUser(change: { user: AdminUser; columnId: string; value: stri
 
 function deleteSelectedUsers(): void {
   const userIds = selectedUser.value ? [selectedUser.value.id] : selectedUserIds.value
-  if (userIds.length > 0) deleteUsersMutation.mutate(userIds)
+  if (userIds.length > 0)
+    deleteUsersMutation.mutate(userIds)
 }
 </script>
 

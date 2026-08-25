@@ -28,7 +28,8 @@ const loadError = computed(() => {
 
 const lastUpdatedLabel = computed(() => {
   const generatedAt = overviewQuery.data.value?.generatedAt
-  if (!generatedAt) return null
+  if (!generatedAt)
+    return null
 
   // AI modified: keep locale-sensitive freshness formatting deterministic across browser timezones.
   return t('dashboard.lastUpdated', {

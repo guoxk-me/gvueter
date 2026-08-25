@@ -19,8 +19,8 @@ const selectedDictionaryTypeId = computed<string | undefined>({
   get: () => dictionaryTypeState.value || allowedDictionaryTypeIds.value[0],
   set: (dictionaryTypeId) => {
     // AI modified: the first server-ordered category is the URL default while non-default choices remain shareable.
-    dictionaryTypeState.value =
-      dictionaryTypeId === allowedDictionaryTypeIds.value[0] ? '' : (dictionaryTypeId ?? '')
+    dictionaryTypeState.value
+      = dictionaryTypeId === allowedDictionaryTypeIds.value[0] ? '' : (dictionaryTypeId ?? '')
   },
 })
 

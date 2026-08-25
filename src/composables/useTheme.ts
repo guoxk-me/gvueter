@@ -12,9 +12,9 @@ let isSystemPreferenceObserved = false
 
 function observeSystemPreference(): void {
   if (
-    isSystemPreferenceObserved ||
-    typeof window === 'undefined' ||
-    typeof window.matchMedia !== 'function'
+    isSystemPreferenceObserved
+    || typeof window === 'undefined'
+    || typeof window.matchMedia !== 'function'
   ) {
     return
   }
@@ -36,7 +36,8 @@ export function useTheme() {
   observeSystemPreference()
 
   const resolvedTheme = computed<ResolvedTheme>(() => {
-    if (themeMode.value !== 'system') return themeMode.value
+    if (themeMode.value !== 'system')
+      return themeMode.value
     return systemPrefersDark.value ? 'dark' : 'light'
   })
   const isDark = computed(() => resolvedTheme.value === 'dark')

@@ -52,31 +52,34 @@ interface LoginFailureRecord {
   lockedUntil: number
 }
 
-export type MockAuthentication =
-  | { isAuthenticated: true; user: MockUser; tenantId: string | null }
-  | { isAuthenticated: false; response: Response }
+export type MockAuthentication
+  = | { isAuthenticated: true, user: MockUser, tenantId: string | null }
+    | { isAuthenticated: false, response: Response }
 
 const captchaRecords = new Map<string, CaptchaRecord>()
 const loginFailureRecords = new Map<string, LoginFailureRecord>()
-const resetTokenStore = new Map<string, { token: string; expiry: number }>()
+const resetTokenStore = new Map<string, { token: string, expiry: number }>()
 
 function pruneAuthenticationRecords(now = Date.now()): void {
   for (const [captchaId, captcha] of captchaRecords) {
-    if (captcha.expiresAt <= now) captchaRecords.delete(captchaId)
+    if (captcha.expiresAt <= now)
+      captchaRecords.delete(captchaId)
   }
   for (const [failureKey, failure] of loginFailureRecords) {
     if (failure.lockedUntil > 0 && failure.lockedUntil <= now)
       loginFailureRecords.delete(failureKey)
   }
   for (const [email, resetToken] of resetTokenStore) {
-    if (resetToken.expiry <= now) resetTokenStore.delete(email)
+    if (resetToken.expiry <= now)
+      resetTokenStore.delete(email)
   }
 }
 
 function enforceAuthenticationRecordLimit<T>(records: Map<string, T>, maximumSize: number): void {
   while (records.size > maximumSize) {
     const oldestKey = records.keys().next().value
-    if (!oldestKey) return
+    if (!oldestKey)
+      return
     records.delete(oldestKey)
   }
 }
@@ -88,7 +91,8 @@ function getLoginFailureKey(email: string): string {
 function getLoginLockResponse(email: string): Response | undefined {
   const failureKey = getLoginFailureKey(email)
   const failureRecord = loginFailureRecords.get(failureKey)
-  if (!failureRecord || failureRecord.lockedUntil === 0) return undefined
+  if (!failureRecord || failureRecord.lockedUntil === 0)
+    return undefined
 
   if (failureRecord.lockedUntil <= Date.now()) {
     // AI modified: an expired lock starts a fresh failure window instead of re-locking forever.
@@ -161,8 +165,9 @@ export function authenticateMockRequest(request: Request): MockAuthentication {
     return getAuthorizationFailure('INVALID_TOKEN', 'Token 无效，请重新登录')
   }
 
-  const user = mockUsers.find((candidate) => candidate.id === session.userId)
-  if (!user) return getAuthorizationFailure('INVALID_TOKEN', 'Token 对应的用户不存在')
+  const user = mockUsers.find(candidate => candidate.id === session.userId)
+  if (!user)
+    return getAuthorizationFailure('INVALID_TOKEN', 'Token 对应的用户不存在')
   if (user.status !== 'active')
     return getAuthorizationFailure('ACCOUNT_SUSPENDED', '账号已停用', 403)
   return { isAuthenticated: true, user, tenantId: session.tenantId }
@@ -190,7 +195,7 @@ export function authorizeMockPermission(
   }
 
   const hasPermission = getRolePermissions(authentication.user.role).some(
-    (permission) => permission.action === action && permission.subject === subject,
+    permission => permission.action === action && permission.subject === subject,
   )
   if (hasPermission) {
     return authentication
@@ -223,13 +228,15 @@ export const captchaHandler = http.get('/api/auth/captcha', () => {
 
 export const loginHandler = http.post<never, LoginInput>('/api/auth/login', async ({ request }) => {
   const requestBody = await readMockJsonBody(request, LOGIN_INPUT_SCHEMA)
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const input = requestBody.body
   const { email, password } = input
   const canonicalEmail = email.trim().toLowerCase()
 
   const existingLockResponse = getLoginLockResponse(email)
-  if (existingLockResponse) return existingLockResponse
+  if (existingLockResponse)
+    return existingLockResponse
 
   if (!input.captchaId || !input.captchaCode) {
     // AI modified: password clients cannot bypass the challenge by omitting both captcha fields.
@@ -240,12 +247,13 @@ export const loginHandler = http.post<never, LoginInput>('/api/auth/login', asyn
   }
 
   const captcha = captchaRecords.get(input.captchaId)
-  const isCaptchaValid =
-    captcha && captcha.expiresAt > Date.now() && captcha.answer === input.captchaCode.trim()
+  const isCaptchaValid
+    = captcha && captcha.expiresAt > Date.now() && captcha.answer === input.captchaCode.trim()
   captchaRecords.delete(input.captchaId)
   if (!isCaptchaValid) {
     const lockResponse = recordLoginFailure(email)
-    if (lockResponse) return lockResponse
+    if (lockResponse)
+      return lockResponse
     return HttpResponse.json<ApiResponse<null>>(
       { code: 'INVALID_CAPTCHA', message: '验证码错误或已过期', data: null },
       { status: 400 },
@@ -253,12 +261,13 @@ export const loginHandler = http.post<never, LoginInput>('/api/auth/login', asyn
   }
 
   const found = mockUsers.find(
-    (user) => user.email.toLowerCase() === canonicalEmail && user.password === password,
+    user => user.email.toLowerCase() === canonicalEmail && user.password === password,
   )
 
   if (!found || found.status !== 'active') {
     const lockResponse = recordLoginFailure(email)
-    if (lockResponse) return lockResponse
+    if (lockResponse)
+      return lockResponse
     // AI modified: one response hides whether an account is absent, suspended, or has a wrong password.
     return HttpResponse.json<ApiResponse<null>>(
       { code: 'INVALID_CREDENTIALS', message: INVALID_CREDENTIALS_MESSAGE, data: null },
@@ -302,9 +311,11 @@ export const loginHandler = http.post<never, LoginInput>('/api/auth/login', asyn
 
 export const logoutHandler = http.post('/api/auth/logout', ({ request }) => {
   const authentication = authenticateMockRequest(request)
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const authorization = request.headers.get('Authorization')
-  if (authorization?.startsWith('Bearer ')) revokeMockToken(authorization.slice('Bearer '.length))
+  if (authorization?.startsWith('Bearer '))
+    revokeMockToken(authorization.slice('Bearer '.length))
 
   // AI modified: logout invalidates the exact opaque Mock session instead of trusting client cleanup.
   return HttpResponse.json<ApiResponse<null>>({
@@ -318,7 +329,8 @@ export const logoutHandler = http.post('/api/auth/logout', ({ request }) => {
 
 export const meHandler = http.get('/api/auth/me', ({ request }) => {
   const authentication = authenticateMockRequest(request)
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<AuthenticatedPrincipal>>(
     {
@@ -335,7 +347,7 @@ function generateResetToken(): string {
   const arr = new Uint8Array(24)
   crypto.getRandomValues(arr)
   return Array.from(arr)
-    .map((b) => b.toString(16).padStart(2, '0'))
+    .map(b => b.toString(16).padStart(2, '0'))
     .join('')
 }
 
@@ -343,10 +355,11 @@ function generateResetToken(): string {
 
 export const forgotPasswordHandler = http.post('/api/auth/forgot-password', async ({ request }) => {
   const requestBody = await readMockJsonBody(request, FORGOT_PASSWORD_INPUT_SCHEMA)
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const { email } = requestBody.body
   const canonicalEmail = email.trim().toLowerCase()
-  const userExists = mockUsers.find((user) => user.email.toLowerCase() === canonicalEmail)
+  const userExists = mockUsers.find(user => user.email.toLowerCase() === canonicalEmail)
 
   const token = generateResetToken()
   if (userExists) {
@@ -369,7 +382,8 @@ export const forgotPasswordHandler = http.post('/api/auth/forgot-password', asyn
 
 export const resetPasswordHandler = http.post('/api/auth/reset-password', async ({ request }) => {
   const requestBody = await readMockJsonBody(request, RESET_PASSWORD_INPUT_SCHEMA)
-  if (!requestBody.isValid) return requestBody.response
+  if (!requestBody.isValid)
+    return requestBody.response
   const { token, newPassword } = requestBody.body
 
   if (!isStrongPassword(newPassword)) {
@@ -404,7 +418,7 @@ export const resetPasswordHandler = http.post('/api/auth/reset-password', async 
   }
 
   // 更新 mockUsers 中的密码
-  const user = mockUsers.find((u) => u.email === matchedEmail)
+  const user = mockUsers.find(u => u.email === matchedEmail)
   if (user) {
     user.password = newPassword
     // AI modified: a password reset revokes every previously issued Mock session for that user.
@@ -426,10 +440,12 @@ export const changePasswordHandler = http.post<never, ChangePasswordInput>(
   '/api/auth/change-password',
   async ({ request }) => {
     const authentication = authenticateMockRequest(request)
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, CHANGE_PASSWORD_INPUT_SCHEMA)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     if (authentication.user.password !== input.currentPassword) {
       return HttpResponse.json<ApiResponse<null>>(
@@ -472,10 +488,12 @@ export const updateProfileHandler = http.put<never, UpdateProfileInput>(
   '/api/auth/profile',
   async ({ request }) => {
     const authentication = authenticateMockRequest(request)
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, UPDATE_PROFILE_INPUT_SCHEMA)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     const name = input.name.trim()
     const email = input.email.trim().toLowerCase()
@@ -487,7 +505,7 @@ export const updateProfileHandler = http.put<never, UpdateProfileInput>(
     }
 
     const hasDuplicateEmail = mockUsers.some(
-      (user) => user.id !== authentication.user.id && user.email.toLowerCase() === email,
+      user => user.id !== authentication.user.id && user.email.toLowerCase() === email,
     )
     if (hasDuplicateEmail) {
       return HttpResponse.json<ApiResponse<null>>(

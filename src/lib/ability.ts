@@ -41,7 +41,8 @@ export function defineAbilityFor(
     if (permission.subject === 'User') {
       const conditions = getDataScopeConditions(authorization.dataScope, user)
       // AI modified: user-record permissions carry backend-issued data-scope conditions for UX checks.
-      if (conditions) can(permission.action, 'User', conditions)
+      if (conditions)
+        can(permission.action, 'User', conditions)
       else can(permission.action, 'User')
       continue
     }
@@ -81,7 +82,7 @@ export function updateAbility(
   const { rules } = defineAbilityFor(user, authorization)
   appAbility.update(rules)
   activePermissionIdentifiers = new Set(
-    authorization?.grants.map((grant) => grant.permissionIdentifier) ?? [],
+    authorization?.grants.map(grant => grant.permissionIdentifier) ?? [],
   )
   // AI modified: CASL is not a Vue ref, so expose an update signal for permission-aware UI.
   abilityRevision.value += 1

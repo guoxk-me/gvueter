@@ -53,13 +53,13 @@ const searchExpansionReserve = shallowRef(0)
 
 useNotificationUnreadCount()
 // AI modified: every authenticated principal owns a transport with an immutable session credential.
-useNotificationRealtime((sessionToken) => createRuntimeNotificationTransport(() => sessionToken))
+useNotificationRealtime(sessionToken => createRuntimeNotificationTransport(() => sessionToken))
 
 const userInitials = computed(() => {
   const words = (auth.user?.name ?? '').trim().split(/\s+/).filter(Boolean)
   return (
     words
-      .map((word) => word[0])
+      .map(word => word[0])
       .join('')
       .toUpperCase()
       .slice(0, 2) || 'A'
@@ -69,10 +69,12 @@ const userInitials = computed(() => {
 async function logout(): Promise<void> {
   try {
     await auth.logout()
-  } catch {
+  }
+  catch {
     // AI modified: local logout and guest navigation remain mandatory when server revocation fails.
     toast.error(t('auth.logoutRevocationFailed'))
-  } finally {
+  }
+  finally {
     await router.replace('/login')
   }
 }
@@ -81,7 +83,8 @@ watch(
   () => props.navigationNodes.length,
   (navigationCount) => {
     // AI modified: layout changes cannot leave search in the compact top-navigation state.
-    if (navigationCount === 0) isTopNavigationOverflowing.value = false
+    if (navigationCount === 0)
+      isTopNavigationOverflowing.value = false
   },
 )
 </script>

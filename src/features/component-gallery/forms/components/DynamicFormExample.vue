@@ -89,8 +89,9 @@ function removeContact(contactId: string): void {
     statusMessage.value = copy.value.minimum
     return
   }
-  const contactIndex = contacts.findIndex((contact) => contact.id === contactId)
-  if (contactIndex === -1) return
+  const contactIndex = contacts.findIndex(contact => contact.id === contactId)
+  if (contactIndex === -1)
+    return
   contacts.splice(contactIndex, 1)
   delete contactErrors[contactId]
   statusMessage.value = ''

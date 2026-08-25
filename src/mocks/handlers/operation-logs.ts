@@ -80,7 +80,7 @@ const initialOperationLogs: OperationLogRecord[] = [
   },
 ]
 const operationLogOutcomes = new Set<string>(OPERATION_LOG_OUTCOMES)
-const operationLogs = initialOperationLogs.map((operationLog) => ({ ...operationLog }))
+const operationLogs = initialOperationLogs.map(operationLog => ({ ...operationLog }))
 let runtimeOperationLogSequence = 1
 
 export interface MockOperationInput {
@@ -140,14 +140,15 @@ export function resetMockOperationLogs(): void {
   operationLogs.splice(
     0,
     operationLogs.length,
-    ...initialOperationLogs.map((operationLog) => ({ ...operationLog })),
+    ...initialOperationLogs.map(operationLog => ({ ...operationLog })),
   )
   runtimeOperationLogSequence = 1
 }
 
 export const listOperationLogsHandler = http.get('/api/operation-logs', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'AuditLog')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
   const url = new URL(request.url)
   const startDate = url.searchParams.get('startDate') ?? ''
   const endDate = url.searchParams.get('endDate') ?? ''
@@ -158,19 +159,19 @@ export const listOperationLogsHandler = http.get('/api/operation-logs', ({ reque
   const requestedPage = Number(url.searchParams.get('page') ?? 1)
   const requestedPageSize = Number(url.searchParams.get('pageSize') ?? 10)
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
-  const pageSize =
-    Number.isInteger(requestedPageSize) && requestedPageSize > 0
+  const pageSize
+    = Number.isInteger(requestedPageSize) && requestedPageSize > 0
       ? Math.min(requestedPageSize, 100)
       : 10
   const outcome = isOperationLogOutcome(requestedOutcome) ? requestedOutcome : undefined
   const matchedLogs = operationLogs.filter(
-    (operationLog) =>
-      (!startDate || operationLog.occurredAt >= `${startDate}T00:00:00.000Z`) &&
-      (!endDate || operationLog.occurredAt <= `${endDate}T23:59:59.999Z`) &&
-      (!actor || operationLog.actorName.toLocaleLowerCase().includes(actor)) &&
-      (!action || operationLog.action.toLocaleLowerCase().includes(action)) &&
-      (!resource || operationLog.resource.toLocaleLowerCase().includes(resource)) &&
-      (!outcome || operationLog.outcome === outcome),
+    operationLog =>
+      (!startDate || operationLog.occurredAt >= `${startDate}T00:00:00.000Z`)
+      && (!endDate || operationLog.occurredAt <= `${endDate}T23:59:59.999Z`)
+      && (!actor || operationLog.actorName.toLocaleLowerCase().includes(actor))
+      && (!action || operationLog.action.toLocaleLowerCase().includes(action))
+      && (!resource || operationLog.resource.toLocaleLowerCase().includes(resource))
+      && (!outcome || operationLog.outcome === outcome),
   )
   const startIndex = (page - 1) * pageSize
 
@@ -193,8 +194,9 @@ export const operationLogDetailHandler = http.get<{ operationLogId: string }>(
   '/api/operation-logs/:operationLogId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'AuditLog')
-    if (!authentication.isAuthenticated) return authentication.response
-    const operationLog = operationLogs.find((candidate) => candidate.id === params.operationLogId)
+    if (!authentication.isAuthenticated)
+      return authentication.response
+    const operationLog = operationLogs.find(candidate => candidate.id === params.operationLogId)
     if (!operationLog) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'OPERATION_LOG_NOT_FOUND', message: '操作日志不存在', data: null },

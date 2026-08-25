@@ -27,7 +27,7 @@ const markdownSource = shallowRef(
 )
 const jsonSource = shallowRef('{\n  "feature": "admin-components",\n  "enabled": true\n}')
 const sourceCode = shallowRef(
-  "const canPublish = ability.can('update', 'Settings')\n\nexport { canPublish }",
+  'const canPublish = ability.can(\'update\', \'Settings\')\n\nexport { canPublish }',
 )
 const croppedImageUrl = shallowRef<string>()
 const cropperDemoSource = `data:image/svg+xml,${encodeURIComponent(`
@@ -39,12 +39,14 @@ const cropperDemoSource = `data:image/svg+xml,${encodeURIComponent(`
 `)}`
 
 function showCroppedImage(image: Blob): void {
-  if (croppedImageUrl.value) URL.revokeObjectURL(croppedImageUrl.value)
+  if (croppedImageUrl.value)
+    URL.revokeObjectURL(croppedImageUrl.value)
   croppedImageUrl.value = URL.createObjectURL(image)
 }
 
 onBeforeUnmount(() => {
-  if (croppedImageUrl.value) URL.revokeObjectURL(croppedImageUrl.value)
+  if (croppedImageUrl.value)
+    URL.revokeObjectURL(croppedImageUrl.value)
 })
 
 const departments: readonly DepartmentRecord[] = [
@@ -105,7 +107,9 @@ const departments: readonly DepartmentRecord[] = [
       :description="t('components.editors.markdownDescription')"
     >
       <MarkdownEditor v-model="markdownSource" />
-      <template #usage> &lt;MarkdownEditor v-model="markdown" /&gt; </template>
+      <template #usage>
+        &lt;MarkdownEditor v-model="markdown" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -113,7 +117,9 @@ const departments: readonly DepartmentRecord[] = [
       :description="t('components.editors.codeDescription')"
     >
       <CodeEditor v-model="sourceCode" language="typescript" />
-      <template #usage> &lt;CodeEditor v-model="source" language="typescript" /&gt; </template>
+      <template #usage>
+        &lt;CodeEditor v-model="source" language="typescript" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -122,7 +128,9 @@ const departments: readonly DepartmentRecord[] = [
     >
       <CodeEditor v-model="jsonSource" language="json" :show-line-numbers="false" />
       <JSONViewer :value="jsonSource" />
-      <template #usage> &lt;JSONViewer :value="responsePayload" /&gt; </template>
+      <template #usage>
+        &lt;JSONViewer :value="responsePayload" /&gt;
+      </template>
     </ComponentDemoCard>
 
     <ComponentDemoCard
@@ -140,7 +148,7 @@ const departments: readonly DepartmentRecord[] = [
         :src="croppedImageUrl"
         :alt="t('components.media.croppedResult')"
         class="max-h-40 rounded-md border"
-      />
+      >
       <template #usage>
         &lt;ImageCropper :aspect-ratio="16 / 9" @cropped="uploadAvatar" /&gt;
       </template>
@@ -155,7 +163,9 @@ const departments: readonly DepartmentRecord[] = [
         error-correction-level="H"
         download-file-name="admin-access.png"
       />
-      <template #usage> &lt;QRCode :value="shareUrl" error-correction-level="H" /&gt; </template>
+      <template #usage>
+        &lt;QRCode :value="shareUrl" error-correction-level="H" /&gt;
+      </template>
     </ComponentDemoCard>
   </div>
 </template>

@@ -2,12 +2,12 @@ import type { App, ComponentPublicInstance } from 'vue'
 
 export const FRONTEND_ERROR_EVENT = 'admin:frontend-error'
 
-export type FrontendErrorSource =
-  | 'vue'
-  | 'unhandled-promise'
-  | 'navigation'
-  | 'vite-preload'
-  | 'bootstrap'
+export type FrontendErrorSource
+  = | 'vue'
+    | 'unhandled-promise'
+    | 'navigation'
+    | 'vite-preload'
+    | 'bootstrap'
 
 export interface FrontendErrorRecord {
   source: FrontendErrorSource
@@ -25,8 +25,8 @@ export interface FrontendErrorReporter {
 
 const reporters = new Map<string, FrontendErrorReporter>()
 
-const SECRET_ASSIGNMENT_PATTERN =
-  /(\b(?:access[_-]?token|refresh[_-]?token|token|password|secret|api[_-]?key|authorization)["']?[ \t]*[:=][ \t]*["']?)([^\s&,}"']+)/gi
+const SECRET_ASSIGNMENT_PATTERN
+  = /(\b(?:access[_-]?token|refresh[_-]?token|token|password|secret|api[_-]?key|authorization)["']?[ \t]*[:=][ \t]*["']?)([^\s&,}"']+)/gi
 const BEARER_CREDENTIAL_PATTERN = /\b(Bearer[ \t]+)[\w.~+/=-]+/gi
 const JWT_PATTERN = /\beyJ[\w-]+\.[\w-]+\.[\w-]+\b/g
 const EMAIL_PATTERN = /\b[\w.%+-]+@[\w.-]+\.[a-z]{2,}\b/gi
@@ -47,8 +47,8 @@ function getErrorRecord(
   failure: unknown,
   context: Pick<FrontendErrorRecord, 'componentName' | 'lifecycleInfo'> = {},
 ): FrontendErrorRecord {
-  const error =
-    failure instanceof Error
+  const error
+    = failure instanceof Error
       ? failure
       : new Error(typeof failure === 'string' ? failure : 'Unknown frontend failure')
 
@@ -72,8 +72,10 @@ function notifyErrorReporters(record: FrontendErrorRecord, target: Window): void
   for (const reporter of reporters.values()) {
     try {
       const reportTask = reporter.report(record)
-      if (reportTask instanceof Promise) void reportTask.catch(() => undefined)
-    } catch {
+      if (reportTask instanceof Promise)
+        void reportTask.catch(() => undefined)
+    }
+    catch {
       // A reporting integration must never replace the original application failure.
     }
   }
@@ -97,7 +99,8 @@ export function registerFrontendErrorReporter(
 ): () => void {
   reporters.set(key, reporter)
   return () => {
-    if (reporters.get(key) === reporter) reporters.delete(key)
+    if (reporters.get(key) === reporter)
+      reporters.delete(key)
   }
 }
 
@@ -143,7 +146,8 @@ export function installGlobalErrorHandling(app: App, target: Window = window): (
       return
     }
 
-    if (typeof globalThis.reportError === 'function') globalThis.reportError(failure)
+    if (typeof globalThis.reportError === 'function')
+      globalThis.reportError(failure)
   }
 
   target.addEventListener('unhandledrejection', promiseFailureHandler)

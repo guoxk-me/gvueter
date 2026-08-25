@@ -10,7 +10,7 @@ Monitoring vendors can register an adapter without changing application bootstra
 
 ```ts
 const unregister = registerFrontendErrorReporter('production-monitoring', {
-  report: async (record) => monitoringClient.capture(record),
+  report: async record => monitoringClient.capture(record),
 })
 ```
 

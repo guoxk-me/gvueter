@@ -37,7 +37,7 @@ export const SCHEMA_DRIVEN_SUBMISSION_FIELDS_SCHEMA: z.ZodType<SchemaDrivenSubmi
     richBrief: z
       .string()
       .max(200_000)
-      .refine((html) => Boolean(html.replace(/<[^>]+>/g, '').trim())),
+      .refine(html => Boolean(html.replace(/<[^>]+>/g, '').trim())),
     notes: z.string().max(20_000),
   })
   .strict()

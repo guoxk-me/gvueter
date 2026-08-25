@@ -201,11 +201,13 @@ function readBoolean(value: unknown, fallback: boolean): boolean {
  * Reads persisted settings defensively and migrates the legacy stickyHeader field.
  */
 export function readPersistedAppSettings(serializedSettings: string | null): AppSettings {
-  if (!serializedSettings) return { ...DEFAULT_APP_SETTINGS }
+  if (!serializedSettings)
+    return { ...DEFAULT_APP_SETTINGS }
 
   try {
     const storedValue: unknown = JSON.parse(serializedSettings)
-    if (!isRecord(storedValue)) return { ...DEFAULT_APP_SETTINGS }
+    if (!isRecord(storedValue))
+      return { ...DEFAULT_APP_SETTINGS }
 
     // AI modified: validate every persisted preference before it reaches DOM classes or CSS variables.
     return {
@@ -266,7 +268,8 @@ export function readPersistedAppSettings(serializedSettings: string | null): App
         ? storedValue.pageTransition
         : DEFAULT_APP_SETTINGS.pageTransition,
     }
-  } catch {
+  }
+  catch {
     return { ...DEFAULT_APP_SETTINGS }
   }
 }
@@ -287,7 +290,8 @@ function readSettingsWithLegacyFallback(serializedSettings: string | null): AppS
 
   try {
     storedValue = serializedSettings ? JSON.parse(serializedSettings) : undefined
-  } catch {
+  }
+  catch {
     storedValue = undefined
   }
 
@@ -313,9 +317,11 @@ export function readStoredAppSettings(): AppSettings {
 }
 
 export function resolveThemeMode(themeMode: ThemeMode): ResolvedTheme {
-  if (themeMode !== 'system') return themeMode
+  if (themeMode !== 'system')
+    return themeMode
 
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light'
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function')
+    return 'light'
 
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
@@ -355,8 +361,8 @@ const appearancePersistence = {
   storage: appearanceStorage,
   pick: persistedSettingKeys,
   serializer: {
-    serialize: (state) => JSON.stringify(state),
-    deserialize: (serializedSettings) => readSettingsWithLegacyFallback(serializedSettings),
+    serialize: state => JSON.stringify(state),
+    deserialize: serializedSettings => readSettingsWithLegacyFallback(serializedSettings),
   },
 } satisfies PersistenceOptions<AppSettings>
 
@@ -387,7 +393,7 @@ export const useAppearanceStore = defineStore(
 
     const stickyHeader = computed({
       get: () => isHeaderSticky.value,
-      set: (value) => setStickyHeader(value),
+      set: value => setStickyHeader(value),
     })
 
     const settings = computed<AppSettings>(() => ({
@@ -429,15 +435,19 @@ export const useAppearanceStore = defineStore(
     }
 
     function setCustomColor(color: string): void {
-      if (!isHexColor(color)) return
+      if (!isHexColor(color))
+        return
       customColor.value = color
       themeColor.value = 'custom'
     }
 
     function setSemanticColor(semanticColor: SemanticColor, color: string): void {
-      if (!isHexColor(color)) return
-      if (semanticColor === 'success') successColor.value = color
-      else if (semanticColor === 'warning') warningColor.value = color
+      if (!isHexColor(color))
+        return
+      if (semanticColor === 'success')
+        successColor.value = color
+      else if (semanticColor === 'warning')
+        warningColor.value = color
       else destructiveColor.value = color
     }
 
@@ -509,8 +519,9 @@ export const useAppearanceStore = defineStore(
     }
 
     function applyPreset(presetId: AppSettingsPresetId): void {
-      const preset = APP_SETTINGS_PRESETS.find((candidate) => candidate.id === presetId)
-      if (preset) applySettingsValues(preset.settings)
+      const preset = APP_SETTINGS_PRESETS.find(candidate => candidate.id === presetId)
+      if (preset)
+        applySettingsValues(preset.settings)
     }
 
     function reset(): void {
@@ -565,4 +576,5 @@ export const useAppearanceStore = defineStore(
   },
 )
 
-if (import.meta.hot) import.meta.hot.accept(acceptHMRUpdate(useAppearanceStore, import.meta.hot))
+if (import.meta.hot)
+  import.meta.hot.accept(acceptHMRUpdate(useAppearanceStore, import.meta.hot))

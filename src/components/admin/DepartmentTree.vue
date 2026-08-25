@@ -31,7 +31,7 @@ const selectedDepartmentId = defineModel<string | undefined>()
 const checkedDepartmentIds = defineModel<string[]>('checkedIds', { default: () => [] })
 const selectedTreeId = computed<string | null>({
   get: () => selectedDepartmentId.value ?? null,
-  set: (departmentId) => (selectedDepartmentId.value = departmentId ?? undefined),
+  set: departmentId => (selectedDepartmentId.value = departmentId ?? undefined),
 })
 const disabledDepartmentIds = computed(() => new Set(props.disabledIds))
 const departmentNodes = computed<TreeNode[]>(() =>
@@ -42,7 +42,7 @@ function getSelectableDepartments(
   departments: readonly DepartmentTreeNode[],
   disabledIds: ReadonlySet<string>,
 ): TreeNode[] {
-  return departments.map((department) => ({
+  return departments.map(department => ({
     id: department.id,
     label: department.name,
     // AI modified: backend-disabled departments stay visible in context but cannot become a selected scope.

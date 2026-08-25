@@ -6,7 +6,8 @@ import { authenticateMockRequest } from './auth'
 
 export const getUploadPolicyHandler = http.get('/api/uploads/policy', ({ request }) => {
   const authentication = authenticateMockRequest(request)
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<UploadPolicy>>(
     { code: 0, message: 'success', data: getMockUploadPolicy() },

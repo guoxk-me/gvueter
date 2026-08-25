@@ -23,7 +23,8 @@ export function getManagedMenuAncestors(
 ): ManagedMenuRecord[] {
   const menusById = new Map<string, ManagedMenuRecord>()
   for (const menu of menus) {
-    if (!menusById.has(menu.id)) menusById.set(menu.id, menu)
+    if (!menusById.has(menu.id))
+      menusById.set(menu.id, menu)
   }
 
   const ancestors: ManagedMenuRecord[] = []
@@ -32,7 +33,8 @@ export function getManagedMenuAncestors(
   while (currentParentId && !visitedMenuIds.has(currentParentId)) {
     visitedMenuIds.add(currentParentId)
     const parentMenu = menusById.get(currentParentId)
-    if (!parentMenu) break
+    if (!parentMenu)
+      break
     ancestors.unshift(parentMenu)
     currentParentId = parentMenu.parentId
   }
@@ -46,12 +48,12 @@ export function getManagedMenuOrderPreview(
   order: number,
 ): ManagedMenuOrderPreview {
   const siblings = menus
-    .filter((menu) => menu.parentId === parentId && menu.id !== menuId)
+    .filter(menu => menu.parentId === parentId && menu.id !== menuId)
     .sort(
       (leftMenu, rightMenu) =>
         leftMenu.order - rightMenu.order || leftMenu.id.localeCompare(rightMenu.id),
     )
-  const insertionIndex = siblings.findIndex((menu) => menu.order > order)
+  const insertionIndex = siblings.findIndex(menu => menu.order > order)
   const positionIndex = insertionIndex === -1 ? siblings.length : insertionIndex
 
   return {
@@ -59,13 +61,13 @@ export function getManagedMenuOrderPreview(
     nextMenu: siblings[positionIndex],
     position: positionIndex + 1,
     siblingCount: siblings.length + 1,
-    hasOrderConflict: siblings.some((menu) => menu.order === order),
+    hasOrderConflict: siblings.some(menu => menu.order === order),
   }
 }
 
 export function getManagedMenuRows(menus: readonly ManagedMenuRecord[]): ManagedMenuRow[] {
   const menusByParent = new Map<string | null, ManagedMenuRecord[]>()
-  const menuIds = new Set(menus.map((menu) => menu.id))
+  const menuIds = new Set(menus.map(menu => menu.id))
   for (const menu of menus) {
     const parentId = menu.parentId && menuIds.has(menu.parentId) ? menu.parentId : null
     const siblings = menusByParent.get(parentId) ?? []
@@ -78,7 +80,8 @@ export function getManagedMenuRows(menus: readonly ManagedMenuRecord[]): Managed
   const rows: ManagedMenuRow[] = []
   const visitedMenuIds = new Set<string>()
   function visitMenu(menu: ManagedMenuRecord, depth: number): void {
-    if (visitedMenuIds.has(menu.id)) return
+    if (visitedMenuIds.has(menu.id))
+      return
     visitedMenuIds.add(menu.id)
     rows.push({ ...menu, depth })
     for (const childMenu of menusByParent.get(menu.id) ?? []) visitMenu(childMenu, depth + 1)
@@ -87,7 +90,8 @@ export function getManagedMenuRows(menus: readonly ManagedMenuRecord[]): Managed
   for (const rootMenu of menusByParent.get(null) ?? []) visitMenu(rootMenu, 0)
   // AI modified: surface cyclic backend records instead of silently dropping them from administration.
   for (const menu of menus) {
-    if (!visitedMenuIds.has(menu.id)) visitMenu(menu, 0)
+    if (!visitedMenuIds.has(menu.id))
+      visitMenu(menu, 0)
   }
 
   return rows

@@ -11,7 +11,7 @@ const props = defineProps<{
 
 defineSlots<{
   default?: () => unknown
-  fallback?: (props: { action: AppAction; subject: AppSubject }) => unknown
+  fallback?: (props: { action: AppAction, subject: AppSubject }) => unknown
 }>()
 
 const hasAccess = computed(() => {

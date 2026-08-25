@@ -50,8 +50,8 @@ export const MARK_NOTIFICATION_READ_RESPONSE_SCHEMA: z.ZodType<MarkNotificationR
   })
   .strict()
 
-export const MARK_ALL_NOTIFICATIONS_READ_RESPONSE_SCHEMA: z.ZodType<MarkAllNotificationsReadResponse> =
-  z
+export const MARK_ALL_NOTIFICATIONS_READ_RESPONSE_SCHEMA: z.ZodType<MarkAllNotificationsReadResponse>
+  = z
     .object({
       markedIds: z.array(z.string().trim().min(1).max(200)).max(200),
       unreadCount: z.number().int().nonnegative(),

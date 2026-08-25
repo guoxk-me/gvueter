@@ -29,9 +29,9 @@ const { t } = useI18n()
     <FormField v-slot="{ componentField }" name="thirdParty.oauthClientId">
       <FormItem>
         <FormLabel>{{ t('systemConfig.thirdParty.oauthClientId') }}</FormLabel>
-        <FormControl
-          ><Input v-bind="componentField" autocomplete="off" :disabled="isDisabled"
-        /></FormControl>
+        <FormControl>
+          <Input v-bind="componentField" autocomplete="off" :disabled="isDisabled" />
+        </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>
@@ -56,9 +56,9 @@ const { t } = useI18n()
     <FormField v-slot="{ componentField }" name="thirdParty.webhookUrl">
       <FormItem class="sm:col-span-2">
         <FormLabel>{{ t('systemConfig.thirdParty.webhookUrl') }}</FormLabel>
-        <FormControl
-          ><Input v-bind="componentField" type="url" :disabled="isDisabled"
-        /></FormControl>
+        <FormControl>
+          <Input v-bind="componentField" type="url" :disabled="isDisabled" />
+        </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>

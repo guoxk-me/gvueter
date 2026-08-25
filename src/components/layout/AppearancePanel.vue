@@ -54,16 +54,16 @@ const canSetSidebarDefault = computed(() => activeLayoutDefinition.value.collaps
 
 const isOpen = computed({
   get: () => props.open,
-  set: (value) => emit('update:open', value),
+  set: value => emit('update:open', value),
 })
 
-const themeModes: readonly { id: ThemeMode; icon: typeof Sun; labelKey: string }[] = [
+const themeModes: readonly { id: ThemeMode, icon: typeof Sun, labelKey: string }[] = [
   { id: 'light', icon: Sun, labelKey: 'settings.themeLight' },
   { id: 'dark', icon: Moon, labelKey: 'settings.themeDark' },
   { id: 'system', icon: Monitor, labelKey: 'settings.themeSystem' },
 ]
 
-const localeOptions: readonly { id: AppLocale; labelKey: string }[] = [
+const localeOptions: readonly { id: AppLocale, labelKey: string }[] = [
   { id: 'zh-CN', labelKey: 'common.languageChinese' },
   { id: 'en-US', labelKey: 'common.languageEnglish' },
 ]
@@ -96,7 +96,7 @@ const semanticColorFields: readonly {
   { id: 'destructive', valueKey: 'destructiveColor', labelKey: 'appearance.destructiveColor' },
 ]
 
-const layouts: readonly { id: LayoutMode; labelKey: string; descriptionKey: string }[] = [
+const layouts: readonly { id: LayoutMode, labelKey: string, descriptionKey: string }[] = [
   {
     id: 'sidebar',
     labelKey: 'appearance.layoutSidebar',
@@ -137,8 +137,8 @@ const tabStyleLabelKeys: Record<TabStyle, string> = {
 
 const transitionLabelKeys: Record<PageTransition, string> = {
   'fade-slide': 'appearance.transitionFadeSlide',
-  fade: 'appearance.transitionFade',
-  none: 'appearance.transitionNone',
+  'fade': 'appearance.transitionFade',
+  'none': 'appearance.transitionNone',
 }
 
 function selectThemeMode(themeMode: ThemeMode): void {
@@ -166,13 +166,15 @@ function isAppLocale(locale: string): locale is AppLocale {
 watch(
   () => appearance.locale,
   (locale) => {
-    if (activeLocale.value !== locale) setLocale(locale)
+    if (activeLocale.value !== locale)
+      setLocale(locale)
   },
   { immediate: true },
 )
 
 watch(activeLocale, (locale) => {
-  if (isAppLocale(locale) && appearance.locale !== locale) appearance.setLocale(locale)
+  if (isAppLocale(locale) && appearance.locale !== locale)
+    appearance.setLocale(locale)
 })
 </script>
 
@@ -375,7 +377,7 @@ watch(activeLocale, (locale) => {
                 :aria-current="appearance.themeColor === 'custom' ? 'true' : undefined"
                 :value="appearance.customColor"
                 @input="updateCustomColor"
-              />
+              >
             </label>
           </div>
 
@@ -391,7 +393,7 @@ watch(activeLocale, (locale) => {
                 :aria-label="t(semanticColor.labelKey)"
                 :value="appearance[semanticColor.valueKey]"
                 @input="updateSemanticColor(semanticColor.id, $event)"
-              />
+              >
               <span class="min-w-0 break-words text-xs font-medium">
                 {{ t(semanticColor.labelKey) }}
               </span>

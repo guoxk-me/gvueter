@@ -47,7 +47,7 @@ const visibleNodes = computed(() => props.nodes.slice(0, visibleCount.value))
 const overflowNodes = computed(() => props.nodes.slice(visibleCount.value))
 const hasOverflow = computed(() => overflowNodes.value.length > 0)
 const activeOverflowNode = computed(() =>
-  overflowNodes.value.find((menuNode) => branchContainsPath(menuNode, route.path)),
+  overflowNodes.value.find(menuNode => branchContainsPath(menuNode, route.path)),
 )
 const moreButtonLabel = computed(() => {
   const activeNode = activeOverflowNode.value
@@ -58,8 +58,8 @@ const moreButtonLabel = computed(() => {
 
 function branchContainsPath(menuNode: NavigationMenuNode, path: string): boolean {
   return (
-    (Boolean(menuNode.to) && (path === menuNode.to || path.startsWith(`${menuNode.to}/`))) ||
-    menuNode.children.some((childNode) => branchContainsPath(childNode, path))
+    (Boolean(menuNode.to) && (path === menuNode.to || path.startsWith(`${menuNode.to}/`)))
+    || menuNode.children.some(childNode => branchContainsPath(childNode, path))
   )
 }
 
@@ -68,25 +68,29 @@ function getMeasuredWidth(element: HTMLElement): number {
 }
 
 function measureNavigation(): void {
-  if (isUnmounted.value) return
+  if (isUnmounted.value)
+    return
 
   const navigationContainer = container.value
   const rail = measurementRail.value
-  if (!navigationContainer || !rail) return
+  if (!navigationContainer || !rail)
+    return
 
   const availableWidth = getMeasuredWidth(navigationContainer)
-  if (availableWidth <= 0) return
+  if (availableWidth <= 0)
+    return
 
   const menuMeasurements = [...rail.querySelectorAll<HTMLElement>('[data-top-navigation-measure]')]
   const moreMeasurement = rail.querySelector<HTMLElement>('[data-top-navigation-more-measure]')
-  if (menuMeasurements.length !== props.nodes.length || !moreMeasurement) return
+  if (menuMeasurements.length !== props.nodes.length || !moreMeasurement)
+    return
 
-  const menuWidths = menuMeasurements.map((menuMeasurement) => getMeasuredWidth(menuMeasurement))
+  const menuWidths = menuMeasurements.map(menuMeasurement => getMeasuredWidth(menuMeasurement))
   const measuredGap = Number.parseFloat(window.getComputedStyle(rail).columnGap)
   const navigationGap = Number.isFinite(measuredGap) ? measuredGap : 4
-  const fullNavigationWidth =
-    menuWidths.reduce((totalWidth, menuWidth) => totalWidth + menuWidth, 0) +
-    Math.max(0, menuWidths.length - 1) * navigationGap
+  const fullNavigationWidth
+    = menuWidths.reduce((totalWidth, menuWidth) => totalWidth + menuWidth, 0)
+      + Math.max(0, menuWidths.length - 1) * navigationGap
   const fullStateAvailableWidth = Math.max(0, availableWidth - props.restorationReserve)
 
   if (fullNavigationWidth <= fullStateAvailableWidth) {
@@ -101,7 +105,8 @@ function measureNavigation(): void {
   for (const menuWidth of menuWidths) {
     const candidateWidth = occupiedWidth + (fittingCount > 0 ? navigationGap : 0) + menuWidth
     const widthWithMore = candidateWidth + navigationGap + moreWidth
-    if (widthWithMore > availableWidth) break
+    if (widthWithMore > availableWidth)
+      break
     occupiedWidth = candidateWidth
     fittingCount += 1
   }
@@ -111,8 +116,10 @@ function measureNavigation(): void {
 }
 
 function scheduleMeasurement(): void {
-  if (isUnmounted.value) return
-  if (measurementTimer !== undefined) window.clearTimeout(measurementTimer)
+  if (isUnmounted.value)
+    return
+  if (measurementTimer !== undefined)
+    window.clearTimeout(measurementTimer)
   measurementTimer = window.setTimeout(() => {
     measurementTimer = undefined
     measureNavigation()
@@ -120,7 +127,8 @@ function scheduleMeasurement(): void {
 }
 
 function relayOverflowSelection(menuNode: NavigationMenuNode): void {
-  if (menuNode.to || menuNode.href) isMoreOpen.value = false
+  if (menuNode.to || menuNode.href)
+    isMoreOpen.value = false
   emit('nodeSelected', menuNode)
 }
 
@@ -133,7 +141,8 @@ watch(
 watch(
   hasOverflow,
   (doesOverflow) => {
-    if (!doesOverflow) isMoreOpen.value = false
+    if (!doesOverflow)
+      isMoreOpen.value = false
     emit('overflowChange', doesOverflow)
   },
   { immediate: true },
@@ -144,8 +153,10 @@ onMounted(() => {
     scheduleMeasurement()
     if (typeof ResizeObserver === 'function') {
       resizeObserver = new ResizeObserver(scheduleMeasurement)
-      if (container.value) resizeObserver.observe(container.value)
-      if (measurementRail.value) resizeObserver.observe(measurementRail.value)
+      if (container.value)
+        resizeObserver.observe(container.value)
+      if (measurementRail.value)
+        resizeObserver.observe(measurementRail.value)
       return
     }
 
@@ -160,8 +171,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   isUnmounted.value = true
   resizeObserver?.disconnect()
-  if (hasWindowResizeFallback) window.removeEventListener('resize', scheduleMeasurement)
-  if (measurementTimer !== undefined) window.clearTimeout(measurementTimer)
+  if (hasWindowResizeFallback)
+    window.removeEventListener('resize', scheduleMeasurement)
+  if (measurementTimer !== undefined)
+    window.clearTimeout(measurementTimer)
 })
 </script>
 

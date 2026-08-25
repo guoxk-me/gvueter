@@ -19,8 +19,8 @@ interface VisualSnapshotCase {
   viewportWidth: number
 }
 
-const coreVisualSnapshotCases: readonly VisualSnapshotCase[] = locales.flatMap((locale) =>
-  viewportWidths.map((viewportWidth) => ({
+const coreVisualSnapshotCases: readonly VisualSnapshotCase[] = locales.flatMap(locale =>
+  viewportWidths.map(viewportWidth => ({
     locale,
     pageId: 'dashboard' as const,
     snapshotName: `long-text-dashboard-${viewportWidth}-${locale === 'en-US' ? 'en' : 'zh'}.png`,
@@ -56,8 +56,8 @@ async function signInAsAdmin(page: Page, locale: AppLocale): Promise<void> {
   await page.clock.setFixedTime(new Date('2026-07-14T08:00:00.000Z'))
   await page.addInitScript((activeLocale: AppLocale) => {
     const storedSettings: unknown = JSON.parse(localStorage.getItem('appearance') ?? '{}')
-    const appearanceSettings =
-      typeof storedSettings === 'object' && storedSettings !== null
+    const appearanceSettings
+      = typeof storedSettings === 'object' && storedSettings !== null
         ? (storedSettings as Record<string, unknown>)
         : {}
 
@@ -103,7 +103,8 @@ async function waitForPageContent(page: Page, pageCase: PageCase): Promise<void>
   await page.goto(pageCase.path)
   await expect(page.locator('main h1').first()).toBeVisible()
 
-  if (pageCase.id === 'dashboard') await expect(page.getByTestId('dashboard-loading')).toBeHidden()
+  if (pageCase.id === 'dashboard')
+    await expect(page.getByTestId('dashboard-loading')).toBeHidden()
 
   if (pageCase.id === 'users') {
     await expect(page.getByTestId('pro-table')).toBeVisible()
@@ -141,18 +142,20 @@ async function inflateVisibleLabels(page: Page): Promise<void> {
       const parent = textNode.parentElement
       const originalText = textNode.textContent ?? ''
       const visibleText = originalText.trim()
-      if (!parent || visibleText.length < 2 || parent.closest(preservedAncestorSelector)) continue
-      if (!/[\p{L}\p{N}]/u.test(visibleText)) continue
+      if (!parent || visibleText.length < 2 || parent.closest(preservedAncestorSelector))
+        continue
+      if (!/[\p{L}\p{N}]/u.test(visibleText))
+        continue
 
       const isNavigationMeasurement = Boolean(parent.closest(measurementSelector))
       const isAriaHidden = Boolean(parent.closest('[aria-hidden="true"]'))
       // AI modified: Motion labels are aria-hidden for naming, but remain visible copy-expansion targets.
       const isVisibleMotionLabel = Boolean(parent.closest('[data-motion-part="navigation-label"]'))
       const parentStyle = window.getComputedStyle(parent)
-      const isVisuallyHidden =
-        parentStyle.display === 'none' ||
-        parentStyle.visibility === 'hidden' ||
-        parent.getClientRects().length === 0
+      const isVisuallyHidden
+        = parentStyle.display === 'none'
+          || parentStyle.visibility === 'hidden'
+          || parent.getClientRects().length === 0
       if (!isNavigationMeasurement && !isVisibleMotionLabel && (isAriaHidden || isVisuallyHidden))
         continue
 
@@ -224,7 +227,8 @@ async function addLongContentFixtureRegion(page: Page): Promise<void> {
   // AI modified: semantic visible fields exercise unbroken business content rather than protected code or inputs.
   await page.evaluate((fixtures) => {
     const main = document.querySelector<HTMLElement>('main')
-    if (!main) throw new Error('Long-content fixtures require a rendered main landmark')
+    if (!main)
+      throw new Error('Long-content fixtures require a rendered main landmark')
 
     const fixtureRegion = document.createElement('section')
     fixtureRegion.dataset.longContentFixtures = 'true'
@@ -349,16 +353,17 @@ async function expectDocumentWithoutHorizontalOverflow(page: Page): Promise<void
       .filter((element) => {
         const style = window.getComputedStyle(element)
         if (
-          style.display === 'none' ||
-          style.visibility === 'hidden' ||
-          element.getClientRects().length === 0
-        )
+          style.display === 'none'
+          || style.visibility === 'hidden'
+          || element.getClientRects().length === 0
+        ) {
           return false
+        }
         const bounds = element.getBoundingClientRect()
         return bounds.left < -1 || bounds.right > viewportWidth + 1
       })
       .slice(0, 8)
-      .map((element) => ({
+      .map(element => ({
         className: element.className,
         tagName: element.tagName,
         testId: element.dataset.testid,
@@ -390,10 +395,10 @@ async function expectPageHeaderWithoutCollisions(page: Page): Promise<void> {
         const style = window.getComputedStyle(child)
         const bounds = child.getBoundingClientRect()
         return (
-          style.display !== 'none' &&
-          style.visibility !== 'hidden' &&
-          bounds.width > 0 &&
-          bounds.height > 0
+          style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && bounds.width > 0
+          && bounds.height > 0
         )
       })
 
@@ -401,12 +406,12 @@ async function expectPageHeaderWithoutCollisions(page: Page): Promise<void> {
         const firstBounds = firstChild.getBoundingClientRect()
         return visibleChildren.slice(firstIndex + 1).flatMap((secondChild, secondOffset) => {
           const secondBounds = secondChild.getBoundingClientRect()
-          const horizontalOverlap =
-            Math.min(firstBounds.right, secondBounds.right) -
-            Math.max(firstBounds.left, secondBounds.left)
-          const verticalOverlap =
-            Math.min(firstBounds.bottom, secondBounds.bottom) -
-            Math.max(firstBounds.top, secondBounds.top)
+          const horizontalOverlap
+            = Math.min(firstBounds.right, secondBounds.right)
+              - Math.max(firstBounds.left, secondBounds.left)
+          const verticalOverlap
+            = Math.min(firstBounds.bottom, secondBounds.bottom)
+              - Math.max(firstBounds.top, secondBounds.top)
 
           return horizontalOverlap > 1 && verticalOverlap > 1
             ? [
@@ -429,7 +434,8 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
   const shellGeometry = await page.evaluate(() => {
     const shellHeader = document.querySelector<HTMLElement>('[data-layout-region="header"]')
     const shellBody = document.querySelector<HTMLElement>('.admin-layout__body')
-    if (!shellHeader || !shellBody) throw new Error('Admin Shell regions were not rendered')
+    if (!shellHeader || !shellBody)
+      throw new Error('Admin Shell regions were not rendered')
 
     const headerBounds = shellHeader.getBoundingClientRect()
     const bodyBounds = shellBody.getBoundingClientRect()
@@ -438,10 +444,10 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
         const style = window.getComputedStyle(child)
         const bounds = child.getBoundingClientRect()
         return (
-          style.display !== 'none' &&
-          style.visibility !== 'hidden' &&
-          bounds.width > 0 &&
-          bounds.height > 0
+          style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && bounds.width > 0
+          && bounds.height > 0
         )
       })
       .map((child) => {
@@ -453,17 +459,18 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
           top: bounds.top,
         }
       })
-    const headerChildCollisions: Array<{ firstIndex: number; secondIndex: number }> = []
+    const headerChildCollisions: Array<{ firstIndex: number, secondIndex: number }> = []
 
     for (const [firstIndex, firstBounds] of visibleHeaderChildren.entries()) {
       for (const [secondIndex, secondBounds] of visibleHeaderChildren.entries()) {
-        if (secondIndex <= firstIndex) continue
-        const horizontalOverlap =
-          Math.min(firstBounds.right, secondBounds.right) -
-          Math.max(firstBounds.left, secondBounds.left)
-        const verticalOverlap =
-          Math.min(firstBounds.bottom, secondBounds.bottom) -
-          Math.max(firstBounds.top, secondBounds.top)
+        if (secondIndex <= firstIndex)
+          continue
+        const horizontalOverlap
+          = Math.min(firstBounds.right, secondBounds.right)
+            - Math.max(firstBounds.left, secondBounds.left)
+        const verticalOverlap
+          = Math.min(firstBounds.bottom, secondBounds.bottom)
+            - Math.max(firstBounds.top, secondBounds.top)
         if (horizontalOverlap > 1 && verticalOverlap > 1)
           headerChildCollisions.push({ firstIndex, secondIndex })
       }
@@ -477,10 +484,10 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
             const style = window.getComputedStyle(element)
             const bounds = element.getBoundingClientRect()
             return (
-              style.display !== 'none' &&
-              style.visibility !== 'hidden' &&
-              bounds.width > 0 &&
-              bounds.height > 0
+              style.display !== 'none'
+              && style.visibility !== 'hidden'
+              && bounds.width > 0
+              && bounds.height > 0
             )
           })
           .filter((element) => {
@@ -489,7 +496,7 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
               ? bounds.left < navigationBounds.left - 1 || bounds.right > navigationBounds.right + 1
               : false
           })
-          .map((element) => element.textContent?.trim() ?? element.getAttribute('aria-label') ?? '')
+          .map(element => element.textContent?.trim() ?? element.getAttribute('aria-label') ?? '')
       : []
 
     return {
@@ -502,15 +509,16 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
         const mobileNavigation = shellHeader.querySelector<HTMLElement>(
           '[aria-controls="admin-mobile-navigation"]',
         )
-        if (!mobileNavigation) return false
+        if (!mobileNavigation)
+          return false
         const style = window.getComputedStyle(mobileNavigation)
         const bounds = mobileNavigation.getBoundingClientRect()
         return style.display !== 'none' && bounds.width > 0 && bounds.height > 0
       })(),
       isTopNavigationVisible: Boolean(
-        topNavigation &&
-        window.getComputedStyle(topNavigation).display !== 'none' &&
-        (navigationBounds?.width ?? 0) > 0,
+        topNavigation
+        && window.getComputedStyle(topNavigation).display !== 'none'
+        && (navigationBounds?.width ?? 0) > 0,
       ),
     }
   })
@@ -527,12 +535,14 @@ async function expectShellWithoutCollisions(page: Page, viewportWidth: number): 
   if (viewportWidth < 1024) {
     expect(shellGeometry.isMobileNavigationVisible).toBe(true)
     expect(shellGeometry.isTopNavigationVisible).toBe(false)
-  } else {
+  }
+  else {
     expect(shellGeometry.isMobileNavigationVisible).toBe(false)
     expect(shellGeometry.isTopNavigationVisible).toBe(true)
   }
 
-  if (viewportWidth === 1024) expect(shellGeometry.hasMoreNavigation).toBe(true)
+  if (viewportWidth === 1024)
+    expect(shellGeometry.hasMoreNavigation).toBe(true)
 }
 
 async function expectPositiveInteractiveSizes(page: Page): Promise<void> {
@@ -555,22 +565,22 @@ async function expectPositiveInteractiveSizes(page: Page): Promise<void> {
       .filter((element) => {
         const style = window.getComputedStyle(element)
         return (
-          !element.closest('[hidden], [inert]') &&
-          style.display !== 'none' &&
-          style.visibility !== 'hidden' &&
-          element.getClientRects().length > 0
+          !element.closest('[hidden], [inert]')
+          && style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && element.getClientRects().length > 0
         )
       })
       .filter((element) => {
         const bounds = element.getBoundingClientRect()
         return (
-          !Number.isFinite(bounds.width) ||
-          !Number.isFinite(bounds.height) ||
-          bounds.width <= 0 ||
-          bounds.height <= 0
+          !Number.isFinite(bounds.width)
+          || !Number.isFinite(bounds.height)
+          || bounds.width <= 0
+          || bounds.height <= 0
         )
       })
-      .map((element) => ({
+      .map(element => ({
         ariaLabel: element.getAttribute('aria-label'),
         tagName: element.tagName,
         text: element.textContent?.trim().slice(0, 60),
@@ -608,17 +618,18 @@ async function expectTableOverflowOwnedByViewport(
 
   const verticallyOverflowingRows = await tableViewport
     .locator('tbody tr[data-row-id]')
-    .evaluateAll((rows) =>
+    .evaluateAll(rows =>
       rows.flatMap((row) => {
         const rowBounds = row.getBoundingClientRect()
         const overflowingContent = [...row.querySelectorAll<HTMLElement>('*')].some((content) => {
           const style = window.getComputedStyle(content)
           if (
-            style.display === 'none' ||
-            style.visibility === 'hidden' ||
-            content.getClientRects().length === 0
-          )
+            style.display === 'none'
+            || style.visibility === 'hidden'
+            || content.getClientRects().length === 0
+          ) {
             return false
+          }
 
           const contentBounds = content.getBoundingClientRect()
           return (
@@ -664,10 +675,10 @@ function getVisualSnapshot(
   pageId: PageCase['id'],
 ): VisualSnapshotCase | undefined {
   return visualSnapshotCases.find(
-    (snapshotCase) =>
-      snapshotCase.locale === locale &&
-      snapshotCase.viewportWidth === viewportWidth &&
-      snapshotCase.pageId === pageId,
+    snapshotCase =>
+      snapshotCase.locale === locale
+      && snapshotCase.viewportWidth === viewportWidth
+      && snapshotCase.pageId === pageId,
   )
 }
 
@@ -704,9 +715,9 @@ async function openExpandedAppearancePanel(page: Page): Promise<Locator> {
     .getByText('Component Size', { exact: true })
     .locator('xpath=following-sibling::div[1]')
 
-  await presetGrid.evaluate((element) => element.setAttribute('data-visual-grid', 'presets'))
-  await themeModeGrid.evaluate((element) => element.setAttribute('data-visual-grid', 'theme-mode'))
-  await componentSizeGrid.evaluate((element) =>
+  await presetGrid.evaluate(element => element.setAttribute('data-visual-grid', 'presets'))
+  await themeModeGrid.evaluate(element => element.setAttribute('data-visual-grid', 'theme-mode'))
+  await componentSizeGrid.evaluate(element =>
     element.setAttribute('data-visual-grid', 'component-size'),
   )
   await inflateVisibleLabels(page)
@@ -750,7 +761,8 @@ async function expectAppearancePanelGeometry(
           const gridName = (grid as HTMLElement).dataset.visualGrid ?? ''
           const columns = window
             .getComputedStyle(grid)
-            .gridTemplateColumns.split(/\s+/)
+            .gridTemplateColumns
+            .split(/\s+/)
             .filter(Boolean)
           return [gridName, columns.length]
         }),
@@ -773,25 +785,26 @@ async function expectAppearancePanelGeometry(
         return {
           bounds,
           isVisible:
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            bounds.width > 0 &&
-            bounds.height > 0,
+            style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && bounds.width > 0
+            && bounds.height > 0,
           label: button.getAttribute('aria-label') ?? button.textContent?.trim() ?? '',
         }
       })
-      .filter((button) => button.isVisible)
-    const collisions: Array<{ first: string; second: string }> = []
+      .filter(button => button.isVisible)
+    const collisions: Array<{ first: string, second: string }> = []
 
     for (const [firstIndex, firstButton] of visibleButtons.entries()) {
       for (const [secondIndex, secondButton] of visibleButtons.entries()) {
-        if (secondIndex <= firstIndex) continue
-        const horizontalOverlap =
-          Math.min(firstButton.bounds.right, secondButton.bounds.right) -
-          Math.max(firstButton.bounds.left, secondButton.bounds.left)
-        const verticalOverlap =
-          Math.min(firstButton.bounds.bottom, secondButton.bounds.bottom) -
-          Math.max(firstButton.bounds.top, secondButton.bounds.top)
+        if (secondIndex <= firstIndex)
+          continue
+        const horizontalOverlap
+          = Math.min(firstButton.bounds.right, secondButton.bounds.right)
+            - Math.max(firstButton.bounds.left, secondButton.bounds.left)
+        const verticalOverlap
+          = Math.min(firstButton.bounds.bottom, secondButton.bounds.bottom)
+            - Math.max(firstButton.bounds.top, secondButton.bounds.top)
         if (horizontalOverlap > 1 && verticalOverlap > 1) {
           collisions.push({
             first: firstButton.label,
@@ -831,10 +844,12 @@ for (const locale of locales) {
         await expectShellWithoutCollisions(page, viewportWidth)
         await expectPositiveInteractiveSizes(page)
 
-        if (pageCase.id === 'users') await expectTableOverflowOwnedByViewport(page, viewportWidth)
+        if (pageCase.id === 'users')
+          await expectTableOverflowOwnedByViewport(page, viewportWidth)
 
         const snapshotCase = getVisualSnapshot(locale, viewportWidth, pageCase.id)
-        if (snapshotCase) await expectVisualSnapshot(page, snapshotCase.snapshotName)
+        if (snapshotCase)
+          await expectVisualSnapshot(page, snapshotCase.snapshotName)
       }
     })
   }

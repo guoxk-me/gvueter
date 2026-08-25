@@ -124,7 +124,7 @@ function themeColorVars(primary: string, isDark: boolean): ThemeColorVars {
 }
 
 // AI modified: derive every preset from one Tailwind-aligned palette definition so light/dark tokens cannot drift.
-export const THEME_PRESETS: readonly ThemePreset[] = paletteDefinitions.map((palette) => ({
+export const THEME_PRESETS: readonly ThemePreset[] = paletteDefinitions.map(palette => ({
   id: palette.id,
   labelZh: palette.labelZh,
   labelEn: palette.labelEn,
@@ -134,7 +134,7 @@ export const THEME_PRESETS: readonly ThemePreset[] = paletteDefinitions.map((pal
 }))
 
 export function getPreset(id: ThemeColorId): ThemePreset | undefined {
-  return THEME_PRESETS.find((preset) => preset.id === id)
+  return THEME_PRESETS.find(preset => preset.id === id)
 }
 
 function customThemeColorVars(customColor: string, isDark: boolean): ThemeColorVars {
@@ -144,11 +144,12 @@ function customThemeColorVars(customColor: string, isDark: boolean): ThemeColorV
 }
 
 function semanticTone(color: string, isDark: boolean): string {
-  if (!isDark) return color
-  const channels = [1, 3, 5].map((startIndex) =>
+  if (!isDark)
+    return color
+  const channels = [1, 3, 5].map(startIndex =>
     Math.round(Number.parseInt(color.slice(startIndex, startIndex + 2), 16) * 0.82 + 255 * 0.18),
   )
-  return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+  return `#${channels.map(channel => channel.toString(16).padStart(2, '0')).join('')}`
 }
 
 function getHexRelativeLuminance(color: string): number {
@@ -189,7 +190,8 @@ function getOklchRelativeLuminance(color: string): number {
 }
 
 function getColorRelativeLuminance(color: string): number {
-  if (/^#[\da-f]{6}$/i.test(color)) return getHexRelativeLuminance(color)
+  if (/^#[\da-f]{6}$/i.test(color))
+    return getHexRelativeLuminance(color)
   return getOklchRelativeLuminance(color)
 }
 
@@ -197,8 +199,8 @@ function getColorContrastRatio(firstColor: string, secondColor: string): number 
   const firstLuminance = getColorRelativeLuminance(firstColor)
   const secondLuminance = getColorRelativeLuminance(secondColor)
   return (
-    (Math.max(firstLuminance, secondLuminance) + 0.05) /
-    (Math.min(firstLuminance, secondLuminance) + 0.05)
+    (Math.max(firstLuminance, secondLuminance) + 0.05)
+    / (Math.min(firstLuminance, secondLuminance) + 0.05)
   )
 }
 
@@ -228,8 +230,8 @@ export function getThemeCssVariables(
   isDark: boolean,
 ): Record<string, string> {
   const preset = getPreset(colorId)
-  const primaryVars =
-    colorId === 'custom'
+  const primaryVars
+    = colorId === 'custom'
       ? customThemeColorVars(customColor, isDark)
       : ((isDark ? preset?.dark : preset?.light) ?? themeColorVars(customColor, isDark))
   const success = semanticTone(semanticColors.success, isDark)

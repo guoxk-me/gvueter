@@ -17,8 +17,8 @@ const isFormOpen = shallowRef(false)
 const selectedMenu = shallowRef<ManagedMenuRecord>()
 // AI modified: menu actions react immediately when the active role policy changes.
 const canManage = computed(() => canAccess('update', 'Settings'))
-const { menus, queryError, isLoading, isSaving, isDeleting, saveMenu, deleteMenu } =
-  useMenuManagement()
+const { menus, queryError, isLoading, isSaving, isDeleting, saveMenu, deleteMenu }
+  = useMenuManagement()
 
 function getErrorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : t('errors.networkError')
@@ -39,7 +39,8 @@ async function save(input: ManagedMenuInput): Promise<void> {
     await saveMenu({ menu: selectedMenu.value, input })
     isFormOpen.value = false
     toast.success(t('menus.saveSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }
@@ -48,7 +49,8 @@ async function remove(menu: ManagedMenuRecord): Promise<void> {
   try {
     await deleteMenu(menu)
     toast.success(t('menus.deleteSuccess'))
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     toast.error(getErrorMessage(error))
   }
 }

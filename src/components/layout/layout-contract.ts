@@ -41,7 +41,7 @@ export interface AdminNavigationWidths {
 }
 
 const ADMIN_LAYOUT_DEFINITIONS = {
-  sidebar: {
+  'sidebar': {
     mode: 'sidebar',
     gridTemplateAreas: '"primary header" "primary body"',
     gridTemplateColumns: 'var(--admin-sidebar-width) minmax(0, 1fr)',
@@ -56,7 +56,7 @@ const ADMIN_LAYOUT_DEFINITIONS = {
     desktopBreakpoint: ADMIN_DESKTOP_BREAKPOINT_PX,
     canConfigureStickyHeader: false,
   },
-  top: {
+  'top': {
     mode: 'top',
     gridTemplateAreas: '"header" "body"',
     gridTemplateColumns: 'minmax(0, 1fr)',
@@ -71,7 +71,7 @@ const ADMIN_LAYOUT_DEFINITIONS = {
     desktopBreakpoint: ADMIN_DESKTOP_BREAKPOINT_PX,
     canConfigureStickyHeader: false,
   },
-  mixed: {
+  'mixed': {
     mode: 'mixed',
     gridTemplateAreas: '"primary secondary header" "primary secondary body"',
     gridTemplateColumns: '4.25rem var(--admin-secondary-width) minmax(0, 1fr)',

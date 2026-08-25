@@ -19,14 +19,14 @@ const failureResponses: Record<
     status: 401 | 403 | 409 | 422 | 500
   }
 > = {
-  unauthorized: { code: 'TOKEN_EXPIRED', message: 'The session has expired', status: 401 },
-  forbidden: { code: 'FORBIDDEN', message: 'The operation is not permitted', status: 403 },
-  conflict: {
+  'unauthorized': { code: 'TOKEN_EXPIRED', message: 'The session has expired', status: 401 },
+  'forbidden': { code: 'FORBIDDEN', message: 'The operation is not permitted', status: 403 },
+  'conflict': {
     code: 'VERSION_CONFLICT',
     message: 'The resource changed on the server',
     status: 409,
   },
-  validation: { code: 'VALIDATION_FAILED', message: 'Review the highlighted fields', status: 422 },
+  'validation': { code: 'VALIDATION_FAILED', message: 'Review the highlighted fields', status: 422 },
   'server-error': {
     code: 'INTERNAL_ERROR',
     message: 'The service could not complete the request',
@@ -85,8 +85,8 @@ const failedContractHandler = http.get<{ scenario: string }>(
     }
 
     const failure = failureResponses[params.scenario]
-    const details =
-      params.scenario === 'validation'
+    const details
+      = params.scenario === 'validation'
         ? { fieldErrors: { email: ['Enter a valid business email address'] } }
         : null
     return HttpResponse.json<ApiEnvelope<typeof details>>(

@@ -49,7 +49,8 @@ function getSingleQueryText(queryEntry: LocationQuery[string] | undefined): stri
 
 function getPositiveInteger(queryEntry: LocationQuery[string] | undefined): number | undefined {
   const queryText = getSingleQueryText(queryEntry)
-  if (!queryText || !/^\d+$/.test(queryText)) return undefined
+  if (!queryText || !/^\d+$/.test(queryText))
+    return undefined
 
   const integer = Number(queryText)
   return Number.isSafeInteger(integer) && integer > 0 ? integer : undefined
@@ -60,15 +61,17 @@ function getAcceptedSorting(
   contract: TableUrlContract<StringFilterRecord>,
 ): SortingState {
   const sortBy = getSingleQueryText(query.sortBy)
-  if (sortBy === 'none') return []
+  if (sortBy === 'none')
+    return []
 
   const sortOrder = getSingleQueryText(query.sortOrder)
   if (
-    !sortBy ||
-    !contract.sortColumnIds.includes(sortBy) ||
-    !['asc', 'desc'].includes(sortOrder ?? '')
-  )
-    return contract.defaultSorting.map((columnSort) => ({ ...columnSort }))
+    !sortBy
+    || !contract.sortColumnIds.includes(sortBy)
+    || !['asc', 'desc'].includes(sortOrder ?? '')
+  ) {
+    return contract.defaultSorting.map(columnSort => ({ ...columnSort }))
+  }
 
   return [{ id: sortBy, desc: sortOrder === 'desc' }]
 }
@@ -79,8 +82,8 @@ function arePaginationStatesEqual(left: PaginationState, right: PaginationState)
 
 function areSortingStatesEqual(left: SortingState, right: SortingState): boolean {
   return (
-    left.length === right.length &&
-    left.every((columnSort, index) => {
+    left.length === right.length
+    && left.every((columnSort, index) => {
       const comparedSort = right[index]
       return comparedSort?.id === columnSort.id && comparedSort.desc === columnSort.desc
     })
@@ -93,30 +96,30 @@ function areFilterStatesEqual<TFilters extends StringFilterRecord>(
 ): boolean {
   const filterNames = Object.keys(left) as Array<StringFilterKey<TFilters>>
   return (
-    filterNames.length === Object.keys(right).length &&
-    filterNames.every((filterName) => left[filterName] === right[filterName])
+    filterNames.length === Object.keys(right).length
+    && filterNames.every(filterName => left[filterName] === right[filterName])
   )
 }
 
 function getComparableQueryEntry(queryEntry: LocationQueryRaw[string]): string {
   if (Array.isArray(queryEntry))
-    return queryEntry.map((entry) => String(entry ?? '')).join('\u0000')
+    return queryEntry.map(entry => String(entry ?? '')).join('\u0000')
   return String(queryEntry ?? '')
 }
 
 function areQueriesEqual(currentQuery: LocationQuery, nextQuery: LocationQueryRaw): boolean {
   const currentKeys = Object.keys(currentQuery).sort()
   const nextKeys = Object.keys(nextQuery)
-    .filter((queryKey) => nextQuery[queryKey] !== undefined)
+    .filter(queryKey => nextQuery[queryKey] !== undefined)
     .sort()
 
   return (
-    currentKeys.length === nextKeys.length &&
-    currentKeys.every((queryKey, index) => {
+    currentKeys.length === nextKeys.length
+    && currentKeys.every((queryKey, index) => {
       return (
-        queryKey === nextKeys[index] &&
-        getComparableQueryEntry(currentQuery[queryKey]) ===
-          getComparableQueryEntry(nextQuery[queryKey])
+        queryKey === nextKeys[index]
+        && getComparableQueryEntry(currentQuery[queryKey])
+        === getComparableQueryEntry(nextQuery[queryKey])
       )
     })
   )
@@ -127,22 +130,23 @@ export function getTableUrlState<TFilters extends StringFilterRecord>(
   contract: TableUrlContract<TFilters>,
 ): TableUrlState<TFilters> {
   const allowedPageSizes = getAllowedPageSizes(contract.pageSizeOptions)
-  const defaultPageSize =
-    getAcceptedPageSize(contract.defaultPagination.pageSize, allowedPageSizes) ??
-    allowedPageSizes[0]!
-  const pageSize =
-    getAcceptedPageSize(getSingleQueryText(query.pageSize), allowedPageSizes) ?? defaultPageSize
+  const defaultPageSize
+    = getAcceptedPageSize(contract.defaultPagination.pageSize, allowedPageSizes)
+      ?? allowedPageSizes[0]!
+  const pageSize
+    = getAcceptedPageSize(getSingleQueryText(query.pageSize), allowedPageSizes) ?? defaultPageSize
   const pageNumber = getPositiveInteger(query.page)
   const filters = { ...contract.defaultFilters }
 
   for (const filterName of Object.keys(contract.filterRules) as Array<StringFilterKey<TFilters>>) {
     const rule = contract.filterRules[filterName]
     const filterText = getSingleQueryText(query[rule.queryKey])
-    const isAccepted =
-      filterText !== undefined &&
-      (!rule.acceptedValues ||
-        rule.acceptedValues.includes(filterText as TFilters[typeof filterName]))
-    if (isAccepted) filters[filterName] = filterText as TFilters[typeof filterName]
+    const isAccepted
+      = filterText !== undefined
+        && (!rule.acceptedValues
+          || rule.acceptedValues.includes(filterText as TFilters[typeof filterName]))
+    if (isAccepted)
+      filters[filterName] = filterText as TFilters[typeof filterName]
   }
 
   return {
@@ -166,7 +170,7 @@ export function getTableUrlQuery<TFilters extends StringFilterRecord>(
     'pageSize',
     'sortBy',
     'sortOrder',
-    ...Object.values(contract.filterRules).map((rule) => rule.queryKey),
+    ...Object.values(contract.filterRules).map(rule => rule.queryKey),
   ]
   for (const queryKey of controlledKeys) delete nextQuery[queryKey]
 
@@ -178,7 +182,8 @@ export function getTableUrlQuery<TFilters extends StringFilterRecord>(
   if (!areSortingStatesEqual(state.sorting, contract.defaultSorting)) {
     const activeSort = state.sorting[0]
     nextQuery.sortBy = activeSort?.id ?? 'none'
-    if (activeSort) nextQuery.sortOrder = activeSort.desc ? 'desc' : 'asc'
+    if (activeSort)
+      nextQuery.sortOrder = activeSort.desc ? 'desc' : 'asc'
   }
 
   for (const filterName of Object.keys(contract.filterRules) as Array<StringFilterKey<TFilters>>) {
@@ -206,7 +211,8 @@ export function useTableUrlState<TFilters extends StringFilterRecord>(
       },
       options,
     )
-    if (!areQueriesEqual(route.query, nextQuery)) void router.replace({ query: nextQuery })
+    if (!areQueriesEqual(route.query, nextQuery))
+      void router.replace({ query: nextQuery })
   }
 
   watch(

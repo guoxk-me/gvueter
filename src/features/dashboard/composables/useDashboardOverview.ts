@@ -26,7 +26,7 @@ export function useDashboardOverview() {
   const dashboardUnreadCount = computed(
     () =>
       overviewQuery.data.value?.notifications.filter(
-        (notification) => !notificationStore.isRead(notification.id, notification.isRead),
+        notification => !notificationStore.isRead(notification.id, notification.isRead),
       ).length ?? 0,
   )
 
@@ -43,32 +43,30 @@ export function useDashboardOverview() {
   const { markReadMutation, markAllReadMutation } = useNotificationReadMutations({
     category: 'notification',
     onMarkReadSuccess: (response) => {
-      queryClient.setQueryData<DashboardOverview>(dashboardOverviewQueryKey, (overview) =>
+      queryClient.setQueryData<DashboardOverview>(dashboardOverviewQueryKey, overview =>
         overview
           ? {
               ...overview,
-              notifications: overview.notifications.map((notification) =>
+              notifications: overview.notifications.map(notification =>
                 notification.id === response.item.id
                   ? { ...notification, isRead: true }
                   : notification,
               ),
             }
-          : overview,
-      )
+          : overview)
     },
     onMarkAllReadSuccess: () => {
-      queryClient.setQueryData<DashboardOverview>(dashboardOverviewQueryKey, (overview) =>
+      queryClient.setQueryData<DashboardOverview>(dashboardOverviewQueryKey, overview =>
         overview
           ? {
               ...overview,
               // AI modified: a successful category-wide request proves every dashboard notification is read.
-              notifications: overview.notifications.map((notification) => ({
+              notifications: overview.notifications.map(notification => ({
                 ...notification,
                 isRead: true,
               })),
             }
-          : overview,
-      )
+          : overview)
     },
   })
 

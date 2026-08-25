@@ -1,10 +1,10 @@
-export type DemoUploadStatus =
-  | 'waiting'
-  | 'uploading'
-  | 'paused'
-  | 'succeeded'
-  | 'failed'
-  | 'canceled'
+export type DemoUploadStatus
+  = | 'waiting'
+    | 'uploading'
+    | 'paused'
+    | 'succeeded'
+    | 'failed'
+    | 'canceled'
 
 export interface DemoUploadTask {
   id: string

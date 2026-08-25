@@ -50,15 +50,15 @@ export interface UserInput {
   temporaryPassword?: string
 }
 
-export type UserImportIssueCode =
-  | 'DUPLICATE_EMAIL'
-  | 'INVALID_COLUMN_COUNT'
-  | 'INVALID_EMAIL'
-  | 'INVALID_NAME'
-  | 'INVALID_ROLE'
-  | 'INVALID_STATUS'
-  | 'ROLE_ASSIGNMENT_FORBIDDEN'
-  | 'UNSAFE_SPREADSHEET_VALUE'
+export type UserImportIssueCode
+  = | 'DUPLICATE_EMAIL'
+    | 'INVALID_COLUMN_COUNT'
+    | 'INVALID_EMAIL'
+    | 'INVALID_NAME'
+    | 'INVALID_ROLE'
+    | 'INVALID_STATUS'
+    | 'ROLE_ASSIGNMENT_FORBIDDEN'
+    | 'UNSAFE_SPREADSHEET_VALUE'
 
 export interface UserImportIssue {
   row: number

@@ -15,7 +15,9 @@ const { t } = useI18n()
     :is="isNested ? 'section' : 'main'"
     class="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-5 px-6 text-center"
   >
-    <p class="text-sm font-medium text-primary">404</p>
+    <p class="text-sm font-medium text-primary">
+      404
+    </p>
     <div class="space-y-2">
       <h1 class="text-3xl font-semibold">
         {{ t('errors.notFoundTitle') }}

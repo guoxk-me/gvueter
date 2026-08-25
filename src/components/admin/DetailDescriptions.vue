@@ -20,7 +20,7 @@ const props = withDefaults(
 )
 
 defineSlots<{
-  value?: (props: { item: DetailDescriptionItem; value: string }) => unknown
+  value?: (props: { item: DetailDescriptionItem, value: string }) => unknown
 }>()
 
 const { t } = useI18n()
@@ -34,14 +34,17 @@ const gridClass = computed(
 )
 
 function descriptionValue(item: DetailDescriptionItem): string {
-  if (item.value === null || item.value === undefined || item.value === '') return props.emptyText
+  if (item.value === null || item.value === undefined || item.value === '')
+    return props.emptyText
   return String(item.value)
 }
 
 function itemSpanClass(item: DetailDescriptionItem): string {
   const availableSpan = Math.min(item.span ?? 1, props.columns)
-  if (availableSpan === 3) return 'md:col-span-2 xl:col-span-3'
-  if (availableSpan === 2) return 'md:col-span-2'
+  if (availableSpan === 3)
+    return 'md:col-span-2 xl:col-span-3'
+  if (availableSpan === 2)
+    return 'md:col-span-2'
   return ''
 }
 </script>

@@ -33,8 +33,9 @@ const levels = computed<CascaderLevel[]>(() => {
   while (availableOptions.length > 0) {
     const selectedValue = selectedPath.value[depth]
     availableLevels.push({ options: availableOptions, selectedValue })
-    const selectedOption = availableOptions.find((option) => option.value === selectedValue)
-    if (!selectedOption?.children?.length) break
+    const selectedOption = availableOptions.find(option => option.value === selectedValue)
+    if (!selectedOption?.children?.length)
+      break
 
     availableOptions = selectedOption.children
     depth += 1
@@ -47,8 +48,9 @@ const selectedLabels = computed(() => {
   const labels: string[] = []
   let availableOptions = props.options
   for (const selectedValue of selectedPath.value) {
-    const selectedOption = availableOptions.find((option) => option.value === selectedValue)
-    if (!selectedOption) break
+    const selectedOption = availableOptions.find(option => option.value === selectedValue)
+    if (!selectedOption)
+      break
     labels.push(selectedOption.label)
     availableOptions = selectedOption.children ?? []
   }
@@ -62,24 +64,28 @@ watch(
     let availableOptions = props.options
     for (const selectedValue of selectedPath.value) {
       const selectedOption = availableOptions.find(
-        (option) => option.value === selectedValue && !option.disabled,
+        option => option.value === selectedValue && !option.disabled,
       )
-      if (!selectedOption) break
+      if (!selectedOption)
+        break
       availablePath.push(selectedValue)
       availableOptions = selectedOption.children ?? []
     }
-    if (availablePath.length !== selectedPath.value.length) selectedPath.value = availablePath
+    if (availablePath.length !== selectedPath.value.length)
+      selectedPath.value = availablePath
   },
   { deep: true, immediate: true },
 )
 
 function selectLevel(levelIndex: number, nextValue: AcceptableValue): void {
-  if (typeof nextValue !== 'string') return
+  if (typeof nextValue !== 'string')
+    return
 
   const selectedOption = levels.value[levelIndex]?.options.find(
-    (option) => option.value === nextValue,
+    option => option.value === nextValue,
   )
-  if (!selectedOption || selectedOption.disabled) return
+  if (!selectedOption || selectedOption.disabled)
+    return
 
   // AI modified: changing an ancestor clears every stale descendant before the new path is emitted.
   selectedPath.value = [...selectedPath.value.slice(0, levelIndex), nextValue]

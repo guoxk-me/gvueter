@@ -97,7 +97,7 @@ export const FORM_WORKBENCH_FIELDS: readonly DynamicWorkbenchField[] = [
     name: 'category',
     kind: 'select',
     labelKey: 'formWorkbench.fields.category',
-    options: WORKBENCH_CATEGORIES.map((category) => ({
+    options: WORKBENCH_CATEGORIES.map(category => ({
       labelKey: `formWorkbench.categories.${category}`,
       value: category,
     })),

@@ -48,17 +48,19 @@ const checkedNodeIds = shallowRef(['analytics-overview', 'users'])
 const expandedNodeIds = shallowRef(['workspace', 'analytics', 'administration'])
 const selectedNodeLabel = computed(
   () =>
-    findNodeLabel(permissionNodes, selectedNodeId.value) ??
-    findNodeLabel(regionalArchiveNodes, selectedNodeId.value) ??
-    t('components.hierarchy.noSelection'),
+    findNodeLabel(permissionNodes, selectedNodeId.value)
+    ?? findNodeLabel(regionalArchiveNodes, selectedNodeId.value)
+    ?? t('components.hierarchy.noSelection'),
 )
 
 function findNodeLabel(nodes: readonly TreeNode[], nodeId: string | null): string | undefined {
   for (const node of nodes) {
-    if (node.id === nodeId) return node.label
+    if (node.id === nodeId)
+      return node.label
 
     const childLabel = node.children && findNodeLabel(node.children, nodeId)
-    if (childLabel) return childLabel
+    if (childLabel)
+      return childLabel
   }
   return undefined
 }
@@ -72,10 +74,11 @@ function collapseAllNodes(): void {
 }
 
 async function loadPermissionChildren(node: TreeNode): Promise<readonly TreeNode[]> {
-  if (node.id !== 'regional-archives') return []
+  if (node.id !== 'regional-archives')
+    return []
 
   // AI modified: the hierarchy Demo exercises the same on-demand boundary used by large org/category trees.
-  await new Promise((resolve) => window.setTimeout(resolve, 180))
+  await new Promise(resolve => window.setTimeout(resolve, 180))
   return regionalArchiveNodes
 }
 </script>

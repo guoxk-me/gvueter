@@ -28,26 +28,26 @@ function isReadFilter(value: string): value is MessageCenterFilters['read'] {
 
 function isMessageCenterResponse(value: unknown): value is MessageCenterResponse {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'items' in value &&
-    Array.isArray(value.items) &&
-    'total' in value &&
-    typeof value.total === 'number' &&
-    'unreadCount' in value &&
-    typeof value.unreadCount === 'number'
+    typeof value === 'object'
+    && value !== null
+    && 'items' in value
+    && Array.isArray(value.items)
+    && 'total' in value
+    && typeof value.total === 'number'
+    && 'unreadCount' in value
+    && typeof value.unreadCount === 'number'
   )
 }
 
 function getFiltersFromQueryKey(queryKey: QueryKey): MessageCenterFilters | undefined {
   const filters = queryKey[2]
   if (
-    typeof filters !== 'object' ||
-    filters === null ||
-    !('category' in filters) ||
-    typeof filters.category !== 'string' ||
-    !('read' in filters) ||
-    typeof filters.read !== 'string'
+    typeof filters !== 'object'
+    || filters === null
+    || !('category' in filters)
+    || typeof filters.category !== 'string'
+    || !('read' in filters)
+    || typeof filters.read !== 'string'
   ) {
     return undefined
   }
@@ -64,12 +64,12 @@ function eventMatchesFilters(
   event: NotificationRealtimeEvent,
   filters: MessageCenterFilters,
 ): boolean {
-  const categoryMatches =
-    filters.category === 'all' || filters.category === event.notification.category
-  const readMatches =
-    filters.read === 'all' ||
-    (filters.read === 'read' && event.notification.isRead) ||
-    (filters.read === 'unread' && !event.notification.isRead)
+  const categoryMatches
+    = filters.category === 'all' || filters.category === event.notification.category
+  const readMatches
+    = filters.read === 'all'
+      || (filters.read === 'read' && event.notification.isRead)
+      || (filters.read === 'unread' && !event.notification.isRead)
   return categoryMatches && readMatches
 }
 
@@ -79,17 +79,19 @@ export function applyNotificationEventToCache(
 ): boolean {
   const cachedQueries = queryClient.getQueryCache().findAll({ queryKey: messageCenterQueryKeyRoot })
   const isKnownNotification = cachedQueries.some(
-    (query) =>
-      isMessageCenterResponse(query.state.data) &&
-      query.state.data.items.some((item) => item.id === event.notification.id),
+    query =>
+      isMessageCenterResponse(query.state.data)
+      && query.state.data.items.some(item => item.id === event.notification.id),
   )
-  if (isKnownNotification) return false
+  if (isKnownNotification)
+    return false
 
   const unreadIncrease = event.notification.isRead ? 0 : 1
   for (const query of cachedQueries) {
     const cachedResponse = query.state.data
     const filters = getFiltersFromQueryKey(query.queryKey)
-    if (!isMessageCenterResponse(cachedResponse) || !filters) continue
+    if (!isMessageCenterResponse(cachedResponse) || !filters)
+      continue
 
     const shouldInsert = eventMatchesFilters(event, filters)
     queryClient.setQueryData<MessageCenterResponse>(query.queryKey, {
@@ -127,7 +129,8 @@ export function useNotificationUnreadCount() {
   watch(
     () => unreadQuery.data.value?.unreadCount,
     (unreadCount) => {
-      if (unreadCount !== undefined) notificationStore.syncUnreadCount(unreadCount)
+      if (unreadCount !== undefined)
+        notificationStore.syncUnreadCount(unreadCount)
     },
     { immediate: true },
   )
@@ -150,25 +153,29 @@ export function useNotificationRealtime(createTransport: NotificationTransportFa
     const nextRevision = ++connectionRevision
     activeTransport?.stop()
     activeTransport = undefined
-    if (!sessionToken || !principalId) return
+    if (!sessionToken || !principalId)
+      return
 
     const nextTransport = createTransport(sessionToken)
     activeTransport = nextTransport
     nextTransport.start((event) => {
       if (
-        nextRevision !== connectionRevision ||
-        authStore.token !== sessionToken ||
-        authStore.principalId !== principalId
+        nextRevision !== connectionRevision
+        || authStore.token !== sessionToken
+        || authStore.principalId !== principalId
       ) {
         return
       }
-      if (!applyNotificationEventToCache(queryClient, event)) return
-      if (!event.notification.isRead) notificationStore.incrementUnreadCount()
+      if (!applyNotificationEventToCache(queryClient, event))
+        return
+      if (!event.notification.isRead)
+        notificationStore.incrementUnreadCount()
     })
   }
 
   watch([() => authStore.token, () => authStore.principalId], ([sessionToken, principalId]) => {
-    if (isMounted) replaceTransport(sessionToken, principalId)
+    if (isMounted)
+      replaceTransport(sessionToken, principalId)
   })
 
   onMounted(() => {

@@ -48,16 +48,18 @@ const selectorLabel = computed(
 )
 const isDisabled = computed(
   () =>
-    props.disabled ||
-    (props.options === undefined &&
-      (dictionaryOptions.isLoading.value || Boolean(dictionaryOptions.error.value))),
+    props.disabled
+    || (props.options === undefined
+      && (dictionaryOptions.isLoading.value || Boolean(dictionaryOptions.error.value))),
 )
 
 function selectOption(nextValue: AcceptableValue): void {
-  if (typeof nextValue !== 'string') return
+  if (typeof nextValue !== 'string')
+    return
 
-  const selectedOption = availableOptions.value.find((option) => option.value === nextValue)
-  if (!selectedOption || selectedOption.isDisabled) return
+  const selectedOption = availableOptions.value.find(option => option.value === nextValue)
+  if (!selectedOption || selectedOption.isDisabled)
+    return
 
   // AI modified: emit the selected dictionary metadata with the controlled value for status-aware forms.
   selectedValue.value = selectedOption.value

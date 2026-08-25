@@ -41,7 +41,7 @@ const initialDepartments: DepartmentRecord[] = [
   },
 ]
 
-const mockDepartments = initialDepartments.map((department) => ({ ...department }))
+const mockDepartments = initialDepartments.map(department => ({ ...department }))
 let nextDepartmentId = 1
 const MAX_MOCK_DEPARTMENTS = 500
 
@@ -54,11 +54,11 @@ function getInputFailure(message: string, code = 'INVALID_DEPARTMENT', status = 
 }
 
 function getDepartment(departmentId: string | readonly string[]): DepartmentRecord | undefined {
-  return mockDepartments.find((department) => department.id === String(departmentId))
+  return mockDepartments.find(department => department.id === String(departmentId))
 }
 
 export function getMockDepartmentIds(): string[] {
-  return mockDepartments.map((department) => department.id)
+  return mockDepartments.map(department => department.id)
 }
 
 export function getMockDepartmentSnapshot(): DepartmentRecord[] {
@@ -69,14 +69,15 @@ export function resetMockDepartments(): void {
   mockDepartments.splice(
     0,
     mockDepartments.length,
-    ...initialDepartments.map((department) => ({ ...department })),
+    ...initialDepartments.map(department => ({ ...department })),
   )
   nextDepartmentId = 1
 }
 
 export const listDepartmentsHandler = http.get('/api/departments', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<DepartmentListResponse>>({
     code: 0,
@@ -90,13 +91,15 @@ export const createDepartmentHandler = http.post<never, DepartmentInput>(
   async ({ request }) => {
     // AI modified: Settings CRUD follows action-level role grants rather than the admin role name.
     const authentication = authorizeMockPermission(request, 'create', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, DEPARTMENT_INPUT_SCHEMA, {
       code: 'INVALID_DEPARTMENT',
       message: '部门信息不完整',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     if (input.parentId && !getDepartment(input.parentId))
       return getInputFailure('上级部门不存在', 'DEPARTMENT_PARENT_NOT_FOUND')
@@ -126,7 +129,8 @@ export const updateDepartmentHandler = http.put<{ departmentId: string }, Depart
   '/api/departments/:departmentId',
   async ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const department = getDepartment(params.departmentId)
     if (!department) {
@@ -140,7 +144,8 @@ export const updateDepartmentHandler = http.put<{ departmentId: string }, Depart
       code: 'INVALID_DEPARTMENT',
       message: '部门信息不完整',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input = requestBody.body
     if (input.parentId && !getDepartment(input.parentId))
       return getInputFailure('上级部门不存在', 'DEPARTMENT_PARENT_NOT_FOUND')
@@ -168,7 +173,8 @@ export const deleteDepartmentHandler = http.delete<{ departmentId: string }>(
   '/api/departments/:departmentId',
   ({ params, request }) => {
     const authentication = authorizeMockPermission(request, 'delete', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const department = getDepartment(params.departmentId)
     if (!department) {
@@ -177,13 +183,13 @@ export const deleteDepartmentHandler = http.delete<{ departmentId: string }>(
         { status: 404 },
       )
     }
-    if (mockDepartments.some((candidate) => candidate.parentId === department.id)) {
+    if (mockDepartments.some(candidate => candidate.parentId === department.id)) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'DEPARTMENT_HAS_CHILDREN', message: '请先处理下级部门', data: null },
         { status: 409 },
       )
     }
-    if (mockUsers.some((user) => user.departmentId === department.id)) {
+    if (mockUsers.some(user => user.departmentId === department.id)) {
       // AI modified: preserve referential integrity so data-scope principals never become orphaned.
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'DEPARTMENT_HAS_USERS', message: '请先调整部门成员', data: null },

@@ -13,14 +13,15 @@ const props = defineProps<{
 const { t } = useI18n()
 const searchText = shallowRef('')
 const moduleEntries = computed(() =>
-  componentCatalog.filter((entry) => props.modules.includes(entry.module)),
+  componentCatalog.filter(entry => props.modules.includes(entry.module)),
 )
 const visibleEntries = computed(() => {
   const requestedText = searchText.value.trim().toLocaleLowerCase()
-  if (!requestedText) return moduleEntries.value
-  return moduleEntries.value.filter((entry) =>
+  if (!requestedText)
+    return moduleEntries.value
+  return moduleEntries.value.filter(entry =>
     [entry.displayName, entry.summary, ...entry.businessScenarios, ...entry.states].some(
-      (searchableText) => searchableText.toLocaleLowerCase().includes(requestedText),
+      searchableText => searchableText.toLocaleLowerCase().includes(requestedText),
     ),
   )
 })

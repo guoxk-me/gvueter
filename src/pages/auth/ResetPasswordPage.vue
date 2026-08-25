@@ -53,7 +53,7 @@ const formSchema = computed(() => {
         .string({ required_error: t('auth.passwordMinLength', { min: PASSWORD_MIN_LENGTH }) })
         .min(1, t('auth.passwordMinLength', { min: PASSWORD_MIN_LENGTH })),
     })
-    .refine((data) => data.newPassword === data.confirmPassword, {
+    .refine(data => data.newPassword === data.confirmPassword, {
       message: t('auth.passwordMismatch'),
       path: ['confirmPassword'],
     })
@@ -65,7 +65,8 @@ const { handleSubmit } = useForm({ validationSchema: formSchema })
 
 const onSubmit = handleSubmit(
   async (values) => {
-    if (isLoading.value) return
+    if (isLoading.value)
+      return
 
     // AI modified: prevent repeated one-time-token consumption while the request is pending.
     isLoading.value = true
@@ -75,13 +76,16 @@ const onSubmit = handleSubmit(
       isSuccess.value = true
       await nextTick()
       successHeading.value?.focus()
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof ApiError && error.code === 'INVALID_RESET_TOKEN') {
         toast.error(t('auth.invalidToken'))
-      } else {
+      }
+      else {
         toast.error(t('errors.serverError'))
       }
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   },

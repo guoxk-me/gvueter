@@ -814,7 +814,7 @@ export type AdminIconKey = (typeof ADMIN_ICON_OPTIONS)[number]['key']
 export const UNKNOWN_ADMIN_ICON_COMPONENT: Component = CircleHelp
 
 const adminIconOptionsByKey = new Map<string, AdminIconOption>(
-  ADMIN_ICON_OPTIONS.map((option) => [option.key, option]),
+  ADMIN_ICON_OPTIONS.map(option => [option.key, option]),
 )
 
 export function getAdminIconOption(iconKey: string | undefined): AdminIconOption | undefined {

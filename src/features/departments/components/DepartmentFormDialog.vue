@@ -42,8 +42,9 @@ const parentOptions = computed(() => {
   const unavailableDepartmentIds = props.department
     ? getDepartmentDescendantIds(props.departments, props.department.id)
     : new Set<string>()
-  if (props.department) unavailableDepartmentIds.add(props.department.id)
-  return props.departments.filter((department) => !unavailableDepartmentIds.has(department.id))
+  if (props.department)
+    unavailableDepartmentIds.add(props.department.id)
+  return props.departments.filter(department => !unavailableDepartmentIds.has(department.id))
 })
 const formSchema = computed(() =>
   toTypedSchema(
@@ -62,7 +63,8 @@ const { handleSubmit, resetForm } = useForm<DepartmentFormValues>({
 watch(
   [open, () => props.department],
   ([isOpen]) => {
-    if (!isOpen) return
+    if (!isOpen)
+      return
 
     resetForm({
       values: {
@@ -133,9 +135,9 @@ const submitDepartment = handleSubmit((values) => {
       <FormField v-slot="{ componentField }" name="order">
         <FormItem>
           <FormLabel>{{ t('departments.order') }}</FormLabel>
-          <FormControl
-            ><Input v-bind="componentField" type="number" min="0" :disabled="isSaving"
-          /></FormControl>
+          <FormControl>
+            <Input v-bind="componentField" type="number" min="0" :disabled="isSaving" />
+          </FormControl>
           <FormMessage />
         </FormItem>
       </FormField>

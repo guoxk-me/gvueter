@@ -44,7 +44,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  content?: (props: { openFileDialog: () => void; isOverDropZone: boolean }) => unknown
+  content?: (props: { openFileDialog: () => void, isOverDropZone: boolean }) => unknown
 }>()
 
 const entries = defineModel<FileUploadEntry[]>({ default: () => [] })
@@ -65,7 +65,7 @@ onBeforeUnmount(fileDialogListener.off)
 
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   multiple: props.multiple,
-  onDrop: (files) => acceptFiles(files ?? []),
+  onDrop: files => acceptFiles(files ?? []),
 })
 
 function maximumEntries(): number {
@@ -73,11 +73,13 @@ function maximumEntries(): number {
 }
 
 function openFileDialog(): void {
-  if (!props.disabled && !isAtLimit.value) open()
+  if (!props.disabled && !isAtLimit.value)
+    open()
 }
 
 function acceptFiles(incomingFiles: File[]): void {
-  if (props.disabled || incomingFiles.length === 0) return
+  if (props.disabled || incomingFiles.length === 0)
+    return
 
   // AI modified: apply the same guards to file-dialog and drag-drop input before updating the parent model.
   const acceptedEntries: FileUploadEntry[] = []
@@ -119,15 +121,16 @@ function acceptFiles(incomingFiles: File[]): void {
     emit('change', entries.value)
   }
 
-  if (rejections.length > 0) emit('rejected', rejections)
+  if (rejections.length > 0)
+    emit('rejected', rejections)
 }
 
 function isDuplicate(file: File, existingEntries: FileUploadEntry[]): boolean {
   return existingEntries.some(
-    (entry) =>
-      entry.file.name === file.name &&
-      entry.file.size === file.size &&
-      entry.file.lastModified === file.lastModified,
+    entry =>
+      entry.file.name === file.name
+      && entry.file.size === file.size
+      && entry.file.lastModified === file.lastModified,
   )
 }
 
@@ -138,7 +141,7 @@ function createEntryId(): string {
 }
 
 function removeEntry(id: string): void {
-  entries.value = entries.value.filter((entry) => entry.id !== id)
+  entries.value = entries.value.filter(entry => entry.id !== id)
   emit('change', entries.value)
 }
 </script>

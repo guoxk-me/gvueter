@@ -118,7 +118,8 @@ function validateCurrentStep(): boolean {
   statusMessage.value = ''
   if (currentStep.value === 0) {
     clearStepErrors(['name', 'owner'])
-    if (!plan.name.trim()) errors.name = copy.value.nameError
+    if (!plan.name.trim())
+      errors.name = copy.value.nameError
     if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(plan.owner.trim()))
       errors.owner = copy.value.ownerError
     return !errors.name && !errors.owner
@@ -126,8 +127,10 @@ function validateCurrentStep(): boolean {
 
   if (currentStep.value === 1) {
     clearStepErrors(['changeWindow', 'runbook'])
-    if (!plan.changeWindow) errors.changeWindow = copy.value.windowError
-    if (plan.runbook.trim().length < 12) errors.runbook = copy.value.runbookError
+    if (!plan.changeWindow)
+      errors.changeWindow = copy.value.windowError
+    if (plan.runbook.trim().length < 12)
+      errors.runbook = copy.value.runbookError
     return !errors.changeWindow && !errors.runbook
   }
   return true

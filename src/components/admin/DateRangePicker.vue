@@ -46,11 +46,13 @@ const locale = computed(() => (i18n.global as unknown as Composer).locale.value)
 const draftRange = shallowRef<DateRange>({ start: undefined, end: undefined })
 
 function parseDateValue(value: string): DateValue | undefined {
-  if (!value) return undefined
+  if (!value)
+    return undefined
 
   try {
     return parseDate(value)
-  } catch {
+  }
+  catch {
     return undefined
   }
 }
@@ -71,7 +73,8 @@ const calendarLabel = computed(() => `${props.startLabel} – ${props.endLabel}`
 const rangeLabel = computed(() => {
   const start = parseDateValue(range.value?.start ?? '')
   const end = parseDateValue(range.value?.end ?? '')
-  if (!start || !end) return props.placeholder
+  if (!start || !end)
+    return props.placeholder
 
   // AI modified: date-only values use UTC solely to avoid locale formatting shifting the calendar day.
   return `${dateFormatter.value.format(start.toDate('UTC'))} – ${dateFormatter.value.format(end.toDate('UTC'))}`
@@ -79,7 +82,8 @@ const rangeLabel = computed(() => {
 const triggerLabel = computed(() => props.label ?? props.placeholder)
 
 watch(isOpen, (isNowOpen) => {
-  if (!isNowOpen) return
+  if (!isNowOpen)
+    return
 
   // AI modified: bridge the public ISO-string contract to one shadcn range-calendar draft.
   draftRange.value = {
@@ -89,10 +93,12 @@ watch(isOpen, (isNowOpen) => {
 })
 
 function applyRange(): void {
-  if (isApplyDisabled.value) return
+  if (isApplyDisabled.value)
+    return
 
   const { start, end } = draftRange.value
-  if (!start || !end) return
+  if (!start || !end)
+    return
 
   // AI modified: preserve existing string-based DateRangeValue API for all integrations.
   range.value = {

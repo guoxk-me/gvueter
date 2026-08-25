@@ -2,7 +2,7 @@ import type { ZodType, ZodTypeDef } from 'zod'
 import type { ApiResponse } from '@/lib/http'
 import { HttpResponse } from 'msw'
 
-type MockJsonBody<T> = { isValid: true; body: T } | { isValid: false; response: Response }
+type MockJsonBody<T> = { isValid: true, body: T } | { isValid: false, response: Response }
 
 export interface MockJsonValidationFailure {
   code: string
@@ -28,7 +28,8 @@ export async function readMockJsonBody<T = unknown>(
   let candidate: unknown
   try {
     candidate = await request.json()
-  } catch {
+  }
+  catch {
     // AI modified: malformed JSON returns the same typed API boundary as structurally invalid input.
     return {
       isValid: false,
@@ -39,7 +40,8 @@ export async function readMockJsonBody<T = unknown>(
     }
   }
 
-  if (!schema) return { isValid: true, body: candidate as T }
+  if (!schema)
+    return { isValid: true, body: candidate as T }
 
   const validation = schema.safeParse(candidate)
   if (!validation.success) {

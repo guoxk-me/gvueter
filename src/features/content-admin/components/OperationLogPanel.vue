@@ -63,16 +63,19 @@ const {
 const isDetailOpen = computed({
   get: () => Boolean(selectedOperationLogId.value),
   set: (isOpen: boolean) => {
-    if (!isOpen) selectedOperationLogId.value = undefined
+    if (!isOpen)
+      selectedOperationLogId.value = undefined
   },
 })
 
 function parseDateValue(value: string): DateValue | undefined {
-  if (!value) return undefined
+  if (!value)
+    return undefined
 
   try {
     return parseDate(value)
-  } catch {
+  }
+  catch {
     return undefined
   }
 }
@@ -102,7 +105,7 @@ watch(
       // AI modified: the route owner receives server-provided IDs instead of accepting arbitrary detail keys.
       emit(
         'operationLogOptionsReady',
-        availableOperationLogs.map((operationLog) => operationLog.id),
+        availableOperationLogs.map(operationLog => operationLog.id),
       )
     }
   },
@@ -354,9 +357,9 @@ function resetFilters(): void {
                   {{ operationLog.actorEmailMasked }}
                 </p>
               </TableCell>
-              <TableCell
-                ><code class="text-xs">{{ operationLog.action }}</code></TableCell
-              >
+              <TableCell>
+                <code class="text-xs">{{ operationLog.action }}</code>
+              </TableCell>
               <TableCell>{{ operationLog.resource }}</TableCell>
               <TableCell>
                 <StatusTag

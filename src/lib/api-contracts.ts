@@ -1,12 +1,12 @@
 import { z } from 'zod'
 
-export type JsonValue =
-  | boolean
-  | null
-  | number
-  | string
-  | JsonValue[]
-  | {
+export type JsonValue
+  = | boolean
+    | null
+    | number
+    | string
+    | JsonValue[]
+    | {
       [key: string]: JsonValue
     }
 
@@ -15,30 +15,35 @@ export const MAX_JSON_NODES = 50_000
 export const MAX_JSON_STRING_LENGTH = 1_000_000
 
 function isBoundedJsonValue(value: unknown): value is JsonValue {
-  const pendingValues: Array<{ depth: number; value: unknown }> = [{ depth: 0, value }]
+  const pendingValues: Array<{ depth: number, value: unknown }> = [{ depth: 0, value }]
   const visitedContainers = new WeakSet<object>()
   let nodeCount = 0
 
   while (pendingValues.length > 0) {
     const current = pendingValues.pop()
-    if (!current || current.depth > MAX_JSON_DEPTH) return false
+    if (!current || current.depth > MAX_JSON_DEPTH)
+      return false
     nodeCount += 1
-    if (nodeCount > MAX_JSON_NODES) return false
+    if (nodeCount > MAX_JSON_NODES)
+      return false
 
     const candidate = current.value
     if (
-      candidate === null ||
-      typeof candidate === 'boolean' ||
-      (typeof candidate === 'number' && Number.isFinite(candidate))
+      candidate === null
+      || typeof candidate === 'boolean'
+      || (typeof candidate === 'number' && Number.isFinite(candidate))
     ) {
       continue
     }
     if (typeof candidate === 'string') {
-      if (candidate.length > MAX_JSON_STRING_LENGTH) return false
+      if (candidate.length > MAX_JSON_STRING_LENGTH)
+        return false
       continue
     }
-    if (typeof candidate !== 'object') return false
-    if (visitedContainers.has(candidate)) return false
+    if (typeof candidate !== 'object')
+      return false
+    if (visitedContainers.has(candidate))
+      return false
     visitedContainers.add(candidate)
 
     const childValues = Array.isArray(candidate) ? candidate : Object.values(candidate)
@@ -123,11 +128,11 @@ export const UPLOAD_RECEIPT_SCHEMA = z
       .min(1)
       .max(180)
       .refine(
-        (fileName) =>
-          !fileName.startsWith('.') &&
-          !fileName.endsWith('.') &&
-          !/[\\/]/.test(fileName) &&
-          ![...fileName].some((character) => {
+        fileName =>
+          !fileName.startsWith('.')
+          && !fileName.endsWith('.')
+          && !/[\\/]/.test(fileName)
+          && ![...fileName].some((character) => {
             const characterCode = character.charCodeAt(0)
             return characterCode < 32 || characterCode === 127
           }),
@@ -142,7 +147,7 @@ export const UPLOAD_RECEIPT_SCHEMA = z
     uploadedAt: z
       .string()
       .refine(
-        (value) =>
+        value =>
           /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value),
         'uploadedAt must be an ISO 8601 date-time with an explicit offset',
       ),
@@ -153,7 +158,8 @@ export const BUSINESS_TIME_ZONE_SCHEMA = z.string().refine((timeZone) => {
   try {
     new Intl.DateTimeFormat('en-US', { timeZone }).format()
     return timeZone === 'UTC' || timeZone.includes('/')
-  } catch {
+  }
+  catch {
     return false
   }
 }, 'timeZone must be UTC or a supported IANA time-zone identifier')

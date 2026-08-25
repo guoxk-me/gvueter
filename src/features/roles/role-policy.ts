@@ -20,19 +20,19 @@ function createPermission(action: PermissionAction, subject: PermissionSubject):
 }
 
 function createAllPermissions(): RolePermission[] {
-  return PERMISSION_SUBJECTS.flatMap((subject) =>
-    PERMISSION_ACTIONS.map((action) => createPermission(action, subject)),
+  return PERMISSION_SUBJECTS.flatMap(subject =>
+    PERMISSION_ACTIONS.map(action => createPermission(action, subject)),
   )
 }
 
 function copyRoles(roles: RoleDefinition[]): RoleDefinition[] {
-  return roles.map((role) => ({
+  return roles.map(role => ({
     ...role,
     dataScope: {
       ...role.dataScope,
       departmentIds: role.dataScope.departmentIds ? [...role.dataScope.departmentIds] : undefined,
     },
-    permissions: role.permissions.map((permission) => ({ ...permission })),
+    permissions: role.permissions.map(permission => ({ ...permission })),
   }))
 }
 
@@ -94,12 +94,12 @@ export function getRoleDefinitions(): RoleDefinition[] {
 }
 
 export function getRolePermissions(roleKey: UserRole): RolePermission[] {
-  const role = roleDefinitions.find((candidate) => candidate.key === roleKey)
-  return role ? role.permissions.map((permission) => ({ ...permission })) : []
+  const role = roleDefinitions.find(candidate => candidate.key === roleKey)
+  return role ? role.permissions.map(permission => ({ ...permission })) : []
 }
 
 export function getRoleDataScope(roleKey: UserRole): RoleDefinition['dataScope'] {
-  const role = roleDefinitions.find((candidate) => candidate.key === roleKey)
+  const role = roleDefinitions.find(candidate => candidate.key === roleKey)
   const scope = role?.dataScope ?? { scope: 'self' as const }
   // AI modified: return a copy so UI experiments cannot mutate the active authorization policy.
   return {
@@ -122,8 +122,9 @@ export function updateRolePermissions(
   roleKey: UserRole,
   permissions: RolePermission[],
 ): RoleDefinition | undefined {
-  const currentRole = roleDefinitions.find((candidate) => candidate.key === roleKey)
-  if (!currentRole) return undefined
+  const currentRole = roleDefinitions.find(candidate => candidate.key === roleKey)
+  if (!currentRole)
+    return undefined
 
   // AI modified: retain this focused API for tests and callers that only change permission grants.
   return updateRolePolicy(roleKey, { permissions, dataScope: currentRole.dataScope })
@@ -133,12 +134,14 @@ export function updateRolePolicy(
   roleKey: UserRole,
   input: UpdateRolePolicyInput,
 ): RoleDefinition | undefined {
-  const role = roleDefinitions.find((candidate) => candidate.key === roleKey)
-  if (!role) return undefined
+  const role = roleDefinitions.find(candidate => candidate.key === roleKey)
+  if (!role)
+    return undefined
   // AI modified: keep one built-in recovery path even when callers bypass the HTTP handler.
-  if (!hasAdminRoleRecoveryPermissions(roleKey, input.permissions)) return undefined
+  if (!hasAdminRoleRecoveryPermissions(roleKey, input.permissions))
+    return undefined
 
-  role.permissions = input.permissions.map((permission) => ({ ...permission }))
+  role.permissions = input.permissions.map(permission => ({ ...permission }))
   role.dataScope = copyDataScope(input.dataScope)
   policyRevision += 1
   return {
@@ -147,7 +150,7 @@ export function updateRolePolicy(
       ...role.dataScope,
       departmentIds: role.dataScope.departmentIds ? [...role.dataScope.departmentIds] : undefined,
     },
-    permissions: role.permissions.map((permission) => ({ ...permission })),
+    permissions: role.permissions.map(permission => ({ ...permission })),
   }
 }
 
@@ -159,7 +162,7 @@ function copyDataScope(dataScope: DataScopeGrant): DataScopeGrant {
 }
 
 export function isRoleKey(value: string): value is UserRole {
-  return roleDefinitions.some((role) => role.key === value)
+  return roleDefinitions.some(role => role.key === value)
 }
 
 export function isAdminRoleRecoveryPermission(
@@ -167,11 +170,11 @@ export function isAdminRoleRecoveryPermission(
   permission: RolePermission,
 ): boolean {
   return (
-    roleKey === 'admin' &&
-    ADMIN_ROLE_RECOVERY_PERMISSIONS.some(
-      (requiredPermission) =>
-        requiredPermission.action === permission.action &&
-        requiredPermission.subject === permission.subject,
+    roleKey === 'admin'
+    && ADMIN_ROLE_RECOVERY_PERMISSIONS.some(
+      requiredPermission =>
+        requiredPermission.action === permission.action
+        && requiredPermission.subject === permission.subject,
     )
   )
 }
@@ -181,25 +184,26 @@ export function hasAdminRoleRecoveryPermissions(
   permissions: RolePermission[],
 ): boolean {
   return (
-    roleKey !== 'admin' ||
-    ADMIN_ROLE_RECOVERY_PERMISSIONS.every((requiredPermission) =>
+    roleKey !== 'admin'
+    || ADMIN_ROLE_RECOVERY_PERMISSIONS.every(requiredPermission =>
       permissions.some(
-        (permission) =>
-          permission.action === requiredPermission.action &&
-          permission.subject === requiredPermission.subject,
+        permission =>
+          permission.action === requiredPermission.action
+          && permission.subject === requiredPermission.subject,
       ),
     )
   )
 }
 
 export function isRolePermission(value: unknown): value is RolePermission {
-  if (typeof value !== 'object' || value === null) return false
+  if (typeof value !== 'object' || value === null)
+    return false
   const permission = value as Partial<RolePermission>
   return (
-    typeof permission.action === 'string' &&
-    typeof permission.subject === 'string' &&
-    PERMISSION_ACTIONS.includes(permission.action as PermissionAction) &&
-    PERMISSION_SUBJECTS.includes(permission.subject as PermissionSubject)
+    typeof permission.action === 'string'
+    && typeof permission.subject === 'string'
+    && PERMISSION_ACTIONS.includes(permission.action as PermissionAction)
+    && PERMISSION_SUBJECTS.includes(permission.subject as PermissionSubject)
   )
 }
 

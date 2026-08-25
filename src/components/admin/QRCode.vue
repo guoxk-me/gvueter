@@ -45,20 +45,21 @@ function qrColor(
   token: '--background' | '--foreground',
   fallback: string,
 ): string {
-  const themeValue =
-    requestedColor ?? getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+  const themeValue
+    = requestedColor ?? getComputedStyle(document.documentElement).getPropertyValue(token).trim()
   const colorCanvas = document.createElement('canvas')
   colorCanvas.width = 1
   colorCanvas.height = 1
   const context = colorCanvas.getContext('2d')
-  if (!context) return fallback
+  if (!context)
+    return fallback
 
   // AI modified: qrcode accepts HEX while design tokens use OKLCH, so resolve through the browser color engine.
   context.fillStyle = fallback
   context.fillStyle = themeValue || fallback
   context.fillRect(0, 0, 1, 1)
   const [red = 0, green = 0, blue = 0, alpha = 255] = context.getImageData(0, 0, 1, 1).data
-  const colorChannels = [red, green, blue, alpha].map((channel) =>
+  const colorChannels = [red, green, blue, alpha].map(channel =>
     channel.toString(16).padStart(2, '0'),
   )
   return `#${colorChannels.join('')}`
@@ -83,18 +84,22 @@ async function renderQrCode(): Promise<void> {
         light: qrColor(props.background, '--background', '#ffffff'),
       },
     })
-    if (revision !== renderRevision) return
+    if (revision !== renderRevision)
+      return
     errorMessage.value = ''
     emit('rendered')
-  } catch {
-    if (revision !== renderRevision) return
+  }
+  catch {
+    if (revision !== renderRevision)
+      return
     errorMessage.value = t('components.media.qrRenderFailed')
     emit('error', errorMessage.value)
   }
 }
 
 function downloadQrCode(): void {
-  if (!canvas.value || errorMessage.value) return
+  if (!canvas.value || errorMessage.value)
+    return
   const downloadLink = document.createElement('a')
   downloadLink.download = getQrCodeDownloadName(props.downloadFileName)
   downloadLink.href = canvas.value.toDataURL('image/png')

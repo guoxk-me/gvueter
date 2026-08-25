@@ -110,7 +110,8 @@ export function resetMockSystemConfig(): void {
 
 export const getSystemConfigHandler = http.get('/api/system-config', ({ request }) => {
   const authentication = authorizeMockPermission(request, 'read', 'Settings')
-  if (!authentication.isAuthenticated) return authentication.response
+  if (!authentication.isAuthenticated)
+    return authentication.response
 
   return HttpResponse.json<ApiResponse<SystemConfig>>(
     {
@@ -126,13 +127,15 @@ export const updateSystemConfigHandler = http.put<never, SystemConfigInput>(
   '/api/system-config',
   async ({ request }) => {
     const authentication = authorizeMockPermission(request, 'update', 'Settings')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, SYSTEM_CONFIG_INPUT_SCHEMA, {
       code: 'INVALID_SYSTEM_CONFIG',
       message: '系统配置信息不完整',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const input: SystemConfigInput = requestBody.body
     const { isSsoEnabled, ...thirdPartyInput } = input.thirdParty
     const updatedAt = new Date().toISOString()

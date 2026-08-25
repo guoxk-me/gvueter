@@ -11,15 +11,15 @@ import {
   UploadCloud,
 } from '@lucide/vue'
 
-export type ComponentCenterModuleId =
-  | 'editors'
-  | 'forms'
-  | 'icons'
-  | 'patterns'
-  | 'primitives'
-  | 'selection'
-  | 'tables'
-  | 'uploads'
+export type ComponentCenterModuleId
+  = | 'editors'
+    | 'forms'
+    | 'icons'
+    | 'patterns'
+    | 'primitives'
+    | 'selection'
+    | 'tables'
+    | 'uploads'
 
 export interface ComponentCenterModuleDefinition {
   id: ComponentCenterModuleId

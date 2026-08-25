@@ -28,8 +28,9 @@ function getTotalUsers(point: RegistrationTrendPoint): number {
 }
 
 function displayWeek(weekIndex: number | Date): string {
-  if (typeof weekIndex !== 'number') return ''
-  const point = props.points.find((candidate) => candidate.weekIndex === weekIndex)
+  if (typeof weekIndex !== 'number')
+    return ''
+  const point = props.points.find(candidate => candidate.weekIndex === weekIndex)
   return point
     ? getDateTimeLabel(point.weekStart, {
         locale: locale.value,

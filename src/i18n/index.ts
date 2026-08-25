@@ -17,11 +17,13 @@ function isSupportedLocale(locale: string | null): locale is SupportedLocale {
 
 function getDefaultLocale(): SupportedLocale {
   const storedLocale = safeStorageGet(getBrowserStorage('local'), LOCALE_STORAGE_KEY)
-  if (isSupportedLocale(storedLocale)) return storedLocale
+  if (isSupportedLocale(storedLocale))
+    return storedLocale
 
   // AI modified: locale bootstrapping remains deterministic when browser globals are restricted.
   const browserLang = typeof navigator === 'undefined' ? 'en-US' : navigator.language
-  if (browserLang.startsWith('zh')) return 'zh-CN'
+  if (browserLang.startsWith('zh'))
+    return 'zh-CN'
   return 'en-US'
 }
 
@@ -38,11 +40,13 @@ export const i18n = createI18n<[MessageSchema], SupportedLocale>({
 })
 
 // AI modified: apply the persisted or browser-derived locale before the first render.
-if (typeof document !== 'undefined') document.documentElement.lang = initialLocale
+if (typeof document !== 'undefined')
+  document.documentElement.lang = initialLocale
 
 export function setLocale(locale: SupportedLocale): void {
   const composer = i18n.global as unknown as Composer
   composer.locale.value = locale
   safeStorageSet(getBrowserStorage('local'), LOCALE_STORAGE_KEY, locale)
-  if (typeof document !== 'undefined') document.documentElement.lang = locale
+  if (typeof document !== 'undefined')
+    document.documentElement.lang = locale
 }
