@@ -1,6 +1,6 @@
 # Gvueter Admin
 
-A production-oriented Vue 3 admin template built around configurable appearance, backend-driven navigation, CASL permissions and reusable business components. The repository uses Vite+ (`vp`) as the only development toolchain entry point.
+A production-oriented Vue 3 admin template built around configurable appearance, backend-driven navigation, CASL permissions and reusable business components. The repository uses pnpm with official Vite and Vitest packages.
 
 ## Stack
 
@@ -21,8 +21,8 @@ The frontend permission layer improves the user experience. Every protected back
 Node.js `^22.18.0 || >=24.11.0` is required. CI and the production container use Node.js 24.18.0.
 
 ```sh
-vp install --frozen-lockfile
-vp dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 When `VITE_ENABLE_MOCKS` is unset, the development server starts MSW automatically. Copying the shipped `.env.example` disables it; set `VITE_ENABLE_MOCKS=true` explicitly when Mock accounts are required:
@@ -38,35 +38,30 @@ The Mock system configuration enables “Mock Enterprise SSO” by default so th
 ## Verification
 
 ```sh
-# Unified Vite+ formatting and Oxlint gate
-vp check
-
-# All TypeScript projects (including E2E) and semantic Antfu ESLint rules
-vp run check
+# All TypeScript projects (including E2E), ESLint formatting, and semantic rules
+pnpm run check
 
 # Unit tests
-vp test run
+pnpm run test:unit --run
 
 # Unit tests with enforced release coverage thresholds
-vp run test:coverage
+pnpm run test:coverage
 
 # Contract, sensitive-file, and test-inventory policy gates
-vp run check:contracts
-vp run check:security
-vp run test:inventory
+pnpm run check:contracts
+pnpm run check:security
+pnpm run test:inventory
 
 # Type-check, production build, and bundle budget
-vp run build
+pnpm run build
 
 # Local E2E (see docs/testing.md for the release-equivalent Mock preview)
-vp run test:e2e
+pnpm run test:e2e
 ```
 
-`vp check` is the repository-wide Oxfmt/Oxlint gate. `vp run check` remains a required non-mutating supplement for all TypeScript projects and semantic Antfu ESLint rules. Oxfmt is the only mechanical formatter; see [Testing and visual acceptance](./docs/testing.md) for the production/Mock build split and complete release matrix.
+<!-- AI modified: ESLint is the single formatting and semantic gate after the standard Vite migration. -->
 
-<!-- AI modified: make the pre-1.0 toolchain risk explicit instead of implying semver-stable behavior. -->
-
-Vite+ is a pre-1.0 beta dependency. The dependency catalog pins the local core/test packages and coverage provider to the 0.1.19 compatibility set; CI and Docker also pin the global CLI to 0.1.19, while a developer's global `vp` binary is managed outside this repository. Upgrade the set only as one reviewed migration followed by the complete release matrix.
+`pnpm run check` combines `vue-tsc --build` with the Antfu ESLint configuration. Use `pnpm run format` for mechanical ESLint fixes; CSS and standalone HTML intentionally retain their existing style without an additional formatter. See [Testing and visual acceptance](./docs/testing.md) for the production/Mock build split and complete release matrix.
 
 ## Architecture
 

@@ -6,38 +6,37 @@ This repository treats unit, component, integration, browser-flow, and visual ch
 
 ## Required release gates
 
-Run from the repository root with the Vite+ toolchain:
+Run from the repository root with the pnpm-managed toolchain:
 
-On a new machine, install the browser runtimes once with `vp exec playwright install chromium firefox webkit`.
+On a new machine, install the browser runtimes once with `pnpm exec playwright install chromium firefox webkit`.
 
 ```sh
-vp install --frozen-lockfile
-vp check
-vp run check
-vp run check:contracts
-vp run check:security
-vp run test:inventory
-vp pm audit --production --level high
-vp run test:coverage
-vp run build
-VITE_ENABLE_MOCKS=true vp run build
-CI=true VITE_ENABLE_MOCKS=true vp run test:e2e
-VITE_ENABLE_MOCKS=false vp run build
+pnpm install --frozen-lockfile
+pnpm run check
+pnpm run check:contracts
+pnpm run check:security
+pnpm run test:inventory
+pnpm audit --prod --audit-level high
+pnpm run test:coverage
+VITE_ENABLE_MOCKS=false pnpm run build
+VITE_ENABLE_MOCKS=true pnpm run build
+CI=true VITE_ENABLE_MOCKS=true pnpm run test:e2e
+VITE_ENABLE_MOCKS=false pnpm run build
 ```
 
-`vp check` owns repository-wide Oxfmt formatting and Oxlint. `vp run check` adds non-mutating `vue-tsc --build` coverage for the app, tests, configuration, and Playwright projects, plus semantic Vue/TypeScript/pnpm/project ESLint rules. Oxfmt is the sole mechanical formatter, so formatting-equivalent ESLint rules are delegated to it; semantic rules remain active. Use `vp fmt . --write` (or `vp run format`) for formatting and `vp run lint:fix` only when an explicit modifying lint pass is intended. `vp staged` is a fast ESLint hook, not a replacement for either required check.
+<!-- AI modified: ESLint is the one formatting and semantic gate for supported source and documentation files. -->
+
+`pnpm run check` combines non-mutating `vue-tsc --build` coverage for the app, tests, configuration, and Playwright projects with Antfu ESLint formatting and semantic rules. Use `pnpm run format` or `pnpm run lint:fix` for mechanical fixes. Husky and lint-staged provide fast staged-file feedback, but do not replace the required check. CSS and standalone HTML keep their existing style without a mechanical formatter.
 
 The contract gate compares every literal MSW API path with `docs/openapi.yaml` in both directions, requires the OpenAPI/package versions to match, requires every Mock JSON reader to use an executable request schema, requires every JSON OpenAPI request body to resolve to a closed domain object, and rejects production request calls that bypass an explicit runtime response schema. Binary media types and download headers are checked separately. The sensitive-file gate rejects private-key files and common credential signatures without sending source to an external service. The production dependency audit fails on high or critical advisories; the container CI job also publishes an SPDX JSON SBOM of the production image.
 
-`vp run test:inventory` is a regression floor for spec files, declared tests, and direct feature references; it complements, but does not replace, execution coverage. `vp run test:coverage` runs the unit suite with the exact V8 provider required by the pinned test runtime and fails below the configured statement, branch, function, or line thresholds. Keep both gates: inventory catches deleted suites and feature-reference drift, while coverage measures executed production code. CI retains the generated coverage report for 14 days, including failed threshold runs when output exists.
+`pnpm run test:inventory` is a regression floor for spec files, declared tests, and direct feature references; it complements, but does not replace, execution coverage. `pnpm run test:coverage` runs the unit suite with the matching V8 provider and fails below the configured statement, branch, function, or line thresholds. Keep both gates: inventory catches deleted suites and feature-reference drift, while coverage measures executed production code. CI retains the generated coverage report for 14 days, including failed threshold runs when output exists.
 
-<!-- AI modified: document the known pre-1.0 toolchain warning without weakening the executable gate. -->
-
-[Vite+ is a pre-1.0 beta toolchain](https://viteplus.dev/guide/troubleshooting). The dependency catalog pins the local core/test packages to 0.1.19, while CI and Docker pin the global CLI to the same version. The npm-aliased test package declares `@vitest/coverage-v8` 4.1.4 as its peer, but its own package metadata remains versioned `0.1.19`. Vitest therefore emits a mixed-version warning even though the lockfile resolves the declared provider peer exactly. Treat the warning as a tracked toolchain limitation, not as permission to ignore coverage failures. Upgrade the Vite+ CLI, core alias, test alias, and coverage provider only as one reviewed migration followed by this entire release matrix.
+The catalog keeps Vitest and `@vitest/coverage-v8` on the same exact stable version. Treat changes to Vite, Vitest, the coverage provider, TypeScript, or ESLint as coordinated toolchain migrations followed by this entire release matrix.
 
 <!-- AI modified: artifact verification covers both performance and the production Mock boundary. -->
 
-The plain build is the deployable production artifact and includes the bundle-budget gate. That gate also rejects a real browser-Mock entry or `mockServiceWorker.js` in a non-Mock `dist`; the production alias retains only a typed no-op boundary. The Mock-enabled build exists only for deterministic browser verification; it overwrites `dist` locally and must never be deployed. Re-run `VITE_ENABLE_MOCKS=false vp run build` before publishing from the same workspace.
+The plain build is the deployable production artifact and includes the production bundle-budget gate. That gate also rejects a real browser-Mock entry or `mockServiceWorker.js` in a non-Mock `dist`; the production alias retains only a typed no-op boundary. The Mock-enabled build validates that its handler entry and worker exist while skipping production size budgets because it is only a deterministic browser fixture; it overwrites `dist` locally and must never be deployed. Re-run `VITE_ENABLE_MOCKS=false pnpm run build` before publishing from the same workspace.
 
 ## Evidence layers
 

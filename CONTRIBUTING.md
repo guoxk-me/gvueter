@@ -2,14 +2,16 @@
 
 ## Development setup
 
-Use Vite+ as the only package and toolchain entry point:
+Use pnpm as the package and script entry point:
 
 ```sh
-vp install --frozen-lockfile
-vp dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
-Use `vp add`, `vp remove`, and `vp update` for dependency changes. Do not run pnpm, npm, Yarn, Vitest, Oxlint, Oxfmt, or tsdown directly. Keep Vite+, its core alias, and its test alias pinned to the same release.
+<!-- AI modified: dependency and task commands now resolve the repository-pinned pnpm toolchain directly. -->
+
+Use `pnpm add`, `pnpm remove`, and `pnpm update` for dependency changes. Keep Vite and Vitest versions in `pnpm-workspace.yaml`; do not add an alternative formatter or linter without an explicit toolchain decision.
 
 ## Change scope
 
@@ -24,16 +26,15 @@ Use `vp add`, `vp remove`, and `vp update` for dependency changes. Do not run pn
 Run the release gates documented in `docs/testing.md`. At minimum, before requesting review:
 
 ```sh
-vp check
-vp run check
-vp run check:contracts
-vp run check:security
-vp run test:inventory
-vp test run
-vp run build
+pnpm run check
+pnpm run check:contracts
+pnpm run check:security
+pnpm run test:inventory
+pnpm run test:unit --run
+pnpm run build
 ```
 
-Changes to user journeys, layout, accessibility, or visual behavior also require the relevant Playwright projects and inspected artifacts. Dependency changes require `vp install --frozen-lockfile` and `vp pm audit --production --level high` after the lockfile is updated.
+Changes to user journeys, layout, accessibility, or visual behavior also require the relevant Playwright projects and inspected artifacts. Dependency changes require `pnpm install --frozen-lockfile` and `pnpm audit --prod --audit-level high` after the lockfile is updated.
 
 ## Pull requests
 

@@ -45,9 +45,9 @@
 定向验证：
 
 ```sh
-vp test src/__tests__/primitive-examples.spec.ts
-vp exec eslint src/features/component-gallery/primitives src/__tests__/primitive-examples.spec.ts
-vp run type-check
+pnpm exec vitest run src/__tests__/primitive-examples.spec.ts
+pnpm exec eslint src/features/component-gallery/primitives src/__tests__/primitive-examples.spec.ts
+pnpm run type-check
 ```
 
 测试覆盖 27 项目录完整性、14 项缺口决策、双语切换、Form 校验、分页、键盘打开 DropdownMenu、三类 overlay、Sidebar 非权威边界，以及 Skeleton / Tooltip / Sonner 组合。

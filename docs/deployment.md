@@ -12,7 +12,7 @@ VITE_ENABLE_MOCKS=false \
 VITE_NOTIFICATION_WS_URL=wss://admin.example.com/notifications \
 VITE_NOTIFICATION_WS_ALLOWED_ORIGINS=wss://admin.example.com \
 VITE_NAVIGATION_ALLOWED_ORIGINS=https://docs.example.com \
-vp run build
+pnpm run build
 ```
 
 <!-- AI modified: paired deployment must preserve gnester-lite's versioned production API prefix. -->
@@ -85,25 +85,25 @@ Allow-list entries are canonicalized to exact HTTPS origins. `https://docs.examp
 ## Release checks
 
 ```sh
-vp install --frozen-lockfile
-vp check
-vp run check
-vp run check:contracts
-vp run check:security
-vp run test:inventory
-vp pm audit --production --level high
-vp run test:coverage
-vp run build
-VITE_ENABLE_MOCKS=true vp run build
-CI=true VITE_ENABLE_MOCKS=true vp run test:e2e
-VITE_ENABLE_MOCKS=false vp run build
+pnpm install --frozen-lockfile
+pnpm run check
+pnpm run check:contracts
+pnpm run check:security
+pnpm run test:inventory
+pnpm audit --prod --audit-level high
+pnpm run test:coverage
+VITE_ENABLE_MOCKS=false pnpm run build
+VITE_ENABLE_MOCKS=true pnpm run build
+CI=true VITE_ENABLE_MOCKS=true pnpm run test:e2e
+VITE_ENABLE_MOCKS=false pnpm run build
 ```
 
 <!-- AI modified: browser verification uses a disposable Mock preview while the final artifact is rebuilt without MSW. -->
 
-The GitHub Actions workflow pins every action commit, Node.js 24.18.0 and Vite+ 0.1.19, publishes an SPDX SBOM from the production container image, audits production dependencies, and runs behavioral E2E in Chromium, Firefox, and WebKit with MSW explicitly enabled. Chromium alone owns pixel baselines. A Mock-enabled `dist` is test-only and must be replaced by the final non-Mock build before deployment.
+The GitHub Actions workflow pins every action commit, Node.js 24.18.0 and pnpm 10.34.4, publishes an SPDX SBOM from the production container image, audits production dependencies, and runs behavioral E2E in Chromium, Firefox, and WebKit with MSW explicitly enabled. Chromium alone owns pixel baselines. A Mock-enabled `dist` is test-only and must be replaced by the final non-Mock build before deployment.
 CI jobs use isolated workspaces: the container gate waits for verification and E2E, then performs its own production-only image build from the checked-out source instead of consuming the Mock E2E `dist`.
-Vite+ is a pre-1.0 beta toolchain. The dependency catalog pins the local 0.1.19 core/test packages and V8 provider compatibility set; CI and Docker pin the global CLI to 0.1.19. Upgrade them only together and rerun the complete release checks before accepting generated artifacts.
+<!-- AI modified: official Vite and Vitest versions are catalog-owned and verified through the release matrix. -->
+Upgrade Vite, Vitest, the V8 provider, TypeScript, or ESLint only as a reviewed toolchain change followed by the complete release checks.
 The deterministic data, locale, timezone, viewport and screenshot policy is documented in [Testing and visual acceptance](./testing.md).
 Operational verification and rollback procedures are documented in the [runbook](./runbook.md) and [rollback guide](./rollback.md).
 The service-worker cache boundary, HTTPS requirement, and production/Mock isolation are documented in [Progressive Web App](./pwa.md).

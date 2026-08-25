@@ -31,8 +31,8 @@ The thresholds are regression budgets, not a claim that every device downloads t
 ## Verification
 
 ```sh
-vp test run src/__tests__/performance-contract.spec.ts src/__tests__/chart-lifecycle.spec.ts
-vp run build
+pnpm exec vitest run src/__tests__/performance-contract.spec.ts src/__tests__/chart-lifecycle.spec.ts
+pnpm run build
 ```
 
 Build output proves asset budgets. Browser E2E and production RUM are required for first-screen, transition, and interaction percentiles; unit tests cannot prove wall-clock user experience.

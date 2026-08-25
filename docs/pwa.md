@@ -33,8 +33,8 @@ It does not provide an API response cache or an offline mutation queue.
 Run the production and Mock artifact gates from the repository root:
 
 ```sh
-VITE_ENABLE_MOCKS=false vp run build
-VITE_ENABLE_MOCKS=true vp run build
+VITE_ENABLE_MOCKS=false pnpm run build
+VITE_ENABLE_MOCKS=true pnpm run build
 ```
 
 The build runs `scripts/check-pwa-artifact.mjs`. Production must contain a standalone web manifest,
