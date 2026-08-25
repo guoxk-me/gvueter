@@ -1,7 +1,7 @@
 import type { AxiosResponse } from 'axios'
 import type { ApiEnvelope } from '@/lib/http'
 import { delay, HttpResponse, http as mswHttp } from 'msw'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import {
   download,
@@ -37,8 +37,7 @@ describe('request response policy', () => {
           code: 'RULE_FAILED',
           message: 'Business rule failed',
           data: null,
-        }),
-      ),
+        })),
     )
 
     await expect(get('/business-failure')).rejects.toMatchObject({
@@ -59,14 +58,15 @@ describe('request response policy', () => {
       const responses = await Promise.allSettled([get('/users'), get('/roles')])
 
       expect(responses).toHaveLength(2)
-      expect(responses.every((response) => response.status === 'rejected')).toBe(true)
+      expect(responses.every(response => response.status === 'rejected')).toBe(true)
       for (const response of responses) {
         if (response.status === 'rejected') {
           expect(isUnauthorizedError(response.reason)).toBe(true)
         }
       }
       expect(invalidationCount).toBe(1)
-    } finally {
+    }
+    finally {
       unregister()
     }
   })
@@ -77,8 +77,8 @@ describe('request response policy', () => {
     sessionStorage.setItem('auth_token', previousToken)
     let releaseResponse: (() => void) | undefined
     let markRequestStarted: (() => void) | undefined
-    const responseGate = new Promise<void>((resolve) => (releaseResponse = resolve))
-    const requestStarted = new Promise<void>((resolve) => (markRequestStarted = resolve))
+    const responseGate = new Promise<void>(resolve => (releaseResponse = resolve))
+    const requestStarted = new Promise<void>(resolve => (markRequestStarted = resolve))
     server.use(
       mswHttp.get('/api/stale-session', async () => {
         markRequestStarted?.()
@@ -104,7 +104,8 @@ describe('request response policy', () => {
       // AI modified: the currently authenticated browser session survives stale transport failures.
       expect(invalidationCount).toBe(0)
       expect(sessionStorage.getItem('auth_token')).toBe(currentToken)
-    } finally {
+    }
+    finally {
       unregister()
     }
   })
@@ -126,7 +127,8 @@ describe('request response policy', () => {
 
       await expect(request).rejects.toSatisfy(isForbiddenError)
       expect(forbiddenCount).toBe(1)
-    } finally {
+    }
+    finally {
       unregister()
     }
   })
@@ -152,7 +154,8 @@ describe('request response policy', () => {
       // AI modified: a terminal identity state takes the session path, unlike an ordinary 403.
       expect(invalidationCount).toBe(1)
       expect(forbiddenCount).toBe(0)
-    } finally {
+    }
+    finally {
       unregisterInvalidation()
       unregisterForbidden()
     }
@@ -185,7 +188,8 @@ describe('request response policy', () => {
       expect(authorizationHeader).toBeNull()
       expect(invalidationCount).toBe(0)
       expect(sessionStorage.getItem('auth_token')).toBe(activeToken)
-    } finally {
+    }
+    finally {
       unregister()
     }
   })
@@ -202,7 +206,7 @@ describe('request response policy', () => {
     server.use(
       mswHttp.post('/api/auth/sso/start', ({ request }) => {
         startAuthorization = request.headers.get('Authorization')
-        return HttpResponse.json<ApiEnvelope<{ authorizationUrl: string; expiresAt: number }>>({
+        return HttpResponse.json<ApiEnvelope<{ authorizationUrl: string, expiresAt: number }>>({
           code: 0,
           message: 'success',
           data: {
@@ -233,7 +237,8 @@ describe('request response policy', () => {
       expect(exchangeAuthorization).toBeNull()
       expect(invalidationCount).toBe(0)
       expect(sessionStorage.getItem('auth_token')).toBe(activeToken)
-    } finally {
+    }
+    finally {
       unregister()
     }
   })
@@ -269,10 +274,10 @@ describe('request concurrency and file helpers', () => {
         message: 'uploaded',
         data: { fileName: 'report.txt', category: 'audit' },
       },
-    } as AxiosResponse<ApiEnvelope<{ fileName: string; category: string }>>)
+    } as AxiosResponse<ApiEnvelope<{ fileName: string, category: string }>>)
 
     try {
-      const response = await upload<{ fileName: string; category: string }>(
+      const response = await upload<{ fileName: string, category: string }>(
         '/upload',
         new File(['report'], 'report.txt', { type: 'text/plain' }),
         { fieldName: 'document', fields: { category: 'audit' } },
@@ -283,7 +288,8 @@ describe('request concurrency and file helpers', () => {
       expect((formData as FormData).get('category')).toBe('audit')
       expect((formData as FormData).get('document')).toBeInstanceOf(File)
       expect(response).toEqual({ fileName: 'report.txt', category: 'audit' })
-    } finally {
+    }
+    finally {
       postSpy.mockRestore()
     }
   })
@@ -320,8 +326,7 @@ describe('request concurrency and file helpers', () => {
         HttpResponse.json<ApiEnvelope<null>>(
           { code: 'ACCOUNT_SUSPENDED', message: 'Account suspended', data: null },
           { status: 403 },
-        ),
-      ),
+        )),
     )
 
     try {
@@ -334,7 +339,8 @@ describe('request concurrency and file helpers', () => {
       })
       // AI modified: download responses follow the same terminal-session policy as JSON API calls.
       expect(invalidationCount).toBe(1)
-    } finally {
+    }
+    finally {
       unregister()
     }
   })
@@ -359,8 +365,7 @@ describe('request concurrency and file helpers', () => {
           code: 0,
           message: 'success',
           data: { count: 'not-a-number' },
-        }),
-      ),
+        })),
     )
 
     await expect(

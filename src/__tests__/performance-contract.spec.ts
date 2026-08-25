@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import { PERFORMANCE_BUDGET } from '@/lib/performance-contract'
 
 describe('performance contract', () => {

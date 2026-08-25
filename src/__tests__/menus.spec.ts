@@ -5,7 +5,7 @@ import type {
 } from '@/features/menus/types'
 import type { BackendMenuResponse } from '@/features/navigation'
 import { mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import MenuFormDialog from '@/features/menus/components/MenuFormDialog.vue'
 import {
@@ -57,25 +57,25 @@ describe('menu and permission identifier management', () => {
 
     const response = await get<ManagedMenuListResponse>('/system-menus')
     const rows = getManagedMenuRows(response.items)
-    expect(rows.find((menu) => menu.id === 'administration')).toMatchObject({ depth: 0 })
-    expect(rows.find((menu) => menu.id === 'form-workbench')).toMatchObject({ depth: 0, order: 25 })
-    expect(rows.find((menu) => menu.id === 'content-admin')).toMatchObject({ depth: 0, order: 27 })
-    expect(rows.find((menu) => menu.id === 'monitoring')).toMatchObject({ depth: 0, order: 35 })
-    expect(rows.find((menu) => menu.id === 'audit-logs')).toMatchObject({ depth: 0, order: 36 })
-    expect(rows.find((menu) => menu.id === 'departments')).toMatchObject({ depth: 1, order: 30 })
-    expect(rows.find((menu) => menu.id === 'security-center')).toMatchObject({
+    expect(rows.find(menu => menu.id === 'administration')).toMatchObject({ depth: 0 })
+    expect(rows.find(menu => menu.id === 'form-workbench')).toMatchObject({ depth: 0, order: 25 })
+    expect(rows.find(menu => menu.id === 'content-admin')).toMatchObject({ depth: 0, order: 27 })
+    expect(rows.find(menu => menu.id === 'monitoring')).toMatchObject({ depth: 0, order: 35 })
+    expect(rows.find(menu => menu.id === 'audit-logs')).toMatchObject({ depth: 0, order: 36 })
+    expect(rows.find(menu => menu.id === 'departments')).toMatchObject({ depth: 1, order: 30 })
+    expect(rows.find(menu => menu.id === 'security-center')).toMatchObject({
       depth: 1,
       order: 90,
     })
-    expect(rows.find((menu) => menu.id === 'audit-controls')).toMatchObject({ depth: 2, order: 10 })
-    expect(rows.find((menu) => menu.id === 'audit-events')).toMatchObject({ depth: 3, order: 10 })
+    expect(rows.find(menu => menu.id === 'audit-controls')).toMatchObject({ depth: 2, order: 10 })
+    expect(rows.find(menu => menu.id === 'audit-events')).toMatchObject({ depth: 3, order: 10 })
 
-    const securityCenter = response.items.find((menu) => menu.id === 'security-center')
-    const users = response.items.find((menu) => menu.id === 'users')
+    const securityCenter = response.items.find(menu => menu.id === 'security-center')
+    const users = response.items.find(menu => menu.id === 'users')
     expect(securityCenter && canManagedMenuHaveChildren(securityCenter)).toBe(true)
     expect(users && canManagedMenuHaveChildren(users)).toBe(false)
     expect(
-      getManagedMenuAncestors(response.items, 'audit-controls').map((menu) => menu.id),
+      getManagedMenuAncestors(response.items, 'audit-controls').map(menu => menu.id),
     ).toEqual(['administration', 'security-center', 'audit-controls'])
     expect(
       getManagedMenuOrderPreview(response.items, undefined, 'security-center', 20),
@@ -89,9 +89,10 @@ describe('menu and permission identifier management', () => {
 
   it('shows the complete hierarchy and sibling placement in the menu editor', async () => {
     const response = await get<ManagedMenuListResponse>('/system-menus')
-    const auditEvents = response.items.find((menu) => menu.id === 'audit-events')
+    const auditEvents = response.items.find(menu => menu.id === 'audit-events')
     expect(auditEvents).toBeDefined()
-    if (!auditEvents) throw new Error('Expected the audit events fixture')
+    if (!auditEvents)
+      throw new Error('Expected the audit events fixture')
 
     const wrapper = mount(MenuFormDialog, {
       attachTo: document.body,
@@ -130,14 +131,15 @@ describe('menu and permission identifier management', () => {
 
     await del(`/system-menus/${createdMenu.id}`)
     const response = await get<ManagedMenuListResponse>('/system-menus')
-    expect(response.items.some((menu) => menu.id === createdMenu.id)).toBe(false)
+    expect(response.items.some(menu => menu.id === createdMenu.id)).toBe(false)
   })
 
   it('projects managed changes into the live navigation endpoint', async () => {
     const response = await get<ManagedMenuListResponse>('/system-menus')
-    const usersMenu = response.items.find((menu) => menu.id === 'users')
+    const usersMenu = response.items.find(menu => menu.id === 'users')
     expect(usersMenu).toBeDefined()
-    if (!usersMenu) throw new Error('Expected the managed users menu fixture')
+    if (!usersMenu)
+      throw new Error('Expected the managed users menu fixture')
 
     await put(`/system-menus/${usersMenu.id}`, {
       ...usersMenu,
@@ -146,8 +148,8 @@ describe('menu and permission identifier management', () => {
     })
 
     const navigation = await get<BackendMenuResponse>('/navigation')
-    const administration = navigation.menus.find((menu) => menu.id === 'administration')
-    expect(administration?.children?.find((menu) => menu.id === 'users')).toMatchObject({
+    const administration = navigation.menus.find(menu => menu.id === 'administration')
+    expect(administration?.children?.find(menu => menu.id === 'users')).toMatchObject({
       hidden: true,
       order: 5,
       path: '/users',
@@ -165,7 +167,7 @@ describe('menu and permission identifier management', () => {
       icon: 'external',
     })
     const navigationAfterCreate = await get<BackendMenuResponse>('/navigation')
-    expect(navigationAfterCreate.menus.find((menu) => menu.id === externalMenu.id)).toMatchObject({
+    expect(navigationAfterCreate.menus.find(menu => menu.id === externalMenu.id)).toMatchObject({
       externalUrl: '/embedded-help.html?source=managed-menu',
       icon: 'external',
     })
@@ -217,8 +219,8 @@ describe('menu and permission identifier management', () => {
       icon: 'iframe',
     })
     const navigation = await get<BackendMenuResponse>('/navigation')
-    const administration = navigation.menus.find((menu) => menu.id === 'administration')
-    expect(administration?.children?.find((menu) => menu.id === iframeMenu.id)).toMatchObject({
+    const administration = navigation.menus.find(menu => menu.id === 'administration')
+    expect(administration?.children?.find(menu => menu.id === iframeMenu.id)).toMatchObject({
       kind: 'iframe',
       path: '/embedded-audit',
       iframeUrl: '/embedded-help.html?source=menu',
@@ -357,9 +359,10 @@ describe('menu and permission identifier management', () => {
     })
 
     const response = await get<ManagedMenuListResponse>('/system-menus')
-    const securityCenter = response.items.find((menu) => menu.id === 'security-center')
+    const securityCenter = response.items.find(menu => menu.id === 'security-center')
     expect(securityCenter).toBeDefined()
-    if (!securityCenter) throw new Error('Expected the security center fixture')
+    if (!securityCenter)
+      throw new Error('Expected the security center fixture')
 
     await expect(
       put('/system-menus/security-center', {

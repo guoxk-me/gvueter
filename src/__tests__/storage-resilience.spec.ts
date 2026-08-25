@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ACCESS_TOKEN_SESSION_STORAGE_KEY, getSessionAccessToken } from '@/lib/auth-session'
 import {
   getBrowserStorage,

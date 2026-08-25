@@ -11,7 +11,7 @@ import type {
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
@@ -89,15 +89,15 @@ describe('notification API authorization and read state', () => {
       read: 'all',
     })
 
-    expect(editorMessages.items.map((item) => item.id)).toContain('task-publish-release-notes')
-    expect(editorMessages.items.map((item) => item.id)).not.toContain('notification-access-review')
-    expect(editorMessages.items.every((item) => !('recipientUserIds' in item))).toBe(true)
+    expect(editorMessages.items.map(item => item.id)).toContain('task-publish-release-notes')
+    expect(editorMessages.items.map(item => item.id)).not.toContain('notification-access-review')
+    expect(editorMessages.items.every(item => !('recipientUserIds' in item))).toBe(true)
 
     const unreadTasks = await get<MessageCenterResponse>('/notifications', {
       category: 'task',
       read: 'unread',
     })
-    expect(unreadTasks.items.map((item) => item.id)).toEqual(['task-publish-release-notes'])
+    expect(unreadTasks.items.map(item => item.id)).toEqual(['task-publish-release-notes'])
   })
 
   it('marks one or one category as read without exposing another user message', async () => {

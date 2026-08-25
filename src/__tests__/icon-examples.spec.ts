@@ -1,6 +1,6 @@
 import type { AdminIconKey } from '@/components/admin/icon-selector'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import CopyButton from '@/components/admin/CopyButton.vue'
@@ -44,15 +44,15 @@ beforeEach(() => {
 describe('audited admin icon registry', () => {
   it('keeps a broad categorized inventory and exact managed-menu allowlist parity', () => {
     expect(ADMIN_ICON_OPTIONS.length).toBeGreaterThanOrEqual(70)
-    expect(new Set(ADMIN_ICON_OPTIONS.map((option) => option.key)).size).toBe(
+    expect(new Set(ADMIN_ICON_OPTIONS.map(option => option.key)).size).toBe(
       ADMIN_ICON_OPTIONS.length,
     )
-    expect(new Set(ADMIN_ICON_OPTIONS.map((option) => option.category))).toEqual(
+    expect(new Set(ADMIN_ICON_OPTIONS.map(option => option.category))).toEqual(
       new Set(ADMIN_ICON_CATEGORIES),
     )
 
-    const menuSafeKeys = ADMIN_ICON_OPTIONS.filter((option) => option.isMenuSafe)
-      .map((option) => option.key)
+    const menuSafeKeys = ADMIN_ICON_OPTIONS.filter(option => option.isMenuSafe)
+      .map(option => option.key)
       .sort()
     expect(menuSafeKeys).toEqual([...MANAGED_MENU_ICON_KEYS].sort())
 
@@ -80,11 +80,11 @@ describe('icon catalog interactions', () => {
     expect(wrapper.findAll('[data-icon-key]')).toHaveLength(ADMIN_ICON_OPTIONS.length)
     await wrapper.get('input[type="search"]').setValue('ChartLine')
     expect(
-      wrapper.findAll('[data-icon-key]').map((icon) => icon.attributes('data-icon-key')),
+      wrapper.findAll('[data-icon-key]').map(icon => icon.attributes('data-icon-key')),
     ).toEqual(['chart-line'])
 
     await wrapper.get('input[type="search"]').setValue('')
-    const commerceFilter = wrapper.findAll('button').find((button) => button.text() === 'Commerce')
+    const commerceFilter = wrapper.findAll('button').find(button => button.text() === 'Commerce')
     expect(commerceFilter).toBeDefined()
     await commerceFilter!.trigger('click')
     expect(wrapper.findAll('[data-icon-key]')).not.toHaveLength(0)
@@ -92,7 +92,7 @@ describe('icon catalog interactions', () => {
       wrapper
         .findAll('[data-icon-key]')
         .every(
-          (icon) => getAdminIconOption(icon.attributes('data-icon-key'))?.category === 'commerce',
+          icon => getAdminIconOption(icon.attributes('data-icon-key'))?.category === 'commerce',
         ),
     ).toBe(true)
 
@@ -100,7 +100,7 @@ describe('icon catalog interactions', () => {
     expect(wrapper.text()).toContain('No icons match these filters')
     await wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Clear icon filters')!
+      .find(button => button.text() === 'Clear icon filters')!
       .trigger('click')
     expect(wrapper.findAll('[data-icon-key]')).toHaveLength(ADMIN_ICON_OPTIONS.length)
   })
@@ -136,7 +136,7 @@ describe('icon catalog interactions', () => {
     await nextTick()
 
     const options = document.body.querySelectorAll<HTMLButtonElement>('[data-icon-option-key]')
-    expect([...options].map((option) => option.dataset.iconOptionKey)).toEqual(['chart-line'])
+    expect([...options].map(option => option.dataset.iconOptionKey)).toEqual(['chart-line'])
     options[0]?.click()
     await nextTick()
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['chart-line' satisfies AdminIconKey])
@@ -149,7 +149,7 @@ describe('dedicated icon route content', () => {
       history: createMemoryHistory(),
       routes: [
         { path: '/components', component: { template: '<div />' } },
-        ...componentCenterModules.map((componentModule) => ({
+        ...componentCenterModules.map(componentModule => ({
           path: componentModule.path,
           component: { template: '<div />' },
         })),

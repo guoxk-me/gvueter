@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent } from 'vue'
 import {
   FRONTEND_ERROR_EVENT,
@@ -57,7 +57,8 @@ describe('frontend observability boundary', () => {
       expect(report).toHaveBeenCalledWith(record)
       expect(browserRecords).toEqual([record])
       expect(record).not.toHaveProperty('componentState')
-    } finally {
+    }
+    finally {
       unregister()
       window.removeEventListener(FRONTEND_ERROR_EVENT, browserHandler)
     }

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import { badgeVariants } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { getThemeCssVariables, THEME_PRESETS } from '@/lib/theme-presets'
@@ -18,13 +18,15 @@ function readThemeBlock(selector: ':root' | '.dark'): string {
   const block = themeSource.match(
     new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\n\\s*\\}`),
   )?.[1]
-  if (!block) throw new Error(`Missing ${selector} theme block`)
+  if (!block)
+    throw new Error(`Missing ${selector} theme block`)
   return block
 }
 
 function readOklchToken(themeBlock: string, tokenName: string): OklchColor {
   const token = themeBlock.match(new RegExp(`--${tokenName}:\\s*oklch\\(([^)]+)\\)`))?.[1]
-  if (!token) throw new Error(`Missing concrete OKLCH token: ${tokenName}`)
+  if (!token)
+    throw new Error(`Missing concrete OKLCH token: ${tokenName}`)
   const [lightnessPart = '', chromaPart = '', huePart = '0'] = token.trim().split(/\s+/)
   const lightness = Number.parseFloat(lightnessPart) / (lightnessPart.endsWith('%') ? 100 : 1)
   return {
@@ -63,13 +65,14 @@ function getContrastRatio(firstColor: OklchColor, secondColor: OklchColor): numb
   const firstLuminance = getRelativeLuminance(firstColor)
   const secondLuminance = getRelativeLuminance(secondColor)
   return (
-    (Math.max(firstLuminance, secondLuminance) + 0.05) /
-    (Math.min(firstLuminance, secondLuminance) + 0.05)
+    (Math.max(firstLuminance, secondLuminance) + 0.05)
+    / (Math.min(firstLuminance, secondLuminance) + 0.05)
   )
 }
 
 function getHexRelativeLuminance(color: string): number {
-  if (!/^#[\da-f]{6}$/i.test(color)) throw new Error(`Expected a six-digit hex color: ${color}`)
+  if (!/^#[\da-f]{6}$/i.test(color))
+    throw new Error(`Expected a six-digit hex color: ${color}`)
   const channels = [1, 3, 5].map((startIndex) => {
     const channel = Number.parseInt(color.slice(startIndex, startIndex + 2), 16) / 255
     return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
@@ -81,13 +84,14 @@ function getHexContrastRatio(firstColor: string, secondColor: string): number {
   const firstLuminance = getHexRelativeLuminance(firstColor)
   const secondLuminance = getHexRelativeLuminance(secondColor)
   return (
-    (Math.max(firstLuminance, secondLuminance) + 0.05) /
-    (Math.min(firstLuminance, secondLuminance) + 0.05)
+    (Math.max(firstLuminance, secondLuminance) + 0.05)
+    / (Math.min(firstLuminance, secondLuminance) + 0.05)
   )
 }
 
 function getRuntimeColorRelativeLuminance(color: string): number {
-  if (/^#[\da-f]{6}$/i.test(color)) return getHexRelativeLuminance(color)
+  if (/^#[\da-f]{6}$/i.test(color))
+    return getHexRelativeLuminance(color)
   const token = color.match(/^oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+(-?[\d.]+)(?:deg)?\s*\)$/i)
   if (!token?.[1] || !token[3] || !token[4])
     throw new Error(`Expected a concrete runtime color: ${color}`)
@@ -102,8 +106,8 @@ function getRuntimeContrastRatio(firstColor: string, secondColor: string): numbe
   const firstLuminance = getRuntimeColorRelativeLuminance(firstColor)
   const secondLuminance = getRuntimeColorRelativeLuminance(secondColor)
   return (
-    (Math.max(firstLuminance, secondLuminance) + 0.05) /
-    (Math.min(firstLuminance, secondLuminance) + 0.05)
+    (Math.max(firstLuminance, secondLuminance) + 0.05)
+    / (Math.min(firstLuminance, secondLuminance) + 0.05)
   )
 }
 
@@ -111,8 +115,8 @@ function getRuntimeToOklchContrastRatio(runtimeColor: string, surfaceColor: Oklc
   const runtimeLuminance = getRuntimeColorRelativeLuminance(runtimeColor)
   const surfaceLuminance = getRelativeLuminance(surfaceColor)
   return (
-    (Math.max(runtimeLuminance, surfaceLuminance) + 0.05) /
-    (Math.min(runtimeLuminance, surfaceLuminance) + 0.05)
+    (Math.max(runtimeLuminance, surfaceLuminance) + 0.05)
+    / (Math.min(runtimeLuminance, surfaceLuminance) + 0.05)
   )
 }
 

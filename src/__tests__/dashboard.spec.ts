@@ -8,7 +8,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { http, HttpResponse } from 'msw'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { i18n, setLocale } from '@/i18n'
 import { del, post, put } from '@/lib/http'
@@ -135,7 +135,7 @@ describe('dashboard overview calculation', () => {
     }
     const created = await post<AnnouncementRecord>('/announcements', input)
 
-    expect(createDashboardOverview().announcements.some((entry) => entry.id === created.id)).toBe(
+    expect(createDashboardOverview().announcements.some(entry => entry.id === created.id)).toBe(
       false,
     )
 
@@ -157,13 +157,13 @@ describe('dashboard overview calculation', () => {
     )
 
     await put(`/announcements/${created.id}/status`, { status: 'offline' })
-    expect(createDashboardOverview().announcements.some((entry) => entry.id === created.id)).toBe(
+    expect(createDashboardOverview().announcements.some(entry => entry.id === created.id)).toBe(
       false,
     )
 
     await put(`/announcements/${created.id}/status`, { status: 'published' })
     await del(`/announcements/${created.id}`)
-    expect(createDashboardOverview().announcements.some((entry) => entry.id === created.id)).toBe(
+    expect(createDashboardOverview().announcements.some(entry => entry.id === created.id)).toBe(
       false,
     )
   })
@@ -193,13 +193,13 @@ describe('dashboard overview calculation', () => {
     expect(notifications.unreadCount).toBe(1)
     expect(notifications.readNotificationIds).toEqual(['notification-access-review'])
 
-    notifications.markAllRead(overview.notifications.map((notification) => notification.id))
+    notifications.markAllRead(overview.notifications.map(notification => notification.id))
     expect(notifications.unreadCount).toBe(0)
     expect(notifications.readNotificationIds).toHaveLength(3)
   })
 })
 
-describe('DashboardPage query states', () => {
+describe('dashboardPage query states', () => {
   beforeEach(() => {
     localStorage.clear()
     sessionStorage.clear()
@@ -231,7 +231,7 @@ describe('DashboardPage query states', () => {
     expect(
       notificationsCard
         .findAll('button')
-        .find((button) => button.text().includes('Mark all read'))
+        .find(button => button.text().includes('Mark all read'))
         ?.get('svg')
         .attributes('data-icon'),
     ).toBe('inline-start')
@@ -243,8 +243,7 @@ describe('DashboardPage query states', () => {
         HttpResponse.json<ApiResponse<null>>(
           { code: 500, message: 'Temporary dashboard failure', data: null },
           { status: 500 },
-        ),
-      ),
+        )),
     )
     const { wrapper } = await mountDashboardPage()
 
@@ -275,8 +274,7 @@ describe('DashboardPage query states', () => {
           code: 0,
           message: 'success',
           data: emptyOverview,
-        }),
-      ),
+        })),
     )
     const { wrapper } = await mountDashboardPage()
 
@@ -304,21 +302,21 @@ describe('DashboardPage query states', () => {
     const overview = queryClient.getQueryData<DashboardOverview>(['dashboard', 'overview'])
     const accessReview = overview
       ? overview.notifications.find(
-          (notification) => notification.id === 'notification-access-review',
+          notification => notification.id === 'notification-access-review',
         )
       : undefined
     expect(accessReview?.isRead).toBe(true)
 
     const markAllReadButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Mark all read'))
+      .find(button => button.text().includes('Mark all read'))
     expect(markAllReadButton).toBeDefined()
     await markAllReadButton!.trigger('click')
     await flushPromises()
 
     await vi.waitFor(() => {
       const overview = queryClient.getQueryData<DashboardOverview>(['dashboard', 'overview'])
-      expect(overview?.notifications.every((notification) => notification.isRead)).toBe(true)
+      expect(overview?.notifications.every(notification => notification.isRead)).toBe(true)
     })
   })
 
@@ -328,8 +326,7 @@ describe('DashboardPage query states', () => {
         HttpResponse.json<ApiResponse<null>>(
           { code: 'READ_FAILED', message: 'Unable to persist read state', data: null },
           { status: 500 },
-        ),
-      ),
+        )),
     )
     const { pinia, queryClient, wrapper } = await mountDashboardPage()
 
@@ -346,7 +343,7 @@ describe('DashboardPage query states', () => {
     const overview = queryClient.getQueryData<DashboardOverview>(['dashboard', 'overview'])
     const accessReview = overview
       ? overview.notifications.find(
-          (notification) => notification.id === 'notification-access-review',
+          notification => notification.id === 'notification-access-review',
         )
       : undefined
     expect(accessReview?.isRead).toBe(false)

@@ -5,7 +5,7 @@ import type { User } from '@/stores/auth'
 import type { AuthorizationSnapshot } from '@/types/auth'
 import { http, HttpResponse } from 'msw'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import { resolveBackendNavigation } from '@/features/navigation'
@@ -180,7 +180,7 @@ describe('backend navigation contract', () => {
       defineAbilityFor(viewerUser),
     )
 
-    expect(viewerNavigation.routes.map((routeCandidate) => routeCandidate.routeName)).toEqual([
+    expect(viewerNavigation.routes.map(routeCandidate => routeCandidate.routeName)).toEqual([
       'dashboard',
       'message-center',
       'components',
@@ -203,8 +203,8 @@ describe('backend navigation contract', () => {
       '/system-config/audit-events',
       '/audit-logs',
     ])
-    expect(viewerNavigation.menus.some((menuNode) => menuNode.id === 'administration')).toBe(false)
-    expect(viewerNavigation.menus.find((menuNode) => menuNode.id === 'profile')?.hidden).toBe(true)
+    expect(viewerNavigation.menus.some(menuNode => menuNode.id === 'administration')).toBe(false)
+    expect(viewerNavigation.menus.find(menuNode => menuNode.id === 'profile')?.hidden).toBe(true)
   })
 
   it('resolves the audit-log route with AuditLog access and no Content grant', () => {
@@ -213,7 +213,7 @@ describe('backend navigation contract', () => {
       defineAbilityFromSnapshot(viewerUser, auditReaderAuthorization),
     )
     const auditLogRoute = auditReaderNavigation.routes.find(
-      (routeCandidate) => routeCandidate.routeName === 'audit-logs',
+      routeCandidate => routeCandidate.routeName === 'audit-logs',
     )
 
     // AI modified: this route contract proves AuditLog does not inherit the Content boundary.
@@ -228,7 +228,7 @@ describe('backend navigation contract', () => {
     })
     expect(
       auditReaderNavigation.routes.some(
-        (routeCandidate) => routeCandidate.routeName === 'content-admin',
+        routeCandidate => routeCandidate.routeName === 'content-admin',
       ),
     ).toBe(false)
   })
@@ -320,9 +320,9 @@ describe('backend navigation contract', () => {
 
     const resolvedNavigation = resolveBackendNavigation(untrustedMenus, defineAbilityFor(adminUser))
 
-    expect(resolvedNavigation.routes.map((route) => route.routeName)).toEqual(['cyclic-leaf'])
+    expect(resolvedNavigation.routes.map(route => route.routeName)).toEqual(['cyclic-leaf'])
     expect(resolvedNavigation.menus).toHaveLength(1)
-    expect(resolvedNavigation.menus[0]?.children.map((menu) => menu.id)).toEqual(['cyclic-leaf'])
+    expect(resolvedNavigation.menus[0]?.children.map(menu => menu.id)).toEqual(['cyclic-leaf'])
   })
 
   it('exposes ordered visible menus without hidden destinations', () => {
@@ -330,7 +330,7 @@ describe('backend navigation contract', () => {
     const menuStore = useMenuStore()
     menuStore.replaceMenus(adminNavigation.menus)
 
-    expect(menuStore.visibleMenus.map((menuNode) => menuNode.id)).toEqual([
+    expect(menuStore.visibleMenus.map(menuNode => menuNode.id)).toEqual([
       'dashboard',
       'message-center',
       'components',
@@ -343,8 +343,9 @@ describe('backend navigation contract', () => {
     ])
     expect(
       menuStore.visibleMenus
-        .find((menuNode) => menuNode.id === 'administration')
-        ?.children.map((menuNode) => menuNode.id),
+        .find(menuNode => menuNode.id === 'administration')
+        ?.children
+        .map(menuNode => menuNode.id),
     ).toEqual([
       'users',
       'roles',
@@ -357,19 +358,20 @@ describe('backend navigation contract', () => {
       'security-center',
     ])
     const administrationMenu = menuStore.visibleMenus.find(
-      (menuNode) => menuNode.id === 'administration',
+      menuNode => menuNode.id === 'administration',
     )
-    const usersMenu = administrationMenu?.children.find((menuNode) => menuNode.id === 'users')
+    const usersMenu = administrationMenu?.children.find(menuNode => menuNode.id === 'users')
     expect(usersMenu?.permissionIdentifier).toBe('system:user:read')
-    const usersRoute = adminNavigation.routes.find((route) => route.routeName === 'users')
+    const usersRoute = adminNavigation.routes.find(route => route.routeName === 'users')
     expect(usersRoute?.route.meta?.permissionIdentifier).toBe('system:user:read')
     expect(
-      adminNavigation.routes.find((route) => route.routeName === 'audit-events')?.fullPath,
+      adminNavigation.routes.find(route => route.routeName === 'audit-events')?.fullPath,
     ).toBe('/system-config/audit-events')
     expect(
       menuStore.visibleMenus
-        .find((menuNode) => menuNode.id === 'resources')
-        ?.children.map((menuNode) => menuNode.id),
+        .find(menuNode => menuNode.id === 'resources')
+        ?.children
+        .map(menuNode => menuNode.id),
     ).toEqual(['documentation', 'embedded-documentation'])
   })
 })
@@ -391,8 +393,7 @@ describe('dynamic route lifecycle', () => {
           data: {
             menus: [{ id: 'malformed', kind: 'script', titleKey: 'nav.dashboard' }],
           },
-        }),
-      ),
+        })),
     )
 
     // AI modified: one invalid backend node fails the response contract before router mutation.
@@ -460,7 +461,7 @@ describe('dynamic route lifecycle', () => {
     expect(testRouter.hasRoute('audit-logs')).toBe(false)
     expect(testRouter.hasRoute('dashboard')).toBe(true)
     expect(menuStore.menus).toEqual([])
-    expect(tabsStore.tabs.some((tab) => tab.routeName === 'users')).toBe(false)
+    expect(tabsStore.tabs.some(tab => tab.routeName === 'users')).toBe(false)
   })
 
   it('re-enters a first direct dynamic URL once after authenticated assembly', async () => {
@@ -554,7 +555,7 @@ describe('dynamic route lifecycle', () => {
 
     expect(testRouter.hasRoute('users')).toBe(false)
     expect(useMenuStore().menus).toEqual([])
-    expect(tabsStore.tabs.some((tab) => tab.routeName === 'users')).toBe(false)
+    expect(tabsStore.tabs.some(tab => tab.routeName === 'users')).toBe(false)
   })
 })
 
@@ -563,16 +564,16 @@ describe('static account and persisted tab contracts', () => {
     const adminRoot = adminRoutes[0]
     const accountRoutes = adminRoot?.children
       ? adminRoot.children.filter(
-          (routeRecord) => routeRecord.name === 'profile' || routeRecord.name === 'change-password',
+          routeRecord => routeRecord.name === 'profile' || routeRecord.name === 'change-password',
         )
       : []
 
     expect(accountRoutes).toHaveLength(2)
-    expect(accountRoutes.every((routeRecord) => routeRecord.meta?.requiresAuth)).toBe(true)
+    expect(accountRoutes.every(routeRecord => routeRecord.meta?.requiresAuth)).toBe(true)
     expect(
-      accountRoutes.every((routeRecord) => routeRecord.meta?.requiredAbility === undefined),
+      accountRoutes.every(routeRecord => routeRecord.meta?.requiredAbility === undefined),
     ).toBe(true)
-    expect(accountRoutes.every((routeRecord) => routeRecord.meta?.hidden)).toBe(true)
+    expect(accountRoutes.every(routeRecord => routeRecord.meta?.hidden)).toBe(true)
   })
 
   it('persists tabs and derives a unique KeepAlive include contract', async () => {
@@ -612,7 +613,7 @@ describe('static account and persisted tab contracts', () => {
     expect(restoredTabsStore.tabs).toHaveLength(3)
     expect(restoredTabsStore.activeTabId).toBe('/users?status=active')
     expect(restoredTabsStore.closeAllTabs()).toBe('/dashboard')
-    expect(restoredTabsStore.tabs.map((tab) => tab.routeName)).toEqual(['dashboard'])
+    expect(restoredTabsStore.tabs.map(tab => tab.routeName)).toEqual(['dashboard'])
 
     restoredTabsStore.bindPrincipal('tenant-b:1')
     // AI modified: persisted page state cannot cross tenant boundaries for the same account.

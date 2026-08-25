@@ -1,5 +1,5 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import ApplicationErrorBoundary from '@/components/admin/ApplicationErrorBoundary.vue'
 import { i18n, setLocale } from '@/i18n'
@@ -75,7 +75,8 @@ describe('application recovery state', () => {
       )
       expect(applicationFailure.value).toBeUndefined()
       expect(report).toHaveBeenCalledOnce()
-    } finally {
+    }
+    finally {
       uninstall()
       unregisterReporter()
     }
@@ -116,7 +117,8 @@ describe('application recovery state', () => {
 
       await wrapper.get('button').trigger('click')
       expect(reloadApplication).toHaveBeenCalledOnce()
-    } finally {
+    }
+    finally {
       unregisterReporter()
     }
   })

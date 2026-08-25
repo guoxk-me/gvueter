@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '../App.vue'
 import { i18n } from '../i18n'
@@ -8,7 +8,7 @@ import { clearApplicationFailure } from '../lib/application-recovery'
 
 afterEach(() => clearApplicationFailure())
 
-describe('App', () => {
+describe('app', () => {
   it('renders routed content through the application recovery boundary', async () => {
     const router = createRouter({
       history: createMemoryHistory(),

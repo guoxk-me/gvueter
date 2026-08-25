@@ -8,7 +8,7 @@ import type {
 } from '@/features/dictionaries/types'
 import type { DictionaryCacheEntry } from '@/stores/dictionary'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getSelectedDictionaryTypeId } from '@/features/dictionaries/dictionary-selection'
 import { del, get, post, put } from '@/lib/http'
 import { generateMockToken } from '@/mocks/data/users'
@@ -62,7 +62,7 @@ describe('dictionary management API', () => {
     await del(`/dictionaries/types/${createdType.id}`)
     const dictionaryTypes = await get<DictionaryTypeListResponse>('/dictionaries/types')
     expect(
-      dictionaryTypes.items.some((dictionaryType) => dictionaryType.id === createdType.id),
+      dictionaryTypes.items.some(dictionaryType => dictionaryType.id === createdType.id),
     ).toBe(false)
   })
 

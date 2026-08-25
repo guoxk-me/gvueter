@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 
 const directiveCandidates = [
   'v-permission',
@@ -19,14 +19,15 @@ async function readApplicationSources(directory: string): Promise<string[]> {
     const entryPath = resolve(directory, entry.name)
     if (entry.isDirectory()) {
       sources.push(...(await readApplicationSources(entryPath)))
-    } else if (/\.(?:ts|vue)$/.test(entry.name)) {
+    }
+    else if (/\.(?:ts|vue)$/.test(entry.name)) {
       sources.push(await readFile(entryPath, 'utf8'))
     }
   }
   return sources
 }
 
-describe('DOM capability decisions', () => {
+describe('dOM capability decisions', () => {
   it('documents every evaluated directive and its existing owner', async () => {
     const decisionDocument = await readFile(
       resolve(process.cwd(), 'docs/dom-capability-decisions.md'),

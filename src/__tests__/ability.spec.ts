@@ -1,6 +1,6 @@
 import type { User } from '@/stores/auth'
 import { subject } from '@casl/ability'
-import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   appAbility,
   defineAbilityFor as defineAbilityFromSnapshot,

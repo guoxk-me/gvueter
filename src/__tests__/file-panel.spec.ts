@@ -7,7 +7,7 @@ import type {
 } from '@/features/content-admin/types/files'
 import type { UploadPolicy } from '@/features/uploads/types'
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import Upload from '@/components/admin/Upload.vue'
 import FilePanel from '@/features/content-admin/components/FilePanel.vue'
@@ -60,16 +60,19 @@ vi.mock('@/features/content-admin/composables/useFileManagement', async () => {
         isDeleting: shallowRef(false),
         uploadFiles: async (files: File[]) => {
           filePanelState.uploadCalls.push(files)
-          if (filePanelState.uploadError) throw filePanelState.uploadError
+          if (filePanelState.uploadError)
+            throw filePanelState.uploadError
           return filePanelState.uploadOutcome
         },
         deleteFile: async (file: ContentFileRecord) => {
           filePanelState.deleteCalls.push(file.id)
-          if (filePanelState.deleteErrorIds.has(file.id)) throw new Error(`delete ${file.id}`)
+          if (filePanelState.deleteErrorIds.has(file.id))
+            throw new Error(`delete ${file.id}`)
         },
         downloadFile: async (file: ContentFileRecord) => {
           filePanelState.downloadCalls.push(file.id)
-          if (filePanelState.downloadErrorIds.has(file.id)) throw new Error(`download ${file.id}`)
+          if (filePanelState.downloadErrorIds.has(file.id))
+            throw new Error(`download ${file.id}`)
           return { blob: new Blob(['file']), fileName: file.name }
         },
       }
@@ -95,7 +98,8 @@ vi.mock('@/lib/http', async (importOriginal) => {
     ...http,
     download: async (url: string) => {
       filePanelState.previewCalls.push(url)
-      if (filePanelState.previewError) throw filePanelState.previewError
+      if (filePanelState.previewError)
+        throw filePanelState.previewError
       return { blob: new Blob(['preview']), fileName: 'preview' }
     },
   }
@@ -135,7 +139,7 @@ const DialogStub = defineComponent({
 })
 
 function mountFilePanel(
-  props: { canUpload: boolean; canDelete: boolean },
+  props: { canUpload: boolean, canDelete: boolean },
   shouldStubActions = false,
 ) {
   return mount(FilePanel, {
@@ -158,7 +162,7 @@ function selectUploadEntries(
 }
 
 function getUploadButton(wrapper: ReturnType<typeof mountFilePanel>) {
-  return wrapper.findAll('button').find((button) => button.text().includes('Upload selected'))!
+  return wrapper.findAll('button').find(button => button.text().includes('Upload selected'))!
 }
 
 beforeEach(() => {
@@ -213,7 +217,7 @@ describe('content file list composition', () => {
 
     await wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Reset')!
+      .find(button => button.text() === 'Reset')!
       .trigger('click')
     expect(filePanelState.filters?.value).toEqual({ keyword: '', page: 1, pageSize: 10 })
     expect(wrapper.findAll('button[aria-label="Download file"]')).toHaveLength(2)

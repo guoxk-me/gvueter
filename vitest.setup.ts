@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll } from 'vite-plus/test'
+import { afterAll, afterEach, beforeAll } from 'vitest'
 import { resetRoleDefinitions } from './src/features/roles/role-policy'
 import { resetMockDashboardData } from './src/mocks/data/dashboard'
 import { resetMockUsers } from './src/mocks/data/users'

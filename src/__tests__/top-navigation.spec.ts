@@ -3,7 +3,7 @@ import type { NavigationMenuNode } from '@/features/navigation'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
@@ -158,10 +158,14 @@ beforeEach(() => {
   vi.stubGlobal('IntersectionObserver', TestIntersectionObserver)
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
     function (this: HTMLElement) {
-      if (this.hasAttribute('data-top-navigation')) return rectangle(containerWidth)
-      if (this.hasAttribute('data-top-navigation-measure')) return rectangle(menuWidth(this))
-      if (this.hasAttribute('data-top-navigation-more-measure')) return rectangle(80)
-      if (this.hasAttribute('data-search-full-measure')) return rectangle(180)
+      if (this.hasAttribute('data-top-navigation'))
+        return rectangle(containerWidth)
+      if (this.hasAttribute('data-top-navigation-measure'))
+        return rectangle(menuWidth(this))
+      if (this.hasAttribute('data-top-navigation-more-measure'))
+        return rectangle(80)
+      if (this.hasAttribute('data-search-full-measure'))
+        return rectangle(180)
       return rectangle(32)
     },
   )
@@ -175,7 +179,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('AdminTopNavigation', () => {
+describe('adminTopNavigation', () => {
   it('moves only overflowing branches into a recursive More menu with active semantics', async () => {
     const wrapper = await mountTopNavigation()
 
@@ -235,7 +239,7 @@ describe('AdminTopNavigation', () => {
     await vi.waitFor(() => expect(wrapper.find('[data-top-navigation-more]').exists()).toBe(true))
 
     expect(
-      wrapper.emitted('overflowChange')?.some((eventArguments) => eventArguments[0] === false),
+      wrapper.emitted('overflowChange')?.some(eventArguments => eventArguments[0] === false),
     ).toBe(true)
     const overflowEvents = wrapper.emitted('overflowChange') ?? []
     expect(overflowEvents[overflowEvents.length - 1]).toEqual([true])
@@ -243,7 +247,7 @@ describe('AdminTopNavigation', () => {
 
   it('remeasures translated labels when locale changes', async () => {
     containerWidth = 260
-    menuWidth = (element) => 40 + (element.textContent?.trim().length ?? 0) * 7
+    menuWidth = element => 40 + (element.textContent?.trim().length ?? 0) * 7
     const translatedNodes = [
       navigationNodes[1]!,
       {

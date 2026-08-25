@@ -1,5 +1,5 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import ImageCropper from '@/components/admin/ImageCropper.vue'
 import AccessibleDragBoard from '@/features/component-gallery/operations/components/AccessibleDragBoard.vue'
@@ -47,7 +47,7 @@ describe('upload lifecycle and accessible drag examples', () => {
 
     await firstCard.get('button[aria-label^="Move down"]').trigger('click')
     expect(
-      backlog.findAll('[data-board-card]').map((card) => card.attributes('data-board-card')),
+      backlog.findAll('[data-board-card]').map(card => card.attributes('data-board-card')),
     ).toEqual(['card-copy-audit', 'card-access-review', 'card-export-policy'])
 
     await firstCard.get('button[aria-label^="Move to next lane"]').trigger('click')
@@ -98,12 +98,12 @@ describe('upload lifecycle and accessible drag examples', () => {
 
     const addScenarioButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Add partial-success scenario'))
+      .find(button => button.text().includes('Add partial-success scenario'))
     expect(addScenarioButton).toBeDefined()
     await addScenarioButton!.trigger('click')
     const startButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Start waiting uploads'))
+      .find(button => button.text().includes('Start waiting uploads'))
     expect(startButton).toBeDefined()
     await startButton!.trigger('click')
 
@@ -111,13 +111,13 @@ describe('upload lifecycle and accessible drag examples', () => {
     expect(firstTask).toBeDefined()
     const pauseButton = firstTask!
       .findAll('button')
-      .find((button) => button.text().includes('Pause'))
+      .find(button => button.text().includes('Pause'))
     expect(pauseButton).toBeDefined()
     await pauseButton!.trigger('click')
     expect(firstTask!.attributes('data-upload-status')).toBe('paused')
     const resumeButton = firstTask!
       .findAll('button')
-      .find((button) => button.text().includes('Resume'))
+      .find(button => button.text().includes('Resume'))
     expect(resumeButton).toBeDefined()
     await resumeButton!.trigger('click')
 
@@ -156,7 +156,7 @@ describe('upload lifecycle and accessible drag examples', () => {
     expect(
       wrapper
         .findAll('[role="progressbar"]')
-        .every((progress) => progress.attributes('aria-valuenow') === '100'),
+        .every(progress => progress.attributes('aria-valuenow') === '100'),
     ).toBe(true)
     expect(wrapper.text()).toContain('demo-file-')
     expect(wrapper.text()).toContain('/api/component-gallery/files/')
@@ -212,7 +212,7 @@ describe('upload lifecycle and accessible drag examples', () => {
     })
     expect(authenticatedDownload.status).toBe(200)
     expect(authenticatedDownload.headers.get('Content-Disposition')).toContain(
-      "filename*=UTF-8''receipt.csv",
+      'filename*=UTF-8\'\'receipt.csv',
     )
     expect(new Uint8Array(await authenticatedDownload.arrayBuffer())).toEqual(
       new Uint8Array([1, 2, 3]),
@@ -310,7 +310,7 @@ describe('upload lifecycle and accessible drag examples', () => {
 
     const simulateFailure = wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Simulate load failure')
+      .find(button => button.text() === 'Simulate load failure')
     expect(simulateFailure).toBeDefined()
     await simulateFailure!.trigger('click')
     expect(wrapper.get('[data-image-cropper]').attributes('data-src')).toBe(
@@ -318,7 +318,7 @@ describe('upload lifecycle and accessible drag examples', () => {
     )
     const restoreSample = wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Restore sample')
+      .find(button => button.text() === 'Restore sample')
     await restoreSample!.trigger('click')
     expect(wrapper.get('[data-image-cropper]').attributes('data-src')).toContain(
       'data:image/svg+xml',

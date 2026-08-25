@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import AsyncState from '@/components/admin/AsyncState.vue'
 import { i18n } from '@/i18n'
 import { ApiError } from '@/lib/http'
 
-describe('AsyncState error contract', () => {
+describe('asyncState error contract', () => {
   it('applies loading, error, empty, and success precedence and emits retry', async () => {
     const wrapper = mount(AsyncState, {
       props: {

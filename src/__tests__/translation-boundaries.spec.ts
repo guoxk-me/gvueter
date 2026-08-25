@@ -1,7 +1,7 @@
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import CodeEditor from '@/components/admin/CodeEditor.vue'
 import JSONViewer from '@/components/admin/JSONViewer.vue'
@@ -141,8 +141,8 @@ describe('automatic translation boundaries', () => {
     await flushPromises()
 
     const keyInput = document.body.querySelector<HTMLInputElement>('input[name="key"]')
-    const parameterValue =
-      document.body.querySelector<HTMLTextAreaElement>('textarea[name="value"]')
+    const parameterValue
+      = document.body.querySelector<HTMLTextAreaElement>('textarea[name="value"]')
     const parameterDescription = document.body.querySelector<HTMLTextAreaElement>(
       'textarea[name="description"]',
     )

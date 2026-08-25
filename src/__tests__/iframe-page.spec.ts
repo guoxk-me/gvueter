@@ -1,6 +1,6 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import IframePage from '@/features/navigation/IframePage.vue'
@@ -54,7 +54,7 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('IframePage lifecycle', () => {
+describe('iframePage lifecycle', () => {
   it('preserves the iframe security contract and exposes source and recovery actions', async () => {
     const wrapper = await mountIframePage()
     const frame = wrapper.get('iframe')
@@ -70,12 +70,12 @@ describe('IframePage lifecycle', () => {
     ).toBe('inline-start')
     expect(externalLink.get('svg').attributes('data-icon')).toBe('inline-start')
     expect(frame.attributes()).toMatchObject({
-      src: FIRST_SOURCE,
-      title: 'Embedded help',
-      loading: 'lazy',
-      referrerpolicy: 'strict-origin-when-cross-origin',
-      sandbox: 'allow-forms allow-popups allow-scripts',
-      tabindex: '-1',
+      'src': FIRST_SOURCE,
+      'title': 'Embedded help',
+      'loading': 'lazy',
+      'referrerpolicy': 'strict-origin-when-cross-origin',
+      'sandbox': 'allow-forms allow-popups allow-scripts',
+      'tabindex': '-1',
       'aria-hidden': 'true',
     })
     expect(externalLink.attributes()).toMatchObject({
@@ -104,7 +104,7 @@ describe('IframePage lifecycle', () => {
     expect(wrapper.text()).toContain('Embedded content could not be loaded')
     const retryButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Try again'))
+      .find(button => button.text().includes('Try again'))
     expect(retryButton).toBeDefined()
 
     await retryButton!.trigger('click')

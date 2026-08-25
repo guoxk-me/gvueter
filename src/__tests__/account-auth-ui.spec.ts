@@ -2,7 +2,7 @@ import type { AdminUser } from '@/features/users/types'
 import type { CaptchaChallenge } from '@/types/auth'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import {
@@ -212,8 +212,9 @@ describe('authentication account UI', () => {
 
     const ssoButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Continue with Operations SSO'))
-    if (!ssoButton) throw new Error('SSO start button was not rendered')
+      .find(button => button.text().includes('Continue with Operations SSO'))
+    if (!ssoButton)
+      throw new Error('SSO start button was not rendered')
     expect(ssoButton.attributes('type')).toBe('button')
     await ssoButton.trigger('click')
     expect(startSsoLogin).toHaveBeenCalledWith('/users?status=active')
@@ -248,8 +249,9 @@ describe('authentication account UI', () => {
     expect(wrapper.get('input[type="email"]').attributes('disabled')).toBeUndefined()
     const retryButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Retry SSO availability'))
-    if (!retryButton) throw new Error('SSO retry button was not rendered')
+      .find(button => button.text().includes('Retry SSO availability'))
+    if (!retryButton)
+      throw new Error('SSO retry button was not rendered')
     expect(retryButton.text()).toContain('Retry SSO availability')
     await retryButton.trigger('click')
     await flushPromises()

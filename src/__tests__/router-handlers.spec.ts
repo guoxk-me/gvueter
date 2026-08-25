@@ -2,7 +2,7 @@ import type { ApiResponse } from '@/lib/http'
 import { http, HttpResponse } from 'msw'
 import NProgress from 'nprogress'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { startAppLocaleSync } from '@/composables/useLocaleToggle'
@@ -92,7 +92,8 @@ describe('router fatal navigation recovery', () => {
         expect.objectContaining({ source: 'navigation', message: 'Lazy route failed' }),
       )
       expect(done).toHaveBeenCalledWith(true)
-    } finally {
+    }
+    finally {
       done.mockRestore()
       unregisterReporter()
     }
@@ -133,7 +134,8 @@ describe('router fatal navigation recovery', () => {
       expect(report).toHaveBeenCalledWith(
         expect.objectContaining({ source: 'vite-preload', message: 'Stale route chunk' }),
       )
-    } finally {
+    }
+    finally {
       uninstallPreloadRecovery()
       unregisterReporter()
     }
@@ -166,8 +168,7 @@ describe('session restore navigation recovery', () => {
         HttpResponse.json<ApiResponse<null>>(
           { code: 'IDENTITY_UNAVAILABLE', message: 'Identity service unavailable', data: null },
           { status: 503 },
-        ),
-      ),
+        )),
     )
     setActivePinia(createPinia())
     const testRouter = createHandlerTestRouter()

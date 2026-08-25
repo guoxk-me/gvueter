@@ -1,6 +1,6 @@
 import type { User } from '@/stores/auth'
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick, shallowRef } from 'vue'
 import Callout from '@/components/admin/Callout.vue'
 import DetailDrawer from '@/components/admin/DetailDrawer.vue'
@@ -33,7 +33,7 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('SearchableSelect', () => {
+describe('searchableSelect', () => {
   it('filters options and updates the controlled value after a selection', async () => {
     const wrapper = mount(SearchableSelect, {
       attachTo: document.body,
@@ -60,7 +60,7 @@ describe('SearchableSelect', () => {
     expect(document.getElementById(listboxId!)?.getAttribute('role')).toBe('listbox')
 
     const platformOption = [...document.body.querySelectorAll<HTMLElement>('[role="option"]')].find(
-      (option) => option.textContent?.includes('Platform team'),
+      option => option.textContent?.includes('Platform team'),
     )
     const platformOptionId = platformOption?.id
     expect(platformOptionId).toBeTruthy()
@@ -189,7 +189,7 @@ describe('SearchableSelect', () => {
   })
 })
 
-describe('PermissionGate', () => {
+describe('permissionGate', () => {
   it('updates the rendered boundary when the CASL policy changes', async () => {
     updateAbility(null)
     const wrapper = mount(PermissionGate, {
@@ -277,7 +277,7 @@ describe('admin workflow containers', () => {
     )
     submitButton?.click()
     await flushPromises()
-    await new Promise((resolve) => window.setTimeout(resolve, 0))
+    await new Promise(resolve => window.setTimeout(resolve, 0))
 
     expect(document.activeElement).toBe(document.body.querySelector('input[name="project-name"]'))
     wrapper.unmount()
@@ -481,7 +481,7 @@ describe('feedback components', () => {
   })
 })
 
-describe('TreeView', () => {
+describe('treeView', () => {
   const nodes = [
     {
       id: 'workspace',
@@ -530,7 +530,7 @@ describe('TreeView', () => {
   })
 
   it('loads an expandable branch on demand and exposes its busy state', async () => {
-    let releaseChildren: ((children: readonly { id: string; label: string }[]) => void) | undefined
+    let releaseChildren: ((children: readonly { id: string, label: string }[]) => void) | undefined
     const wrapper = mount(TreeView, {
       props: {
         nodes: [{ id: 'archive', label: 'Archive', hasChildren: true }],
@@ -568,7 +568,8 @@ describe('TreeView', () => {
         retryLoadLabel: 'Retry branch',
         loadChildren: async () => {
           loadAttempts += 1
-          if (loadAttempts === 1) throw new Error('Archive unavailable')
+          if (loadAttempts === 1)
+            throw new Error('Archive unavailable')
           return [{ id: 'retention', label: 'Retention records' }]
         },
       },
@@ -587,7 +588,7 @@ describe('TreeView', () => {
   })
 
   it('ignores a lazy branch result after the caller replaces the tree', async () => {
-    let releaseChildren: ((children: readonly { id: string; label: string }[]) => void) | undefined
+    let releaseChildren: ((children: readonly { id: string, label: string }[]) => void) | undefined
     const wrapper = mount(TreeView, {
       props: {
         nodes: [{ id: 'archive', label: 'Archive', hasChildren: true }],

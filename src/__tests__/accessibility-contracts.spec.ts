@@ -1,7 +1,7 @@
 import type { SearchFormField, SearchFormValues } from '@/components/admin/search-form'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { defineComponent, nextTick, shallowRef } from 'vue'
 import { toast } from 'vue-sonner'
 import DateRangePicker from '@/components/admin/DateRangePicker.vue'
@@ -32,14 +32,14 @@ describe('shared accessibility contracts', () => {
       slots: { default: '<svg aria-hidden="true" />' },
     })
     const explicitTitle = mount(Button, {
-      attrs: { 'aria-label': 'Open filters', title: 'Filter customer records' },
+      attrs: { 'aria-label': 'Open filters', 'title': 'Filter customer records' },
       props: { size: 'icon-sm' },
       slots: { default: '<svg aria-hidden="true" />' },
     })
 
     expect(inheritedTitle.get('button').attributes()).toMatchObject({
       'aria-label': 'Open filters',
-      title: 'Open filters',
+      'title': 'Open filters',
     })
     expect(explicitTitle.get('button').attributes('title')).toBe('Filter customer records')
   })
@@ -84,9 +84,9 @@ describe('shared accessibility contracts', () => {
     const searchInputs = wrapper.findAll<HTMLInputElement>('input[type="search"]')
     const searchLabels = wrapper.findAll('label')
     expect(searchInputs).toHaveLength(2)
-    expect(new Set(searchInputs.map((input) => input.attributes('id'))).size).toBe(2)
-    expect(searchLabels.map((label) => label.attributes('for'))).toEqual(
-      searchInputs.map((input) => input.attributes('id')),
+    expect(new Set(searchInputs.map(input => input.attributes('id'))).size).toBe(2)
+    expect(searchLabels.map(label => label.attributes('for'))).toEqual(
+      searchInputs.map(input => input.attributes('id')),
     )
 
     const dateRangeTriggers = [
@@ -94,7 +94,7 @@ describe('shared accessibility contracts', () => {
       ...document.body.querySelectorAll<HTMLButtonElement>('button[aria-label="Second active range"]'),
     ]
     expect(dateRangeTriggers).toHaveLength(2)
-    expect(new Set(dateRangeTriggers.map((trigger) => trigger.getAttribute('aria-label'))).size).toBe(
+    expect(new Set(dateRangeTriggers.map(trigger => trigger.getAttribute('aria-label'))).size).toBe(
       2,
     )
     for (const trigger of dateRangeTriggers) {
@@ -215,8 +215,8 @@ describe('shared accessibility contracts', () => {
       ...sheet!.querySelectorAll<HTMLButtonElement>('button[class*="border-2"]'),
     ]
     expect(optionButtons.length).toBeGreaterThan(10)
-    expect(optionButtons.every((button) => button.hasAttribute('aria-pressed'))).toBe(true)
-    expect(optionButtons.some((button) => button.getAttribute('aria-pressed') === 'true')).toBe(
+    expect(optionButtons.every(button => button.hasAttribute('aria-pressed'))).toBe(true)
+    expect(optionButtons.some(button => button.getAttribute('aria-pressed') === 'true')).toBe(
       true,
     )
   })
@@ -253,7 +253,8 @@ describe('shared accessibility contracts', () => {
     for (const [filePath, source] of Object.entries(componentSources)) {
       if (!filePath.endsWith('/ui/label/Label.vue')) {
         for (const labelMatch of source.matchAll(/<Label\b([^>]*)>/g)) {
-          if (!/:?for=/.test(labelMatch[1] ?? '')) detachedLabels.push(filePath)
+          if (!/:?for=/.test(labelMatch[1] ?? ''))
+            detachedLabels.push(filePath)
         }
       }
 
@@ -261,7 +262,8 @@ describe('shared accessibility contracts', () => {
         const attributes = labelMatch[1] ?? ''
         const contents = labelMatch[2] ?? ''
         const wrapsControl = /<(?:input|select|textarea|Input|Select|Textarea)\b/.test(contents)
-        if (!/:?for=/.test(attributes) && !wrapsControl) detachedLabels.push(filePath)
+        if (!/:?for=/.test(attributes) && !wrapsControl)
+          detachedLabels.push(filePath)
       }
     }
 

@@ -5,7 +5,7 @@ import type {
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { DateRangePicker } from '@/components/admin'
@@ -32,7 +32,7 @@ function createSelectionRouter(initialPath = '/components/selection') {
     history: createMemoryHistory(),
     routes: [
       { path: '/components', component: { template: '<div />' } },
-      ...componentCenterModules.map((componentModule) => ({
+      ...componentCenterModules.map(componentModule => ({
         path: componentModule.path,
         component: { template: '<div />' },
       })),
@@ -206,13 +206,13 @@ describe('selection interaction examples', () => {
     calendarDays[0]!.click()
     await nextTick()
     const applyButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.trim() === 'Apply',
+      button => button.textContent?.trim() === 'Apply',
     )
     expect(applyButton?.disabled).toBe(true)
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 
     const preset = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.trim() === 'Last week',
+      button => button.textContent?.trim() === 'Last week',
     )
     preset?.click()
     await nextTick()
@@ -228,7 +228,7 @@ describe('selection interaction examples', () => {
     await wrapper.get('[aria-label="Active date"]').trigger('click')
     await nextTick()
     const clearButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.trim() === 'Clear',
+      button => button.textContent?.trim() === 'Clear',
     )
     clearButton?.click()
     await nextTick()
@@ -300,8 +300,10 @@ describe('selection interaction examples', () => {
     let requestCount = 0
     const source: RemoteOptionSource = async (query) => {
       requestCount += 1
-      if (query === 'failure' && requestCount === 1) throw new Error('Directory unavailable')
-      if (query === 'none') return []
+      if (query === 'failure' && requestCount === 1)
+        throw new Error('Directory unavailable')
+      if (query === 'none')
+        return []
       return [{ value: 'recovered', label: 'Recovered employee' }]
     }
     const wrapper = mount(RemoteSearchExample, {
@@ -352,7 +354,7 @@ describe('selection interaction examples', () => {
 
     const removeRegionButton = wrapper
       .findAll('button')
-      .find((button) => button.attributes('aria-label') === 'Remove filter: Region: Asia')
+      .find(button => button.attributes('aria-label') === 'Remove filter: Region: Asia')
     expect(removeRegionButton).toBeDefined()
     await removeRegionButton!.trigger('click')
     await flushPromises()
@@ -364,13 +366,13 @@ describe('selection interaction examples', () => {
     await wrapper.get('#selection-scheme-name').setValue('APAC active users')
     const saveButton = wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Save current scheme')
+      .find(button => button.text() === 'Save current scheme')
     expect(saveButton).toBeDefined()
     await saveButton!.trigger('click')
     await flushPromises()
     expect(readSavedFilterSchemes(localStorage.getItem(SAVED_FILTER_SCHEMES_KEY))).toHaveLength(1)
 
-    const clearButton = wrapper.findAll('button').find((button) => button.text() === 'Clear all')
+    const clearButton = wrapper.findAll('button').find(button => button.text() === 'Clear all')
     expect(clearButton).toBeDefined()
     await clearButton!.trigger('click')
     await flushPromises()
@@ -378,7 +380,7 @@ describe('selection interaction examples', () => {
 
     const applySchemeButton = wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Apply scheme')
+      .find(button => button.text() === 'Apply scheme')
     expect(applySchemeButton).toBeDefined()
     await applySchemeButton!.trigger('click')
     await flushPromises()
@@ -402,7 +404,7 @@ describe('selection interaction examples', () => {
     await wrapper.get('#selection-scheme-name').setValue('In-memory scheme')
     const saveButton = wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Save current scheme')
+      .find(button => button.text() === 'Save current scheme')
     expect(saveButton).toBeDefined()
     await saveButton!.trigger('click')
 
@@ -414,9 +416,9 @@ describe('selection interaction examples', () => {
 
 describe('dedicated selection route', () => {
   it('registers the dedicated page and renders bilingual, responsive, documented sections', async () => {
-    const adminRoot = adminRoutes.find((route) => route.name === 'admin-root')
+    const adminRoot = adminRoutes.find(route => route.name === 'admin-root')
     const selectionRoute = adminRoot?.children?.find(
-      (route) => route.name === 'component-selection',
+      route => route.name === 'component-selection',
     )
     expect(selectionRoute?.props).toBeUndefined()
     expect(selectionRoute?.meta?.cacheKey).toBe('SelectionExamplesPage')

@@ -2,7 +2,7 @@ import type { Composer } from 'vue-i18n'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, nextTick } from 'vue'
 import AppearancePanel from '@/components/layout/AppearancePanel.vue'
 import { getAdminLayoutDefinition } from '@/components/layout/layout-contract'
@@ -29,7 +29,8 @@ function clearDocumentSettings(): void {
   root.removeAttribute('style')
   root.lang = ''
   for (const attribute of root.getAttributeNames()) {
-    if (attribute.startsWith('data-')) root.removeAttribute(attribute)
+    if (attribute.startsWith('data-'))
+      root.removeAttribute(attribute)
   }
 }
 
@@ -224,7 +225,7 @@ describe('appearance document projection', () => {
   })
 })
 
-describe('AppSettings startup adapters', () => {
+describe('appSettings startup adapters', () => {
   it('starts and keeps in-memory appearance state when Web Storage throws', () => {
     const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new DOMException('Storage access denied', 'SecurityError')
@@ -240,7 +241,8 @@ describe('AppSettings startup adapters', () => {
       expect(() => appearance.setThemeMode('dark')).not.toThrow()
       // AI modified: storage failure cannot prevent the current document from receiving user settings.
       expect(document.documentElement.classList.contains('dark')).toBe(true)
-    } finally {
+    }
+    finally {
       getItemSpy.mockRestore()
       setItemSpy.mockRestore()
     }
@@ -265,7 +267,7 @@ describe('AppSettings startup adapters', () => {
   })
 })
 
-describe('AppearancePanel layout contract', () => {
+describe('appearancePanel layout contract', () => {
   it('renders every preview from the Shell grid and hides inapplicable breadcrumb icon settings', async () => {
     setLocale('en-US')
     const pinia = createPinia()

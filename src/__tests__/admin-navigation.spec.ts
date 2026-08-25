@@ -2,7 +2,7 @@ import type { VueWrapper } from '@vue/test-utils'
 import type { AdminNavigationVariant } from '@/components/layout/layout-contract'
 import type { NavigationMenuNode } from '@/features/navigation'
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import AdminNavigation from '@/components/layout/AdminNavigation.vue'
@@ -87,9 +87,10 @@ async function mountNavigation(options: MountNavigationOptions): Promise<VueWrap
 
 function getButton(label: string): HTMLButtonElement {
   const button = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-    (candidate) => candidate.textContent?.includes(label),
+    candidate => candidate.textContent?.includes(label),
   )
-  if (!button) throw new Error(`Missing navigation button: ${label}`)
+  if (!button)
+    throw new Error(`Missing navigation button: ${label}`)
   return button
 }
 
@@ -103,7 +104,7 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('AdminNavigation recursive branches', () => {
+describe('adminNavigation recursive branches', () => {
   it('preserves expandable vertical navigation without accumulating deep rails', async () => {
     const wrapper = await mountNavigation({ path: '/dashboard' })
     const administrationButton = getButton('Administration')

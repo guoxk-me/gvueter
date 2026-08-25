@@ -1,6 +1,6 @@
 import type { CacheHealth, MonitoringOverview, ScheduledJob } from '@/features/monitoring/types'
 import { mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import MonitoringSessionsTable from '@/features/monitoring/components/MonitoringSessionsTable.vue'
 import { MONITORING_OVERVIEW_SCHEMA } from '@/features/monitoring/monitoring-api-contracts'
 import { maskDisplayName, maskIpAddress } from '@/features/monitoring/privacy'
@@ -28,16 +28,16 @@ describe('system monitoring', () => {
 
     expect(overview.accessLevel).toBe('operator')
     expect(
-      overview.onlineSessions.some((session) => session.userIdentifier === 'admin@example.com'),
+      overview.onlineSessions.some(session => session.userIdentifier === 'admin@example.com'),
     ).toBe(true)
-    expect(new Set(overview.logs.map((log) => log.kind))).toEqual(
+    expect(new Set(overview.logs.map(log => log.kind))).toEqual(
       new Set(['login', 'operation', 'api', 'exception']),
     )
     expect(overview.services).toHaveLength(4)
     expect(overview.jobs).toHaveLength(3)
     expect(overview.caches).toHaveLength(3)
     expect(overview.summary.onlineSessionCount).toBe(overview.onlineSessions.length)
-    expect(overview.logs.every((monitoringLog) => !('userId' in monitoringLog))).toBe(true)
+    expect(overview.logs.every(monitoringLog => !('userId' in monitoringLog))).toBe(true)
   })
 
   it('prevents the monitoring overview from being stored by browsers or intermediaries', async () => {
@@ -81,7 +81,7 @@ describe('system monitoring', () => {
     expect(serializedOverview).not.toContain('10.42.2.27')
     expect(serializedOverview.toLowerCase()).not.toContain('stacktrace')
     expect(serializedOverview.toLowerCase()).not.toContain('mock-secret')
-    expect(overview.logs.some((monitoringLog) => monitoringLog.kind === 'operation')).toBe(true)
+    expect(overview.logs.some(monitoringLog => monitoringLog.kind === 'operation')).toBe(true)
   })
 
   it('removes operation events when a monitoring observer lacks AuditLog access', async () => {
@@ -94,7 +94,7 @@ describe('system monitoring', () => {
 
     // AI modified: API filtering prevents audit summaries from leaking through monitoring filters.
     expect(overview.accessLevel).toBe('observer')
-    expect(overview.logs.some((monitoringLog) => monitoringLog.kind === 'operation')).toBe(false)
+    expect(overview.logs.some(monitoringLog => monitoringLog.kind === 'operation')).toBe(false)
     expect(operationOverview.logs).toEqual([])
     expect(JSON.stringify(overview)).not.toContain('role:editor')
     expect(JSON.stringify(overview)).not.toContain('users:export')
@@ -105,7 +105,7 @@ describe('system monitoring', () => {
     await post('/monitoring/sessions/session-editor-web/terminate')
     const afterTermination = await get<MonitoringOverview>('/monitoring/overview')
     expect(
-      afterTermination.onlineSessions.some((session) => session.id === 'session-editor-web'),
+      afterTermination.onlineSessions.some(session => session.id === 'session-editor-web'),
     ).toBe(false)
     sessionStorage.setItem('auth_token', terminatedUserToken)
     await expect(get('/auth/me')).rejects.toMatchObject({
@@ -178,12 +178,12 @@ describe('system monitoring', () => {
     expect(
       observerTable
         .findAll('button')
-        .some((button) => button.attributes('aria-label') === terminateLabel),
+        .some(button => button.attributes('aria-label') === terminateLabel),
     ).toBe(false)
     expect(
       operatorTable
         .findAll('button')
-        .some((button) => button.attributes('aria-label') === terminateLabel),
+        .some(button => button.attributes('aria-label') === terminateLabel),
     ).toBe(true)
 
     observerTable.unmount()

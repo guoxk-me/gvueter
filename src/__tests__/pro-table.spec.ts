@@ -2,7 +2,7 @@ import type { PaginationState } from '@tanstack/vue-table'
 import type { ProTableLabels } from '@/components/pro-table/types'
 import { createColumnHelper } from '@tanstack/vue-table'
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import SearchForm from '@/components/admin/SearchForm.vue'
 import ProTable from '@/components/pro-table/ProTable.vue'
@@ -105,7 +105,7 @@ async function selectPageSize(label: string, pageSize: number): Promise<void> {
 
   const pageSizeOption = [
     ...document.body.querySelectorAll<HTMLElement>('[data-slot="select-item"]'),
-  ].find((option) => option.textContent?.trim() === String(pageSize))
+  ].find(option => option.textContent?.trim() === String(pageSize))
   expect(pageSizeOption).toBeDefined()
   pageSizeOption!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }))
   pageSizeOption!.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }))
@@ -114,7 +114,7 @@ async function selectPageSize(label: string, pageSize: number): Promise<void> {
   await nextTick()
 }
 
-describe('ProTable public behavior', () => {
+describe('proTable public behavior', () => {
   it('uses localized default labels and omits an empty lightweight toolbar', () => {
     setLocale('en-US')
     const wrapper = mountTable({ labels: undefined })
@@ -145,7 +145,7 @@ describe('ProTable public behavior', () => {
 
   it('uses column text behavior and declared minima for header and cell layout', () => {
     const wrapper = mountTable()
-    const nameHeader = wrapper.findAll('th').find((header) => header.text().includes('Name'))
+    const nameHeader = wrapper.findAll('th').find(header => header.text().includes('Name'))
     const emailCell = wrapper.find('[data-row-id="1"] td:nth-last-child(1)')
     const firstRow = wrapper.get('[data-row-id="1"]')
 
@@ -161,14 +161,14 @@ describe('ProTable public behavior', () => {
 
   it('sorts client rows and commits inline edits through typed events', async () => {
     const wrapper = mountTable()
-    const sortableHeader = wrapper.findAll('th').find((header) => header.text().includes('Name'))
-    const nameHeader = wrapper.findAll('button').find((button) => button.text().includes('Name'))
+    const sortableHeader = wrapper.findAll('th').find(header => header.text().includes('Name'))
+    const nameHeader = wrapper.findAll('button').find(button => button.text().includes('Name'))
     expect(nameHeader).toBeDefined()
     expect(sortableHeader?.attributes('aria-sort')).toBe('none')
 
     await nameHeader!.trigger('click')
     expect(sortableHeader?.attributes('aria-sort')).toBe('ascending')
-    expect(wrapper.findAll('[data-row-id]').map((row) => row.attributes('data-row-id'))).toEqual([
+    expect(wrapper.findAll('[data-row-id]').map(row => row.attributes('data-row-id'))).toEqual([
       '2',
       '3',
       '1',
@@ -238,7 +238,7 @@ describe('ProTable public behavior', () => {
     await nextPage.trigger('click')
     expect(wrapper.emitted('paginationChange')?.[0]?.[0]).toEqual({ pageIndex: 1, pageSize: 2 })
 
-    const nameHeader = wrapper.findAll('button').find((button) => button.text().includes('Name'))
+    const nameHeader = wrapper.findAll('button').find(button => button.text().includes('Name'))
     await nameHeader!.trigger('click')
     expect(wrapper.emitted('sortingChange')?.[0]?.[0]).toEqual([{ id: 'name', desc: false }])
 
@@ -260,9 +260,9 @@ describe('ProTable public behavior', () => {
     const paginationRequests: PaginationState[] = []
     const wrapper = mountTable(
       {
-        data: pagedRows,
-        pagination: { pageIndex: 0, pageSize: 5 },
-        pageSizeOptions: [5, 10],
+        'data': pagedRows,
+        'pagination': { pageIndex: 0, pageSize: 5 },
+        'pageSizeOptions': [5, 10],
         'onUpdate:pagination': (pagination: PaginationState) => {
           paginationRequests.push(pagination)
           void wrapper.setProps({ pagination })
@@ -309,9 +309,9 @@ describe('ProTable public behavior', () => {
     const paginationRequests: PaginationState[] = []
     const wrapper = mountTable(
       {
-        data: pagedRows,
-        pagination: { pageIndex: 0, pageSize: 10 },
-        pageSizeOptions: [5, 10],
+        'data': pagedRows,
+        'pagination': { pageIndex: 0, pageSize: 10 },
+        'pageSizeOptions': [5, 10],
         'onUpdate:pagination': (pagination: PaginationState) => {
           paginationRequests.push(pagination)
           void wrapper.setProps({ pagination })
@@ -332,10 +332,10 @@ describe('ProTable public behavior', () => {
   it('clamps controlled server pagination when the total shrinks', async () => {
     const paginationRequests: PaginationState[] = []
     const wrapper = mountTable({
-      pagination: { pageIndex: 2, pageSize: 5 },
-      pageSizeOptions: [5, 10],
-      manualPagination: true,
-      rowCount: 12,
+      'pagination': { pageIndex: 2, pageSize: 5 },
+      'pageSizeOptions': [5, 10],
+      'manualPagination': true,
+      'rowCount': 12,
       'onUpdate:pagination': (pagination: PaginationState) => {
         paginationRequests.push(pagination)
         void wrapper.setProps({ pagination })
@@ -357,11 +357,11 @@ describe('ProTable public behavior', () => {
   it('defers maximum page clamping until a loading server total is known', async () => {
     const paginationRequests: PaginationState[] = []
     const wrapper = mountTable({
-      pagination: { pageIndex: 1, pageSize: 5 },
-      pageSizeOptions: [5, 10],
-      manualPagination: true,
-      rowCount: 0,
-      isLoading: true,
+      'pagination': { pageIndex: 1, pageSize: 5 },
+      'pageSizeOptions': [5, 10],
+      'manualPagination': true,
+      'rowCount': 0,
+      'isLoading': true,
       'onUpdate:pagination': (pagination: PaginationState) => paginationRequests.push(pagination),
     })
 
@@ -406,10 +406,10 @@ describe('ProTable public behavior', () => {
     }))
     const wrapper = mountTable(
       {
-        data: pagedRows,
-        pagination: { pageIndex: 0, pageSize: 2 },
-        pageSizeOptions: [2, 5],
-        enableRowSelection: true,
+        'data': pagedRows,
+        'pagination': { pageIndex: 0, pageSize: 2 },
+        'pageSizeOptions': [2, 5],
+        'enableRowSelection': true,
         'onUpdate:pagination': (pagination: PaginationState) => {
           void wrapper.setProps({ pagination })
         },
@@ -430,7 +430,7 @@ describe('ProTable public behavior', () => {
     await nextTick()
     expect(wrapper.emitted('selectionChange')).toHaveLength(selectionEventsAfterSelection.length)
 
-    const nameHeader = wrapper.findAll('button').find((button) => button.text().includes('Name'))
+    const nameHeader = wrapper.findAll('button').find(button => button.text().includes('Name'))
     await nameHeader!.trigger('click')
     const selectionEventsAfterSorting = wrapper.emitted('selectionChange') ?? []
     expect(selectionEventsAfterSorting[selectionEventsAfterSorting.length - 1]?.[0]).toEqual({
@@ -464,7 +464,7 @@ describe('ProTable public behavior', () => {
     expect(wrapper.text()).toContain('Import users')
     expect(wrapper.text()).toContain('Export users')
     expect(wrapper.text()).toContain('Print users')
-    expect(wrapper.findAll('th').map((header) => header.text())).toEqual(['Email', 'Name'])
+    expect(wrapper.findAll('th').map(header => header.text())).toEqual(['Email', 'Name'])
 
     const pinnedTable = mountTable({ columnPinning: { left: ['name'], right: [] } })
     expect(pinnedTable.findAll('th')[0]!.text()).toBe('Name')
@@ -476,7 +476,7 @@ describe('ProTable public behavior', () => {
       density: 'compact',
     })
     expect(
-      filteredTable.findAll('[data-row-id]').map((row) => row.attributes('data-row-id')),
+      filteredTable.findAll('[data-row-id]').map(row => row.attributes('data-row-id')),
     ).toEqual(['2'])
     expect(filteredTable.text()).not.toContain('alice@example.com')
     expect(filteredTable.find('[data-row-id="2"]').attributes('style')).toContain('36px')
@@ -513,7 +513,7 @@ describe('ProTable public behavior', () => {
     emailMoveUp!.click()
     await nextTick()
     await nextTick()
-    expect(wrapper.findAll('th').map((header) => header.text())).toEqual(['Email', 'Name'])
+    expect(wrapper.findAll('th').map(header => header.text())).toEqual(['Email', 'Name'])
     expect(wrapper.get('[role="status"]').text()).toBe('Email moved to position 1 of 2')
 
     if (!document.body.querySelector('[data-slot="dropdown-menu-content"][data-state="open"]')) {
@@ -530,7 +530,7 @@ describe('ProTable public behavior', () => {
     emailMoveDown!.click()
     await nextTick()
     await nextTick()
-    expect(wrapper.findAll('th').map((header) => header.text())).toEqual(['Name', 'Email'])
+    expect(wrapper.findAll('th').map(header => header.text())).toEqual(['Name', 'Email'])
     expect(wrapper.get('[role="status"]').text()).toBe('Email moved to position 2 of 2')
 
     if (!document.body.querySelector('[data-slot="dropdown-menu-content"][data-state="open"]')) {
@@ -545,8 +545,8 @@ describe('ProTable public behavior', () => {
         '[data-slot="dropdown-menu-content"][data-state="open"] [draggable="true"]',
       ),
     ]
-    const nameColumnRow = columnRows.find((columnRow) => columnRow.textContent?.includes('Name'))
-    const emailColumnRow = columnRows.find((columnRow) => columnRow.textContent?.includes('Email'))
+    const nameColumnRow = columnRows.find(columnRow => columnRow.textContent?.includes('Name'))
+    const emailColumnRow = columnRows.find(columnRow => columnRow.textContent?.includes('Email'))
     expect(nameColumnRow).toBeDefined()
     expect(emailColumnRow).toBeDefined()
 
@@ -554,7 +554,7 @@ describe('ProTable public behavior', () => {
     emailColumnRow!.dispatchEvent(new Event('drop', { bubbles: true, cancelable: true }))
     await nextTick()
     await nextTick()
-    expect(wrapper.findAll('th').map((header) => header.text())).toEqual(['Email', 'Name'])
+    expect(wrapper.findAll('th').map(header => header.text())).toEqual(['Email', 'Name'])
     expect(wrapper.get('[role="status"]').text()).toBe('Name moved to position 2 of 2')
 
     wrapper.unmount()
@@ -616,7 +616,7 @@ describe('ProTable public behavior', () => {
   })
 })
 
-describe('SearchForm public behavior', () => {
+describe('searchForm public behavior', () => {
   it('emits immutable search snapshots and restores defaults', async () => {
     const wrapper = mount(SearchForm<{ keyword: string }>, {
       props: {
@@ -638,7 +638,7 @@ describe('SearchForm public behavior', () => {
 
     await wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Reset')!
+      .find(button => button.text() === 'Reset')!
       .trigger('click')
     const resetSnapshot = wrapper.emitted('reset')?.[0]?.[0]
     const modelUpdates = wrapper.emitted('update:modelValue') ?? []
@@ -739,9 +739,9 @@ describe('SearchForm public behavior', () => {
 
     const actionButtons = wrapper
       .findAll('button')
-      .filter((button) => button.text() === 'Reset' || button.text() === 'Search')
+      .filter(button => button.text() === 'Reset' || button.text() === 'Search')
     expect(actionButtons).toHaveLength(2)
-    expect(actionButtons.every((button) => button.attributes('disabled') !== undefined)).toBe(true)
+    expect(actionButtons.every(button => button.attributes('disabled') !== undefined)).toBe(true)
 
     await wrapper.get('[data-testid="extra-action"]').trigger('click')
     expect(wrapper.emitted('search')).toBeUndefined()
@@ -783,7 +783,7 @@ describe('user privacy projection', () => {
     expect(readOnlyTable.text()).not.toContain(user.email)
     expect(readOnlyTable.find('[data-masked="true"]').exists()).toBe(true)
     expect(
-      readOnlyTable.findAll('button').some((button) => button.text().includes('Copy email')),
+      readOnlyTable.findAll('button').some(button => button.text().includes('Copy email')),
     ).toBe(false)
 
     const managerTable = mount(UserTable, {
@@ -793,16 +793,16 @@ describe('user privacy projection', () => {
     expect(managerTable.text()).toContain(user.email)
     expect(managerTable.find('[data-masked="false"]').exists()).toBe(true)
     expect(
-      managerTable.findAll('button').some((button) => button.text().includes('Copy email')),
+      managerTable.findAll('button').some(button => button.text().includes('Copy email')),
     ).toBe(true)
     await managerTable
       .findAll('button')
-      .find((button) => button.text().includes('Import CSV'))!
+      .find(button => button.text().includes('Import CSV'))!
       .trigger('click')
     expect(managerTable.emitted('import')).toHaveLength(1)
     await managerTable
       .findAll('button')
-      .find((button) => button.text().includes('Refresh'))!
+      .find(button => button.text().includes('Refresh'))!
       .trigger('click')
     expect(managerTable.emitted('refresh')).toHaveLength(1)
   })

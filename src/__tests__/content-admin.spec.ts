@@ -13,7 +13,7 @@ import type {
 } from '@/features/content-admin/types/operation-logs'
 import { File as NodeFile } from 'node:buffer'
 import { mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import ContentAdminWorkspace from '@/features/content-admin/components/ContentAdminWorkspace.vue'
 import { uploadContentFiles } from '@/features/content-admin/composables/useFileManagement'
 import {
@@ -97,7 +97,7 @@ describe('announcement API', () => {
     ).resolves.toMatchObject({ status: 'offline' })
     await del(`/announcements/${created.id}`)
     const response = await get<AnnouncementListResponse>('/announcements')
-    expect(response.items.some((announcement) => announcement.id === created.id)).toBe(false)
+    expect(response.items.some(announcement => announcement.id === created.id)).toBe(false)
   })
 
   it('allows the default editor to create and update Content but not delete it', async () => {
@@ -129,7 +129,7 @@ describe('announcement API', () => {
     expect(created.content).not.toMatch(/script|onclick|javascript:/)
 
     const response = await get<AnnouncementListResponse>('/announcements')
-    const storedAnnouncement = response.items.find((announcement) => announcement.id === created.id)
+    const storedAnnouncement = response.items.find(announcement => announcement.id === created.id)
     expect(storedAnnouncement?.content).toBe(created.content)
   })
 })
@@ -149,7 +149,7 @@ describe('content file API', () => {
     expect(page.items).toHaveLength(1)
 
     const files = await get<ContentFileListResponse>('/content-files', { page: 1, pageSize: 10 })
-    const longNamedFile = files.items.find((file) => file.id === 'file-release-notes')
+    const longNamedFile = files.items.find(file => file.id === 'file-release-notes')
     expect(longNamedFile?.name.length).toBeGreaterThan(80)
     expect(longNamedFile?.name).toContain('亚太区访问权限复核')
     expect(longNamedFile?.name).toContain('quarterly-apac-access-governance')

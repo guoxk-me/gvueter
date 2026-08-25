@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import { createI18n } from 'vue-i18n'
 import { SUPPORTED_LOCALES } from '@/i18n'
 import enUS from '@/i18n/locales/en-US'
@@ -44,8 +44,8 @@ describe('pseudo locale text expansion', () => {
   })
 
   it('preserves placeholders, HTML-like tokens, URLs, brands, and code identifiers', () => {
-    const sourceMessage =
-      'Welcome {name} to <strong>Admin Panel</strong>. Read `userId` at https://docs.example.com/api with JSON and customWidget.'
+    const sourceMessage
+      = 'Welcome {name} to <strong>Admin Panel</strong>. Read `userId` at https://docs.example.com/api with JSON and customWidget.'
     const pseudoMessage = createPseudoMessage(sourceMessage)
 
     expect(getProtectedMessageTokens(pseudoMessage)).toEqual(
@@ -61,7 +61,7 @@ describe('pseudo locale text expansion', () => {
 
   it('retains executable Vue I18n interpolation and literal syntax', () => {
     const pseudoMessage = createPseudoMessage(
-      "Welcome {name}. You have {count} alerts at admin{'@'}example.com.",
+      'Welcome {name}. You have {count} alerts at admin{\'@\'}example.com.',
     )
     const pseudoI18n = createI18n({
       legacy: false,

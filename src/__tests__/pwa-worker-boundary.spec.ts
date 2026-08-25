@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vite-plus/test'
+import { describe, expect, it, vi } from 'vitest'
 import {
   isPwaWorkerRegistration,
   MOCK_WORKER_FILENAME,
@@ -20,7 +20,7 @@ function registration(scriptFilename: string, unregister: () => Promise<boolean>
   } as unknown as ServiceWorkerRegistration
 }
 
-describe('PWA service worker boundary', () => {
+describe('pWA service worker boundary', () => {
   it('rejects a same-scope MSW registration from PWA update checks', () => {
     const mockRegistration = registration(MOCK_WORKER_FILENAME, async () => true)
     const pwaRegistration = registration(PWA_WORKER_FILENAME, async () => true)

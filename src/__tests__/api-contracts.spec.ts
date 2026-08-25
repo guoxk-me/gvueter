@@ -1,6 +1,6 @@
 import type { ResponseDataSchema } from '@/lib/http'
 import { HttpResponse, http as mswHttp } from 'msw'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CONTENT_FILE_LIST_RESPONSE_SCHEMA } from '@/features/content-admin/content-admin-api-contracts'
 import { DASHBOARD_OVERVIEW_SCHEMA } from '@/features/dashboard/dashboard-api-contracts'
 import { MONITORING_OVERVIEW_SCHEMA } from '@/features/monitoring/monitoring-api-contracts'
@@ -72,7 +72,7 @@ describe('browser Mock request boundary', () => {
   })
 })
 
-describe('API schemas', () => {
+describe('aPI schemas', () => {
   it('accepts the canonical envelope and one-based page contract', () => {
     expect(
       API_ENVELOPE_SCHEMA.parse({
@@ -152,7 +152,7 @@ describe('API schemas', () => {
   })
 })
 
-describe('Mock failure matrix', () => {
+describe('mock failure matrix', () => {
   it.each([
     ['unauthorized', 'authentication', 'sign-in', 401],
     ['forbidden', 'authorization', 'request-access', 403],
@@ -215,8 +215,7 @@ describe('feature response contracts', () => {
             code: 0,
             message: 'success',
             data: { unexpected: true },
-          }),
-        ),
+          })),
       )
 
       // AI modified: representative feature payloads are rejected before stores, charts, or tables consume them.

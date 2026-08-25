@@ -3,7 +3,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { http, HttpResponse } from 'msw'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import {
   DetailDescriptions,
@@ -34,7 +34,7 @@ function dispatchDrop(target: HTMLButtonElement, files: File[]): void {
   Object.defineProperty(event, 'dataTransfer', {
     value: {
       files,
-      items: files.map((file) => ({ type: file.type })),
+      items: files.map(file => ({ type: file.type })),
     },
   })
   target.dispatchEvent(event)
@@ -48,8 +48,8 @@ beforeEach(() => {
 describe('business pagination and overlays', () => {
   it('keeps long overlay, badge, and empty-state copy inside shrinkable surfaces', async () => {
     // AI modified: one boundary fixture exercises 150%-style copy across reusable overlay surfaces.
-    const longTitle =
-      'Exceptionally long translated review request requiring complete operator context'
+    const longTitle
+      = 'Exceptionally long translated review request requiring complete operator context'
     const dialogWrapper = mount(Dialog, {
       attachTo: document.body,
       props: { open: true, title: longTitle, description: `${longTitle} description` },
@@ -193,7 +193,7 @@ describe('business uploads and data actions', () => {
 
     const importButton = [
       ...document.body.querySelectorAll<HTMLButtonElement>('[data-slot="dialog-content"] button'),
-    ].find((button) => button.textContent?.includes('Start import'))
+    ].find(button => button.textContent?.includes('Start import'))
     expect(importButton?.disabled).toBe(false)
     importButton?.click()
     expect(wrapper.emitted('import')?.[0]).toEqual([file])
@@ -202,7 +202,7 @@ describe('business uploads and data actions', () => {
   it('delegates safe CSV downloads and reports the exported row count', async () => {
     const rows: readonly unknown[] = [{ id: '1', value: '=unsafe' }]
     const columns: readonly CsvExportColumn<unknown>[] = [
-      { label: 'Value', getValue: (row) => (row as { value: string }).value },
+      { label: 'Value', getValue: row => (row as { value: string }).value },
     ]
     const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:csv')
     const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
@@ -254,11 +254,12 @@ describe('dictionary and detail components', () => {
     server.use(
       http.get('/api/dictionaries/options/retry_status', () => {
         requestCount += 1
-        if (requestCount === 1)
+        if (requestCount === 1) {
           return HttpResponse.json(
             { code: 'DICTIONARY_UNAVAILABLE', message: 'Unavailable', data: null },
             { status: 500 },
           )
+        }
         return HttpResponse.json({
           code: 0,
           message: 'success',

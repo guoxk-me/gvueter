@@ -1,7 +1,7 @@
 import type { PaginationState } from '@tanstack/vue-table'
 import type { DataTableColumnDef } from '@/components/data-table/types'
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import DataTable from '@/components/data-table/DataTable.vue'
 import {
@@ -58,7 +58,7 @@ async function selectPageSize(label: string, pageSize: number): Promise<void> {
 
   const pageSizeOption = [
     ...document.body.querySelectorAll<HTMLElement>('[data-slot="select-item"]'),
-  ].find((option) => option.textContent?.trim() === String(pageSize))
+  ].find(option => option.textContent?.trim() === String(pageSize))
   expect(pageSizeOption).toBeDefined()
   pageSizeOption!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }))
   pageSizeOption!.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }))
@@ -71,7 +71,7 @@ function visibleRows(): NodeListOf<HTMLTableRowElement> {
   return document.body.querySelectorAll('tbody tr')
 }
 
-describe('DataTable pagination contract', () => {
+describe('dataTable pagination contract', () => {
   it('exposes sort direction and stable row names to assistive technology', async () => {
     const wrapper = mountDataTable({
       enableRowSelection: true,
@@ -196,7 +196,7 @@ describe('DataTable pagination contract', () => {
   it('accepts a controlled pagination model without exposing intermediate page-size state', async () => {
     const paginationRequests: PaginationState[] = []
     const wrapper = mountDataTable({
-      pagination: { pageIndex: 1, pageSize: 5 },
+      'pagination': { pageIndex: 1, pageSize: 5 },
       'onUpdate:pagination': (pagination: PaginationState) => {
         paginationRequests.push(pagination)
         void wrapper.setProps({ pagination })
@@ -214,7 +214,7 @@ describe('DataTable pagination contract', () => {
   it('moves from a large page size to a smaller page in one state update', async () => {
     const paginationRequests: PaginationState[] = []
     const wrapper = mountDataTable({
-      pagination: { pageIndex: 0, pageSize: 10 },
+      'pagination': { pageIndex: 0, pageSize: 10 },
       'onUpdate:pagination': (pagination: PaginationState) => {
         paginationRequests.push(pagination)
         void wrapper.setProps({ pagination })

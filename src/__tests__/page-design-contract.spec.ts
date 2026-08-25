@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { shallowMount } from '@vue/test-utils'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import PageHeader from '@/components/admin/PageHeader.vue'
 import { ADMIN_SHELL_METRICS } from '@/components/layout/layout-contract'
 

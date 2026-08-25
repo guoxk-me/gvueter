@@ -1,5 +1,5 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it } from 'vitest'
 import { PAGE_STATE_CONTRACTS, PAGE_STATE_KINDS, PageStatePanel } from '@/components/admin'
 import PageStateGallery from '@/features/component-gallery/components/PageStateGallery.vue'
 import { i18n } from '@/i18n'

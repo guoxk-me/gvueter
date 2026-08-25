@@ -7,7 +7,7 @@ import type {
 import type { ApiEnvelope } from '@/lib/http'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { AxiosHeaders } from 'axios'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import BasicFormExample from '@/features/component-gallery/forms/components/BasicFormExample.vue'
@@ -60,8 +60,9 @@ function mountExample(component: Parameters<typeof mount>[0]): VueWrapper {
 }
 
 function getButton(wrapper: VueWrapper, label: string) {
-  const button = wrapper.findAll('button').find((candidate) => candidate.text().trim() === label)
-  if (!button) throw new Error(`Could not find button: ${label}`)
+  const button = wrapper.findAll('button').find(candidate => candidate.text().trim() === label)
+  if (!button)
+    throw new Error(`Could not find button: ${label}`)
   return button
 }
 
@@ -76,7 +77,19 @@ const validSchemaSubmission: SchemaDrivenSubmissionFields = {
 }
 
 const validPdfBytes = new Uint8Array([
-  0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37, 0x0a, 0x25, 0x45, 0x4f, 0x46,
+  0x25,
+  0x50,
+  0x44,
+  0x46,
+  0x2D,
+  0x31,
+  0x2E,
+  0x37,
+  0x0A,
+  0x25,
+  0x45,
+  0x4F,
+  0x46,
 ])
 const oversizedPdfBytes = new Uint8Array(SCHEMA_DRIVEN_EVIDENCE_MAX_BYTES + 1)
 oversizedPdfBytes.set(validPdfBytes)
@@ -113,7 +126,7 @@ function getSchemaMultipartFixture(
       fileName: 'submission.json',
       name: 'submission',
     },
-    ...evidenceFiles.map((evidenceFile) => ({
+    ...evidenceFiles.map(evidenceFile => ({
       ...evidenceFile,
       name: 'evidence',
     })),
@@ -203,7 +216,7 @@ describe('form example module', () => {
       richBrief: '<p>Release brief</p>',
       notes: '',
     }
-    expect(SCHEMA_DRIVEN_FIELDS.map((field) => field.kind)).toEqual([
+    expect(SCHEMA_DRIVEN_FIELDS.map(field => field.kind)).toEqual([
       'text',
       'select',
       'remote-select',
@@ -214,7 +227,7 @@ describe('form example module', () => {
       'rich-text',
       'textarea',
     ])
-    expect(getVisibleSchemaFields(baseValues).map((field) => field.name)).not.toContain(
+    expect(getVisibleSchemaFields(baseValues).map(field => field.name)).not.toContain(
       'approverEmail',
     )
     expect(
@@ -222,9 +235,9 @@ describe('form example module', () => {
         ...baseValues,
         environment: 'production',
         requiresEvidence: true,
-      }).map((field) => field.name),
+      }).map(field => field.name),
     ).toEqual(expect.arrayContaining(['approverEmail', 'evidence']))
-    expect(SCHEMA_DRIVEN_FIELDS.find((field) => field.name === 'evidence')).toMatchObject({
+    expect(SCHEMA_DRIVEN_FIELDS.find(field => field.name === 'evidence')).toMatchObject({
       kind: 'file',
       required: true,
     })
@@ -232,7 +245,7 @@ describe('form example module', () => {
       getSubmittableSchemaFields(
         { ...baseValues, environment: 'production', approverEmail: 'approver@example.com' },
         { canWriteSensitiveFields: false },
-      ).map((field) => field.name),
+      ).map(field => field.name),
     ).not.toContain('approverEmail')
   })
 
@@ -273,8 +286,8 @@ describe('form example module', () => {
         name: 'submission.json',
         type: 'application/json',
       })
-      const submittedFields: unknown =
-        submissionPart instanceof Blob
+      const submittedFields: unknown
+        = submissionPart instanceof Blob
           ? JSON.parse(await readBrowserBlob(submissionPart))
           : undefined
       // AI modified: read-only sensitive values are absent from the wire contract, not sent as blanks.
@@ -282,7 +295,8 @@ describe('form example module', () => {
       expect(wrapper.get('[data-testid="schema-form-status"]').text()).toContain(
         'Fields and files were sent',
       )
-    } finally {
+    }
+    finally {
       postSpy.mockRestore()
     }
 
@@ -360,7 +374,8 @@ describe('form example module', () => {
       expect(wrapper.get('[data-testid="schema-form-status"]').text()).toContain(
         'schema-submission-client',
       )
-    } finally {
+    }
+    finally {
       postSpy.mockRestore()
     }
   })
@@ -421,7 +436,8 @@ describe('form example module', () => {
       )
       expect(wrapper.text()).not.toContain('This field must not enter component state.')
       expect(document.activeElement).toBe(requestName.element)
-    } finally {
+    }
+    finally {
       postSpy.mockRestore()
     }
   })
@@ -569,7 +585,7 @@ describe('schema-driven multipart submission contract', () => {
     })
     expect(downloadResponse.status).toBe(200)
     expect(downloadResponse.headers.get('Content-Disposition')).toContain(
-      "filename*=UTF-8''release-proof.pdf",
+      'filename*=UTF-8\'\'release-proof.pdf',
     )
     expect(new Uint8Array(await downloadResponse.arrayBuffer())).toEqual(validPdfBytes)
   })

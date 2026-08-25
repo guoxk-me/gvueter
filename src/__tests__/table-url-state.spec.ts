@@ -1,7 +1,7 @@
 import type { PaginationState, SortingState } from '@tanstack/vue-table'
 import type { TableUrlContract } from '@/composables/use-table-url-state'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, shallowRef } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import {
@@ -114,7 +114,7 @@ describe('table URL state contract', () => {
         const filters = shallowRef<ExampleFilters>({ ...defaultFilters })
         const pagination = shallowRef<PaginationState>({ ...contract.defaultPagination })
         const sorting = shallowRef<SortingState>(
-          contract.defaultSorting.map((columnSort) => ({ ...columnSort })),
+          contract.defaultSorting.map(columnSort => ({ ...columnSort })),
         )
         useTableUrlState({ filters, pagination, sorting, ...contract })
 

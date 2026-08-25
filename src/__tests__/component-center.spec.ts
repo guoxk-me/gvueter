@@ -5,7 +5,7 @@ import type {
 } from '@/features/component-gallery/component-catalog'
 import type { ComponentCenterModuleDefinition } from '@/features/component-gallery/component-center-modules'
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import {
   componentCatalog,
@@ -45,9 +45,10 @@ async function mountTableCatalog(): Promise<VueWrapper> {
   await router.isReady()
 
   const tableDefinition = componentCenterModules.find(
-    (componentModule) => componentModule.id === 'tables',
+    componentModule => componentModule.id === 'tables',
   )
-  if (!tableDefinition) throw new Error('Missing table module definition')
+  if (!tableDefinition)
+    throw new Error('Missing table module definition')
 
   const wrapper = mount(ComponentCatalogModuleView, {
     props: {
@@ -75,7 +76,7 @@ describe('component center route modules', () => {
       history: createMemoryHistory(),
       routes: [
         { path: '/components', component: { template: '<div />' } },
-        ...componentCenterModules.map((componentModule) => ({
+        ...componentCenterModules.map(componentModule => ({
           path: componentModule.path,
           component: { template: '<div />' },
         })),
@@ -90,9 +91,9 @@ describe('component center route modules', () => {
 
     const moduleLinks = wrapper
       .findAll('a')
-      .filter((link) =>
+      .filter(link =>
         componentCenterModules.some(
-          (componentModule) => componentModule.path === link.attributes('href'),
+          componentModule => componentModule.path === link.attributes('href'),
         ),
       )
     expect(moduleLinks).toHaveLength(componentCenterModules.length)
@@ -106,29 +107,29 @@ describe('component center route modules', () => {
 
   it('gives every catalog family exactly one stable route owner', () => {
     const ownedCatalogModules = componentCenterModules.flatMap(
-      (componentModule) => componentModule.catalogModules,
+      componentModule => componentModule.catalogModules,
     )
     const catalogModules = [
-      ...new Set<ComponentCatalogModule>(componentCatalog.map((component) => component.module)),
+      ...new Set<ComponentCatalogModule>(componentCatalog.map(component => component.module)),
     ]
 
     expect(new Set(ownedCatalogModules).size).toBe(ownedCatalogModules.length)
     expect([...ownedCatalogModules].sort()).toEqual(catalogModules.sort())
     expect(
-      new Set(componentCenterModules.map((componentModule) => componentModule.path)).size,
+      new Set(componentCenterModules.map(componentModule => componentModule.path)).size,
     ).toBe(componentCenterModules.length)
   })
 
   it('makes every independent module discoverable from global search', () => {
-    const searchablePaths = adminNavigationItems.map((navigationItem) => navigationItem.to)
+    const searchablePaths = adminNavigationItems.map(navigationItem => navigationItem.to)
 
     for (const componentModule of componentCenterModules)
       expect(searchablePaths).toContain(componentModule.path)
   })
 
   it('registers every module path before the authenticated catch-all route', () => {
-    const adminRoot = adminRoutes.find((route) => route.name === 'admin-root')
-    const staticPaths = adminRoot?.children?.map((route) => `/${route.path}`) ?? []
+    const adminRoot = adminRoutes.find(route => route.name === 'admin-root')
+    const staticPaths = adminRoot?.children?.map(route => `/${route.path}`) ?? []
 
     for (const componentModule of componentCenterModules)
       expect(staticPaths).toContain(componentModule.path)
@@ -139,12 +140,12 @@ describe('component center route modules', () => {
   })
 
   it('keeps existing interactive examples in fixed local module registries', () => {
-    expect(componentModuleExamples.selection?.map((example) => example.id)).toEqual([
+    expect(componentModuleExamples.selection?.map(example => example.id)).toEqual([
       'discovery',
       'hierarchy',
       'selection-display',
     ])
-    expect(componentModuleExamples.patterns?.map((example) => example.id)).toEqual([
+    expect(componentModuleExamples.patterns?.map(example => example.id)).toEqual([
       'page-states',
       'data',
       'feedback',
@@ -169,17 +170,17 @@ describe('component center route modules', () => {
     await wrapper.find('input[type="search"]').setValue('')
     const missingDemoButton = wrapper
       .findAll('button')
-      .find((button) => button.text().includes('Missing demo'))
+      .find(button => button.text().includes('Missing demo'))
     expect(missingDemoButton).toBeDefined()
     await missingDemoButton!.trigger('click')
 
     const missingDemoIds = tableCatalogFixtures
-      .filter((component) => component.availability.demo === 'missing')
-      .map((component) => component.id)
+      .filter(component => component.availability.demo === 'missing')
+      .map(component => component.id)
     expect(
       wrapper
         .findAll('[data-component-catalog-entry]')
-        .map((card) => card.attributes('data-component-catalog-entry')),
+        .map(card => card.attributes('data-component-catalog-entry')),
     ).toEqual(missingDemoIds)
   })
 
@@ -192,7 +193,7 @@ describe('component center route modules', () => {
     expect(wrapper.text()).toContain('Enhancement')
     expect(wrapper.text()).toContain('API contract')
     expect(wrapper.text()).toContain('Copyable import')
-    expect(wrapper.text()).toContain("import DataTable from '@/components/data-table/DataTable'")
+    expect(wrapper.text()).toContain('import DataTable from \'@/components/data-table/DataTable\'')
     expect(wrapper.text()).not.toContain('<DataTable />')
     expect(wrapper.text()).toContain('Accessibility and test evidence')
     expect(wrapper.text()).toContain('Version and migration')
@@ -207,7 +208,7 @@ describe('component center route modules', () => {
 
     // AI modified: dedicated routes document every component owned by the module, not only the two table engines.
     expect(wrapper.findAll('[data-component-catalog-entry]')).toHaveLength(
-      componentCatalog.filter((entry) => entry.module === 'tables').length,
+      componentCatalog.filter(entry => entry.module === 'tables').length,
     )
     await wrapper.get('input[type="search"]').setValue('ProTable')
     expect(wrapper.findAll('[data-component-catalog-entry]')).toHaveLength(1)

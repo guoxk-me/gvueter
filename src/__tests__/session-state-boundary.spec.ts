@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/vue-query'
 import { createPinia, setActivePinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, nextTick } from 'vue'
 import {
   FORM_WORKBENCH_DRAFT_KEY,
@@ -123,7 +123,7 @@ describe('principal-scoped application state', () => {
     authStore.setUser({ ...admin, name: 'Renamed administrator' })
     expect(queryClient.getQueryData(['users'])).toEqual({ items: [admin] })
     expect(notificationStore.readNotificationIds).toEqual(['notification-admin'])
-    expect(tabsStore.tabs.map((tab) => tab.id)).toEqual(['/admin-profile'])
+    expect(tabsStore.tabs.map(tab => tab.id)).toEqual(['/admin-profile'])
     expect(permissionStore.principalKey).toBe('1:admin')
 
     authStore.setUser(editor)
@@ -139,7 +139,7 @@ describe('principal-scoped application state', () => {
     expect(sessionStorage.getItem(getFormWorkbenchDraftKey(String(admin.id)))).toBeNull()
 
     authStore.setUser(admin)
-    expect(tabsStore.tabs.map((tab) => tab.id)).toEqual(['/admin-profile'])
+    expect(tabsStore.tabs.map(tab => tab.id)).toEqual(['/admin-profile'])
   })
 
   it('clears privileged projections when the backend policy version changes for the same user', () => {

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import PwaManager from '@/features/pwa/components/PwaManager.vue'
 import { i18n } from '@/i18n'
@@ -8,7 +8,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('PWA manager', () => {
+describe('pWA manager', () => {
   it('captures the browser install event and exposes a dismissible install action', async () => {
     const requestInstall = vi.fn(async () => undefined)
     const installEvent = Object.assign(new Event('beforeinstallprompt', { cancelable: true }), {

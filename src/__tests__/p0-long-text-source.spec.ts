@@ -1,7 +1,7 @@
 import type { User } from '@/stores/auth'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import AppearancePanel from '@/components/layout/AppearancePanel.vue'
@@ -32,7 +32,7 @@ afterEach(() => {
   updateAbility(null)
 })
 
-describe('P0 long-content source contracts', () => {
+describe('p0 long-content source contracts', () => {
   it('keeps global-search result labels shrinkable with explicit full-text titles', async () => {
     updateAbility(adminUser, getTestAuthorization(adminUser))
     const router = createRouter({

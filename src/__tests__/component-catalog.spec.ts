@@ -1,7 +1,7 @@
 import type { ComponentCatalogEntry } from '@/features/component-gallery/component-catalog'
 import { existsSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import {
   adminComponentCatalog,
   componentCatalog,
@@ -13,19 +13,19 @@ describe('component catalog inventory', () => {
   it('covers every current admin component, table family, and UI primitive directory', () => {
     // AI modified: filesystem parity prevents the catalog from silently drifting as components are added or removed.
     const adminSourcePaths = readdirSync(resolve('src/components/admin'), { withFileTypes: true })
-      .filter((entry) => entry.isFile() && entry.name.endsWith('.vue'))
-      .map((entry) => `src/components/admin/${entry.name}`)
+      .filter(entry => entry.isFile() && entry.name.endsWith('.vue'))
+      .map(entry => `src/components/admin/${entry.name}`)
     const primitiveSourcePaths = readdirSync(resolve('src/components/ui'), { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => `src/components/ui/${entry.name}`)
+      .filter(entry => entry.isDirectory())
+      .map(entry => `src/components/ui/${entry.name}`)
 
-    expect(adminComponentCatalog.map((entry) => entry.sourcePath).sort()).toEqual(
+    expect(adminComponentCatalog.map(entry => entry.sourcePath).sort()).toEqual(
       adminSourcePaths.sort(),
     )
-    expect(uiPrimitiveCatalog.map((entry) => entry.sourcePath).sort()).toEqual(
+    expect(uiPrimitiveCatalog.map(entry => entry.sourcePath).sort()).toEqual(
       primitiveSourcePaths.sort(),
     )
-    expect(tableComponentCatalog.map((entry) => entry.sourcePath)).toEqual([
+    expect(tableComponentCatalog.map(entry => entry.sourcePath)).toEqual([
       'src/components/data-table/DataTable.vue',
       'src/components/pro-table/ProTable.vue',
     ])
@@ -37,7 +37,7 @@ describe('component catalog inventory', () => {
   })
 
   it('uses unique stable IDs and references existing source and evidence locations', () => {
-    const componentIds = componentCatalog.map((entry) => entry.id)
+    const componentIds = componentCatalog.map(entry => entry.id)
     expect(new Set(componentIds).size).toBe(componentIds.length)
 
     for (const entry of componentCatalog) {
@@ -84,7 +84,7 @@ describe('component catalog inventory', () => {
 
   it('records known capability boundaries without promoting demos beyond the implementation', () => {
     const findCatalogComponent = (componentId: string) =>
-      componentCatalog.find((component) => component.id === componentId)
+      componentCatalog.find(component => component.id === componentId)
 
     expect(findCatalogComponent('markdown-editor')?.summary).toContain('typed safe preview')
     expect(findCatalogComponent('markdown-editor')?.limitations.join(' ')).toContain(

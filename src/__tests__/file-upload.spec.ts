@@ -1,6 +1,6 @@
 import type { FileUploadEntry, FileUploadRejection } from '@/components/admin'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import FileUpload from '@/components/admin/FileUpload.vue'
 import { i18n } from '@/i18n'
@@ -10,13 +10,13 @@ function dispatchDrop(target: HTMLButtonElement, files: File[]): void {
   Object.defineProperty(event, 'dataTransfer', {
     value: {
       files,
-      items: files.map((file) => ({ type: file.type })),
+      items: files.map(file => ({ type: file.type })),
     },
   })
   target.dispatchEvent(event)
 }
 
-describe('FileUpload', () => {
+describe('fileUpload', () => {
   it('adds a valid dropped file and unmounts cleanly', async () => {
     const wrapper = mount(FileUpload, {
       props: {

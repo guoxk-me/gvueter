@@ -2,7 +2,7 @@ import type { ApiResponse } from '@/lib/http'
 import type { SsoStartResponse } from '@/types/auth'
 import { http, HttpResponse } from 'msw'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { get, post } from '@/lib/http'
 import {
   generateMockToken,
@@ -24,7 +24,8 @@ async function requestMockSsoTicket(returnTo = '/dashboard'): Promise<string> {
   const start = await post<SsoStartResponse>('/auth/sso/start', { returnTo })
   const callbackUrl = new URL(start.authorizationUrl)
   const ticket = new URLSearchParams(callbackUrl.hash.slice(1)).get('ticket')
-  if (!ticket) throw new Error('Mock SSO callback did not contain a ticket fragment')
+  if (!ticket)
+    throw new Error('Mock SSO callback did not contain a ticket fragment')
   return ticket
 }
 
@@ -89,7 +90,8 @@ describe('useAuthStore', () => {
         const token = generateMockToken(1)
         // AI modified: storage privacy failures cannot make the in-memory demo authentication unavailable.
         expect(readMockTokenSession(token)).toMatchObject({ status: 'valid', userId: 1 })
-      } finally {
+      }
+      finally {
         getItemSpy.mockRestore()
       }
     })
@@ -251,8 +253,7 @@ describe('useAuthStore', () => {
               expiresAt: Date.now() + 60_000,
               user: { id: 1, role: 'admin' },
             },
-          }),
-        ),
+          })),
       )
       const store = useAuthStore()
 
@@ -369,8 +370,9 @@ describe('useAuthStore', () => {
             AUTH_PROVIDER_STORAGE_KEY,
             AUTH_TENANT_STORAGE_KEY,
           ].includes(key)
-        )
+        ) {
           throw new DOMException('Storage access denied', 'SecurityError')
+        }
         originalRemoveItem.call(this, key)
       })
 
@@ -389,8 +391,7 @@ describe('useAuthStore', () => {
           HttpResponse.json<ApiResponse<null>>(
             { code: 500, message: 'revocation unavailable', data: null },
             { status: 500 },
-          ),
-        ),
+          )),
       )
 
       await expect(store.logout()).rejects.toMatchObject({ status: 500 })
@@ -407,8 +408,8 @@ describe('useAuthStore', () => {
       await loginWithCaptcha(store, 'admin@example.com', 'admin123')
       let markLogoutStarted = (): void => undefined
       let releaseLogout = (): void => undefined
-      const logoutStarted = new Promise<void>((resolve) => (markLogoutStarted = resolve))
-      const logoutGate = new Promise<void>((resolve) => (releaseLogout = resolve))
+      const logoutStarted = new Promise<void>(resolve => (markLogoutStarted = resolve))
+      const logoutGate = new Promise<void>(resolve => (releaseLogout = resolve))
       server.use(
         http.post('/api/auth/logout', async () => {
           markLogoutStarted()
@@ -429,7 +430,7 @@ describe('useAuthStore', () => {
     })
   })
 
-  describe('SSO', () => {
+  describe('sSO', () => {
     it('discovers the safe public option and establishes a server-owned SSO session', async () => {
       const store = useAuthStore()
 
@@ -494,8 +495,8 @@ describe('useAuthStore', () => {
       const { password: _password, ...admin } = mockUsers[0]!
       let markExchangeStarted = (): void => undefined
       let releaseExchange = (): void => undefined
-      const exchangeStarted = new Promise<void>((resolve) => (markExchangeStarted = resolve))
-      const exchangeGate = new Promise<void>((resolve) => (releaseExchange = resolve))
+      const exchangeStarted = new Promise<void>(resolve => (markExchangeStarted = resolve))
+      const exchangeGate = new Promise<void>(resolve => (releaseExchange = resolve))
       server.use(
         http.post('/api/auth/sso/exchange', async () => {
           markExchangeStarted()
@@ -546,8 +547,7 @@ describe('useAuthStore', () => {
               redirectPath: '//evil.example',
               user: { id: 1, role: 'admin' },
             },
-          }),
-        ),
+          })),
       )
       const store = useAuthStore()
 
@@ -658,8 +658,7 @@ describe('useAuthStore', () => {
           HttpResponse.json<ApiResponse<null>>(
             { code: 500, message: '临时服务故障', data: null },
             { status: 500 },
-          ),
-        ),
+          )),
       )
       setActivePinia(createPinia())
       const store = useAuthStore()
@@ -677,8 +676,8 @@ describe('useAuthStore', () => {
       const { password: _password, ...admin } = mockUsers[0]!
       let markRestoreStarted = (): void => undefined
       let releaseRestore = (): void => undefined
-      const restoreStarted = new Promise<void>((resolve) => (markRestoreStarted = resolve))
-      const restoreGate = new Promise<void>((resolve) => (releaseRestore = resolve))
+      const restoreStarted = new Promise<void>(resolve => (markRestoreStarted = resolve))
+      const restoreGate = new Promise<void>(resolve => (releaseRestore = resolve))
       server.use(
         http.get('/api/auth/me', async () => {
           markRestoreStarted()
@@ -717,10 +716,10 @@ describe('useAuthStore', () => {
       let markSecondStarted = (): void => undefined
       let releaseFirst = (): void => undefined
       let releaseSecond = (): void => undefined
-      const firstStarted = new Promise<void>((resolve) => (markFirstStarted = resolve))
-      const secondStarted = new Promise<void>((resolve) => (markSecondStarted = resolve))
-      const firstGate = new Promise<void>((resolve) => (releaseFirst = resolve))
-      const secondGate = new Promise<void>((resolve) => (releaseSecond = resolve))
+      const firstStarted = new Promise<void>(resolve => (markFirstStarted = resolve))
+      const secondStarted = new Promise<void>(resolve => (markSecondStarted = resolve))
+      const firstGate = new Promise<void>(resolve => (releaseFirst = resolve))
+      const secondGate = new Promise<void>(resolve => (releaseSecond = resolve))
       server.use(
         http.get('/api/auth/me', async () => {
           requestCount += 1
@@ -728,7 +727,8 @@ describe('useAuthStore', () => {
           if (isFirstRequest) {
             markFirstStarted()
             await firstGate
-          } else {
+          }
+          else {
             markSecondStarted()
             await secondGate
           }

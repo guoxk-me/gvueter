@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import { readMarkdown } from '@/components/admin/markdown-content'
 import MarkdownEditor from '@/components/admin/MarkdownEditor.vue'
@@ -27,15 +27,15 @@ const approved = true
 ![Local](/images/local.png)
 ![Remote](https://tracker.invalid/pixel.png)`)
 
-    expect(blocks.map((block) => block.kind)).toEqual([
+    expect(blocks.map(block => block.kind)).toEqual([
       'heading',
       'list',
       'paragraph',
       'code',
       'paragraph',
     ])
-    expect(blocks.find((block) => block.kind === 'code')).toMatchObject({ language: 'ts' })
-    const imageBlocks = blocks.filter((block) => block.kind === 'paragraph')
+    expect(blocks.find(block => block.kind === 'code')).toMatchObject({ language: 'ts' })
+    const imageBlocks = blocks.filter(block => block.kind === 'paragraph')
     const imageBlock = imageBlocks[imageBlocks.length - 1]
     expect(imageBlock).toMatchObject({
       lines: [

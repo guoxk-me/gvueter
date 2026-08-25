@@ -9,7 +9,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { flushPromises, mount } from '@vue/test-utils'
 import { http, HttpResponse } from 'msw'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import RolePermissionMatrix from '@/features/roles/components/RolePermissionMatrix.vue'
@@ -36,11 +36,11 @@ describe('role management API', () => {
   it('lists the built-in roles', async () => {
     const roles = await get<RoleListResponse>('/roles')
 
-    expect(roles.items.map((role) => role.key)).toEqual(['admin', 'editor', 'viewer'])
-    expect(roles.items.find((role) => role.key === 'admin')?.permissions).toHaveLength(
+    expect(roles.items.map(role => role.key)).toEqual(['admin', 'editor', 'viewer'])
+    expect(roles.items.find(role => role.key === 'admin')?.permissions).toHaveLength(
       PERMISSION_ACTIONS.length * PERMISSION_SUBJECTS.length,
     )
-    expect(roles.items.find((role) => role.key === 'editor')?.dataScope.scope).toBe(
+    expect(roles.items.find(role => role.key === 'editor')?.dataScope.scope).toBe(
       'departmentTree',
     )
   })
@@ -96,7 +96,7 @@ describe('role management API', () => {
     }
 
     const roles = await get<RoleListResponse>('/roles')
-    expect(roles.items.find((role) => role.key === 'admin')?.permissions).toHaveLength(
+    expect(roles.items.find(role => role.key === 'admin')?.permissions).toHaveLength(
       PERMISSION_ACTIONS.length * PERMISSION_SUBJECTS.length,
     )
   })
@@ -109,7 +109,7 @@ describe('role management API', () => {
       }),
     ).toBeUndefined()
 
-    const adminRole = getRoleDefinitions().find((role) => role.key === 'admin')
+    const adminRole = getRoleDefinitions().find(role => role.key === 'admin')
     expect(adminRole?.permissions).toHaveLength(
       PERMISSION_ACTIONS.length * PERMISSION_SUBJECTS.length,
     )
@@ -182,8 +182,8 @@ describe('role management API', () => {
     sessionStorage.setItem('auth_token', generateMockToken(2))
     const users = await get<import('@/features/users/types').UserListResponse>('/users')
     expect(users.items).toHaveLength(2)
-    expect(users.items.map((user) => user.id).sort()).toEqual([3, 8])
-    expect(users.items.every((user) => user.departmentId === undefined)).toBe(true)
+    expect(users.items.map(user => user.id).sort()).toEqual([3, 8])
+    expect(users.items.every(user => user.departmentId === undefined)).toBe(true)
   })
 
   it('rejects custom scopes with unknown departments', async () => {
@@ -213,8 +213,9 @@ describe('role permission matrix modes', () => {
   }
 
   function getButtonByText(wrapper: VueWrapper, label: string) {
-    const button = wrapper.findAll('button').find((candidate) => candidate.text().includes(label))
-    if (!button) throw new Error(`Missing button: ${label}`)
+    const button = wrapper.findAll('button').find(candidate => candidate.text().includes(label))
+    if (!button)
+      throw new Error(`Missing button: ${label}`)
     return button
   }
 
@@ -376,8 +377,7 @@ describe('role permission matrix modes', () => {
             permissions: [],
             dataScope: { scope: 'departmentTree' },
           } satisfies RoleDefinition,
-        }),
-      ),
+        })),
       http.get('/api/auth/me', () =>
         HttpResponse.json({
           code: 0,
@@ -392,8 +392,7 @@ describe('role permission matrix modes', () => {
               dataScope: { scope: 'departmentTree' },
             },
           } satisfies AuthenticatedPrincipal,
-        }),
-      ),
+        })),
     )
 
     await getButtonByText(wrapper, 'Content Editor').trigger('click')
@@ -404,7 +403,7 @@ describe('role permission matrix modes', () => {
 
     expect(appAbility.can('read', 'RolePolicy')).toBe(false)
     expect(router.hasRoute('roles')).toBe(false)
-    expect(useMenuStore().visibleMenuLeaves.some((menu) => menu.to === '/roles')).toBe(false)
+    expect(useMenuStore().visibleMenuLeaves.some(menu => menu.to === '/roles')).toBe(false)
     expect(router.currentRoute.value.name).toBe('forbidden')
   })
 })

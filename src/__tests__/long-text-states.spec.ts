@@ -1,5 +1,5 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import { toast } from 'vue-sonner'
 import { Dialog, Drawer, EmptyState, FileUpload } from '@/components/admin'
@@ -17,8 +17,8 @@ import { i18n, setLocale } from '@/i18n'
 
 enableAutoUnmount(afterEach)
 
-const LONG_ENGLISH_COPY =
-  'The upstream administration service returned a detailed validation failure that operators must be able to read before retrying the request.'
+const LONG_ENGLISH_COPY
+  = 'The upstream administration service returned a detailed validation failure that operators must be able to read before retrying the request.'
 const UNBROKEN_IDENTIFIER = `tenant_${'permissionBoundary'.repeat(12)}`
 
 function openSelect(trigger: HTMLButtonElement): void {
@@ -69,11 +69,11 @@ describe('long text rendering boundaries', () => {
     await nextTick()
 
     const options = [...document.body.querySelectorAll<HTMLElement>('[role="option"]')]
-    const optionLabels = options.map((option) => option.textContent?.trim())
+    const optionLabels = options.map(option => option.textContent?.trim())
     expect(optionLabels).toEqual([UNBROKEN_IDENTIFIER, LONG_ENGLISH_COPY])
-    expect(options.every((option) => option.classList.contains('min-w-0'))).toBe(true)
-    expect(options.every((option) => option.classList.contains('whitespace-normal'))).toBe(true)
-    expect(options.every((option) => option.classList.contains('break-words'))).toBe(true)
+    expect(options.every(option => option.classList.contains('min-w-0'))).toBe(true)
+    expect(options.every(option => option.classList.contains('whitespace-normal'))).toBe(true)
+    expect(options.every(option => option.classList.contains('break-words'))).toBe(true)
     expect(document.body.querySelector('[data-slot="select-content"]')).not.toBeNull()
   })
 

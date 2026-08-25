@@ -5,7 +5,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { flushPromises, mount } from '@vue/test-utils'
 import { http, HttpResponse } from 'msw'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -62,15 +62,13 @@ describe('user management API', () => {
           code: 0,
           message: 'success',
           data: { items: [{ id: 'admin', role: 'owner' }], total: '1', page: 1, pageSize: 10 },
-        }),
-      ),
+        })),
       http.post('/api/users', () =>
         HttpResponse.json({
           code: 0,
           message: 'created',
           data: { id: 99, name: 'Missing fields' },
-        }),
-      ),
+        })),
     )
 
     // AI modified: successful business codes cannot bypass user DTO validation.
@@ -116,12 +114,12 @@ describe('user management API', () => {
     expect(firstPage.items).toHaveLength(3)
     expect(secondPage).toMatchObject({ page: 2, pageSize: 3, total: 8 })
     expect(secondPage.items).toHaveLength(3)
-    expect(firstPage.items.map((user) => user.id)).not.toEqual(
-      secondPage.items.map((user) => user.id),
+    expect(firstPage.items.map(user => user.id)).not.toEqual(
+      secondPage.items.map(user => user.id),
     )
     expect(
-      firstPage.items.map((user) => user.name).sort((left, right) => left.localeCompare(right)),
-    ).toEqual(firstPage.items.map((user) => user.name))
+      firstPage.items.map(user => user.name).sort((left, right) => left.localeCompare(right)),
+    ).toEqual(firstPage.items.map(user => user.name))
   })
 
   it('serves a long English identity with an empty avatar and an offset date boundary', async () => {
@@ -200,7 +198,8 @@ describe('user management API', () => {
       status: 401,
     })
 
-    if (!adminToken) throw new Error('The test administrator session was not initialized')
+    if (!adminToken)
+      throw new Error('The test administrator session was not initialized')
     sessionStorage.setItem('auth_token', adminToken)
     await put<AdminUser>(`/users/${createdUser.id}`, {
       name: '已更新用户',
@@ -276,12 +275,12 @@ describe('user management API', () => {
     sessionStorage.setItem('auth_token', generateMockToken(2))
     const editorUsers = await get<UserListResponse>('/users')
 
-    expect(editorUsers.items.map((user) => user.id).sort()).toEqual([2, 4, 5, 7])
+    expect(editorUsers.items.map(user => user.id).sort()).toEqual([2, 4, 5, 7])
     // AI modified: privacy is enforced by the response contract, not only by table rendering.
-    expect(editorUsers.items.every((user) => user.email.includes('***'))).toBe(true)
-    expect(editorUsers.items.every((user) => user.avatar === undefined)).toBe(true)
-    expect(editorUsers.items.every((user) => user.departmentId === undefined)).toBe(true)
-    expect(editorUsers.items.every((user) => user.departmentPath === undefined)).toBe(true)
+    expect(editorUsers.items.every(user => user.email.includes('***'))).toBe(true)
+    expect(editorUsers.items.every(user => user.avatar === undefined)).toBe(true)
+    expect(editorUsers.items.every(user => user.departmentId === undefined)).toBe(true)
+    expect(editorUsers.items.every(user => user.departmentPath === undefined)).toBe(true)
     expect(JSON.stringify(editorUsers)).not.toContain('editor@example.com')
 
     const hiddenEmailSearch = await get<UserListResponse>('/users', {
@@ -328,7 +327,7 @@ describe('user management API', () => {
     const editorUsers = await get<UserListResponse>('/users')
 
     // AI modified: stale departmentPath values neither retain nor suppress current tree membership.
-    expect(editorUsers.items.map((user) => user.id).sort()).toEqual([2, 5, 6, 7])
+    expect(editorUsers.items.map(user => user.id).sort()).toEqual([2, 5, 6, 7])
     await expect(
       put('/users/4', {
         name: '林晓月',
@@ -366,7 +365,7 @@ describe('user management API', () => {
     ])
 
     const importedUsers = await get<UserListResponse>('/users', { keyword: 'import@example.com' })
-    expect(importedUsers.items.map((user) => user.name).sort()).toEqual(['Avery, Zhang', 'Jordan'])
+    expect(importedUsers.items.map(user => user.name).sort()).toEqual(['Avery, Zhang', 'Jordan'])
   })
 
   it('rejects CSV import when the administrator disables csv globally', async () => {
@@ -436,7 +435,7 @@ describe('user management API', () => {
     await expect(
       uploadFileBytes(
         '/users/import',
-        new NodeFile([new Uint8Array([0xc3, 0x28])], 'users.csv', { type: 'text/csv' }),
+        new NodeFile([new Uint8Array([0xC3, 0x28])], 'users.csv', { type: 'text/csv' }),
       ),
     ).rejects.toMatchObject({ code: 'INVALID_USER_IMPORT_ENCODING', status: 400 })
 
@@ -501,8 +500,7 @@ describe('user deletion workflow', () => {
           code: 0,
           message: 'success',
           data: { items: [{ id: 'admin', role: 'owner' }], total: '1', page: 1, pageSize: 5 },
-        }),
-      ),
+        })),
     )
     const router = createRouter({
       history: createMemoryHistory(),
@@ -611,8 +609,7 @@ describe('user deletion workflow', () => {
               { code: 'DELETE_FAILED', message: 'Delete failed', data: null },
               { status: 500 },
             )
-          : HttpResponse.json({ code: 0, message: 'deleted', data: null }),
-      ),
+          : HttpResponse.json({ code: 0, message: 'deleted', data: null })),
     )
 
     const UserTableStub = defineComponent({
@@ -668,7 +665,7 @@ describe('user deletion workflow', () => {
     expect(toast.warning).toHaveBeenCalledWith('Deleted: 1; failed: 1', {
       description: 'Still selected user IDs: 5.',
     })
-    expect(wrapper.findComponent(UserTableStub).props('selectedRowIds')).toEqual({ '5': true })
+    expect(wrapper.findComponent(UserTableStub).props('selectedRowIds')).toEqual({ 5: true })
 
     wrapper.unmount()
     queryClient.clear()

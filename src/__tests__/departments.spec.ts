@@ -3,7 +3,7 @@ import type {
   DepartmentListResponse,
   DepartmentRecord,
 } from '@/features/departments/types'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getDepartmentTree } from '@/features/departments/department-tree'
 import { del, get, post, put } from '@/lib/http'
 import { generateMockToken } from '@/mocks/data/users'
@@ -31,18 +31,18 @@ describe('department management', () => {
     const response = await get<DepartmentListResponse>('/departments')
     const tree = getDepartmentTree(response.items)
 
-    expect(tree.map((department) => department.id)).toEqual(['company'])
-    expect(tree[0]?.children.map((department) => department.id)).toEqual([
+    expect(tree.map(department => department.id)).toEqual(['company'])
+    expect(tree[0]?.children.map(department => department.id)).toEqual([
       'product',
       'operations',
       'finance',
       'human-resources',
     ])
-    expect(tree[0]?.children[0]?.children.map((department) => department.id)).toEqual([
+    expect(tree[0]?.children[0]?.children.map(department => department.id)).toEqual([
       'product-design',
       'product-engineering',
     ])
-    expect(tree[0]?.children[0]?.children[1]?.children.map((department) => department.id)).toEqual([
+    expect(tree[0]?.children[0]?.children[1]?.children.map(department => department.id)).toEqual([
       'product-engineering-platform',
     ])
   })
@@ -60,7 +60,7 @@ describe('department management', () => {
 
     await del(`/departments/${createdDepartment.id}`)
     const response = await get<DepartmentListResponse>('/departments')
-    expect(response.items.some((department) => department.id === createdDepartment.id)).toBe(false)
+    expect(response.items.some(department => department.id === createdDepartment.id)).toBe(false)
   })
 
   it('rejects cyclic moves and non-admin writes at the API boundary', async () => {

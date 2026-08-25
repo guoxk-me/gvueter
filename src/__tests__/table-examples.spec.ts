@@ -1,5 +1,5 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import ClientPaginationDemo from '@/features/component-gallery/table/examples/ClientPaginationDemo.vue'
@@ -38,9 +38,9 @@ async function getTableExampleRouter(query = '') {
   return router
 }
 
-describe('Table example catalog', () => {
+describe('table example catalog', () => {
   it('documents every required scenario with support, tests, accessibility, and limitations', () => {
-    expect(TABLE_EXAMPLE_SCENARIOS.map((scenario) => scenario.id)).toEqual([
+    expect(TABLE_EXAMPLE_SCENARIOS.map(scenario => scenario.id)).toEqual([
       'basic',
       'client-pagination',
       'server-pagination',
@@ -52,7 +52,7 @@ describe('Table example catalog', () => {
       'responsive',
       'states',
     ])
-    expect(new Set(TABLE_EXAMPLE_SCENARIOS.map((scenario) => scenario.id)).size).toBe(10)
+    expect(new Set(TABLE_EXAMPLE_SCENARIOS.map(scenario => scenario.id)).size).toBe(10)
     for (const scenario of TABLE_EXAMPLE_SCENARIOS) {
       expect(scenario.sharedComponent).toBeTruthy()
       expect(scenario.behavior).toBeTruthy()
@@ -64,7 +64,7 @@ describe('Table example catalog', () => {
   })
 })
 
-describe('Table example behavior', () => {
+describe('table example behavior', () => {
   it('keeps client page text, rows, controls, and controlled state in sync', async () => {
     setLocale('en-US')
     const wrapper = mount(ClientPaginationDemo, {
@@ -260,7 +260,7 @@ describe('Table example behavior', () => {
 
     const clearButton = card
       .findAll('button')
-      .find((button) => button.text().includes('Clear selection'))
+      .find(button => button.text().includes('Clear selection'))
     expect(clearButton).toBeDefined()
     await clearButton!.trigger('click')
     expect(card.find('[data-testid="bulk-archive"]').exists()).toBe(false)
@@ -281,7 +281,7 @@ describe('Table example behavior', () => {
     expect(card.text()).toContain('4 selected')
     const clearCurrentPage = card
       .findAll('button')
-      .find((button) => button.text().includes(copy.actions.clear))
+      .find(button => button.text().includes(copy.actions.clear))
     expect(clearCurrentPage).toBeDefined()
     await clearCurrentPage!.trigger('click')
 
@@ -294,11 +294,11 @@ describe('Table example behavior', () => {
       `${copy.selection.exportAll}: 11`,
     )
 
-    const firstPageRow = card.findAll('tbody tr').find((row) => row.text().includes('WO-0001'))
+    const firstPageRow = card.findAll('tbody tr').find(row => row.text().includes('WO-0001'))
     expect(firstPageRow).toBeDefined()
     await firstPageRow!.get('[data-slot="checkbox"]').trigger('click')
     await card.get('[aria-label="Next page"]').trigger('click')
-    const secondPageRow = card.findAll('tbody tr').find((row) => row.text().includes('WO-0007'))
+    const secondPageRow = card.findAll('tbody tr').find(row => row.text().includes('WO-0007'))
     expect(secondPageRow).toBeDefined()
     await secondPageRow!.get('[data-slot="checkbox"]').trigger('click')
     expect(card.text()).toContain('2 selected')
@@ -310,12 +310,12 @@ describe('Table example behavior', () => {
 
     const clearButton = card
       .findAll('button')
-      .find((button) => button.text().includes(copy.actions.clear))
+      .find(button => button.text().includes(copy.actions.clear))
     expect(clearButton).toBeDefined()
     await clearButton!.trigger('click')
     await card.get('[aria-label="Next page"]').trigger('click')
     expect(card.get('[data-testid="selection-page-state"]').text()).toContain('pageIndex=2')
-    const finalPageRow = card.findAll('tbody tr').find((row) => row.text().includes('WO-0011'))
+    const finalPageRow = card.findAll('tbody tr').find(row => row.text().includes('WO-0011'))
     expect(finalPageRow).toBeDefined()
     await finalPageRow!.get('[data-slot="checkbox"]').trigger('click')
     await card.get('[data-testid="bulk-delete"]').trigger('click')
@@ -323,10 +323,10 @@ describe('Table example behavior', () => {
 
     expect(card.get('[data-testid="selection-page-state"]').text()).toContain('pageIndex=1')
     expect(card.get('[data-testid="selection-page-state"]').text()).toContain('rows=10')
-    expect(card.findAll('tbody tr').some((row) => row.text().includes('WO-0011'))).toBe(false)
+    expect(card.findAll('tbody tr').some(row => row.text().includes('WO-0011'))).toBe(false)
     expect(card.get('[aria-label="Next page"]').attributes('disabled')).toBeDefined()
 
-    const refreshedPageRow = card.findAll('tbody tr').find((row) => row.text().includes('WO-0006'))
+    const refreshedPageRow = card.findAll('tbody tr').find(row => row.text().includes('WO-0006'))
     expect(refreshedPageRow).toBeDefined()
     await refreshedPageRow!.get('[data-slot="checkbox"]').trigger('click')
     await card.get('[data-testid="refresh-selection"]').trigger('click')
@@ -437,7 +437,7 @@ describe('Table example behavior', () => {
 
     const retryButton = card
       .findAll('button')
-      .find((button) => button.text().includes(copy.actions.retry))
+      .find(button => button.text().includes(copy.actions.retry))
     expect(retryButton).toBeDefined()
     await retryButton!.trigger('click')
     expect(card.get('[data-testid="active-table-state"]').text()).toContain('ready')

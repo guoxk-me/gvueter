@@ -3,7 +3,7 @@ import type {
   PositionListResponse,
   PositionRecord,
 } from '@/features/positions/types'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { del, get, post, put } from '@/lib/http'
 import { generateMockToken } from '@/mocks/data/users'
 import { resetMockPositions } from '@/mocks/handlers/positions'

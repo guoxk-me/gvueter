@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import AdminContextBar from '@/components/layout/AdminContextBar.vue'
 import {
   ADMIN_DESKTOP_BREAKPOINT_PX,
@@ -13,24 +13,24 @@ import { getActiveTabIdAfterClose } from '@/stores/tab-navigation'
 
 describe('configurable admin layout contract', () => {
   it('gives all six persisted modes a distinct grid arrangement', () => {
-    const definitions = LAYOUT_MODES.map((layoutMode) => getAdminLayoutDefinition(layoutMode))
+    const definitions = LAYOUT_MODES.map(layoutMode => getAdminLayoutDefinition(layoutMode))
 
-    expect(definitions.map((definition) => definition.mode)).toEqual(LAYOUT_MODES)
-    expect(new Set(definitions.map((definition) => definition.gridTemplateAreas)).size).toBe(6)
-    expect(definitions.every((definition) => definition.gridTemplateColumns.length > 0)).toBe(true)
-    expect(definitions.every((definition) => definition.gridTemplateRows.length > 0)).toBe(true)
+    expect(definitions.map(definition => definition.mode)).toEqual(LAYOUT_MODES)
+    expect(new Set(definitions.map(definition => definition.gridTemplateAreas)).size).toBe(6)
+    expect(definitions.every(definition => definition.gridTemplateColumns.length > 0)).toBe(true)
+    expect(definitions.every(definition => definition.gridTemplateRows.length > 0)).toBe(true)
     expect(
-      definitions.every((definition) => definition.previewGridTemplateColumns.length > 0),
+      definitions.every(definition => definition.previewGridTemplateColumns.length > 0),
     ).toBe(true)
-    expect(definitions.every((definition) => definition.previewGridTemplateRows.length > 0)).toBe(
+    expect(definitions.every(definition => definition.previewGridTemplateRows.length > 0)).toBe(
       true,
     )
     expect(
       definitions.every(
-        (definition) => definition.desktopBreakpoint === ADMIN_DESKTOP_BREAKPOINT_PX,
+        definition => definition.desktopBreakpoint === ADMIN_DESKTOP_BREAKPOINT_PX,
       ),
     ).toBe(true)
-    expect(new Set(definitions.map((definition) => definition.desktopBreakpoint))).toEqual(
+    expect(new Set(definitions.map(definition => definition.desktopBreakpoint))).toEqual(
       new Set([1024]),
     )
     expect(ADMIN_SHELL_METRICS).toMatchObject({

@@ -2,13 +2,13 @@ import type { Locator, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 
 type AppLocale = 'en-US' | 'zh-CN'
-type LayoutMode =
-  | 'header-hybrid-header-first'
-  | 'header-hybrid-sidebar-first'
-  | 'mixed'
-  | 'sidebar'
-  | 'sidebar-hybrid-header-first'
-  | 'top'
+type LayoutMode
+  = | 'header-hybrid-header-first'
+    | 'header-hybrid-sidebar-first'
+    | 'mixed'
+    | 'sidebar'
+    | 'sidebar-hybrid-header-first'
+    | 'top'
 type SidebarDefault = 'collapsed' | 'expanded'
 type ThemeMode = 'dark' | 'light'
 type UiDensity = 'compact' | 'standard'
@@ -129,7 +129,8 @@ function durationToMilliseconds(durationList: string): number {
   for (const duration of durationList.split(',')) {
     const trimmedDuration = duration.trim()
     const durationValue = Number.parseFloat(trimmedDuration)
-    if (!Number.isFinite(durationValue)) continue
+    if (!Number.isFinite(durationValue))
+      continue
     const durationMilliseconds = trimmedDuration.endsWith('ms')
       ? durationValue
       : durationValue * 1000
@@ -214,7 +215,7 @@ async function useShellSettings(
 
 async function useThemeDensitySettings(
   page: Page,
-  settings: { density: UiDensity; themeMode: ThemeMode },
+  settings: { density: UiDensity, themeMode: ThemeMode },
 ): Promise<void> {
   await page.evaluate(({ density, themeMode }) => {
     const storedAppearance = JSON.parse(localStorage.getItem('appearance') ?? '{}') as Record<
@@ -246,14 +247,14 @@ async function readShellGeometry(page: Page): Promise<ShellGeometry> {
       ),
     ]
     const verticalNavigationWidths = verticalRegions
-      .map((region) => region.getBoundingClientRect().width)
-      .filter((width) => width > 0.5)
+      .map(region => region.getBoundingClientRect().width)
+      .filter(width => width > 0.5)
     const rightBoundaryOwnerCount = verticalRegions.filter((region) => {
       const styles = getComputedStyle(region)
       return (
-        region.getBoundingClientRect().width > 0.5 &&
-        styles.borderRightStyle !== 'none' &&
-        Number.parseFloat(styles.borderRightWidth) > 0
+        region.getBoundingClientRect().width > 0.5
+        && styles.borderRightStyle !== 'none'
+        && Number.parseFloat(styles.borderRightWidth) > 0
       )
     }).length
     const contextStyles = contextBar ? getComputedStyle(contextBar) : undefined
@@ -273,7 +274,7 @@ async function readShellGeometry(page: Page): Promise<ShellGeometry> {
       contextDirectChildBoundaryCount,
       documentClientWidth: document.documentElement.clientWidth,
       documentScrollWidth: document.documentElement.scrollWidth,
-      railCount: verticalNavigationWidths.filter((width) => width >= 60 && width <= 80).length,
+      railCount: verticalNavigationWidths.filter(width => width >= 60 && width <= 80).length,
       rightBoundaryOwnerCount,
       verticalNavigationWidths,
     }
@@ -314,11 +315,11 @@ async function readResponsivePageGeometry(page: Page): Promise<ResponsivePageGeo
         heading && headingHitTarget && heading.contains(headingHitTarget),
       ),
       isHeadingWithinMain: Boolean(
-        mainRectangle &&
-        headingRectangle &&
-        headingRectangle.left >= mainRectangle.left - 0.5 &&
-        headingRectangle.right <= mainRectangle.right + 0.5 &&
-        headingRectangle.top >= mainRectangle.top - 0.5,
+        mainRectangle
+        && headingRectangle
+        && headingRectangle.left >= mainRectangle.left - 0.5
+        && headingRectangle.right <= mainRectangle.right + 0.5
+        && headingRectangle.top >= mainRectangle.top - 0.5,
       ),
       mainClientWidth: main?.clientWidth ?? 0,
       mainScrollWidth: main?.scrollWidth ?? 0,
@@ -366,7 +367,8 @@ async function captureRouteTransitionDuration(page: Page, targetPath: string): P
       const transitioningRoute = main.querySelector<HTMLElement>(
         '.admin-route-fade-enter-active, .admin-route-fade-leave-active, .admin-route-slide-enter-active, .admin-route-slide-leave-active',
       )
-      if (!transitioningRoute) return
+      if (!transitioningRoute)
+        return
       root.dataset.routeTransitionDuration = getComputedStyle(transitioningRoute).transitionDuration
       observer.disconnect()
     })
@@ -377,7 +379,8 @@ async function captureRouteTransitionDuration(page: Page, targetPath: string): P
   await expect(page).toHaveURL(targetPath)
   await expect
     .poll(() => page.evaluate(() => document.documentElement.dataset.routeTransitionDuration ?? ''))
-    .not.toBe('')
+    .not
+    .toBe('')
   const duration = await page.evaluate(
     () => document.documentElement.dataset.routeTransitionDuration ?? '0s',
   )
@@ -424,8 +427,8 @@ async function armSidebarMotionTrace(page: Page, finalSidebarWidth: number): Pro
         const elapsedMilliseconds = timestamp - startedAt
         const sidebarWidth = sidebarRectangle.width
         hasLeftInitialWidth ||= Math.abs(sidebarWidth - initialSidebarWidth) > 0.75
-        stableFrameCount =
-          hasLeftInitialWidth && Math.abs(sidebarWidth - finalWidth) <= 0.75
+        stableFrameCount
+          = hasLeftInitialWidth && Math.abs(sidebarWidth - finalWidth) <= 0.75
             ? stableFrameCount + 1
             : 0
         frames.push({
@@ -447,7 +450,8 @@ async function armSidebarMotionTrace(page: Page, finalSidebarWidth: number): Pro
 
       // AI modified: start at the committed state change so the trace includes real animation frames.
       const sidebarStateObserver = new MutationObserver(() => {
-        if (root.dataset.sidebarState === initialSidebarState) return
+        if (root.dataset.sidebarState === initialSidebarState)
+          return
         sidebarStateObserver.disconnect()
         requestAnimationFrame(recordFrame)
       })
@@ -466,17 +470,18 @@ async function readSidebarMotionTrace(page: Page): Promise<SidebarMotionFrame[]>
       () =>
         page.evaluate(
           () =>
-            document.querySelector<HTMLElement>('.admin-layout')?.dataset.sidebarMotionDone ??
-            'false',
+            document.querySelector<HTMLElement>('.admin-layout')?.dataset.sidebarMotionDone
+            ?? 'false',
         ),
       { timeout: 2_000 },
     )
     .toBe('true')
 
   return page.evaluate(() => {
-    const serializedFrames =
-      document.querySelector<HTMLElement>('.admin-layout')?.dataset.sidebarMotionTrace
-    if (!serializedFrames) throw new Error('The sidebar motion trace was empty')
+    const serializedFrames
+      = document.querySelector<HTMLElement>('.admin-layout')?.dataset.sidebarMotionTrace
+    if (!serializedFrames)
+      throw new Error('The sidebar motion trace was empty')
     return JSON.parse(serializedFrames) as SidebarMotionFrame[]
   })
 }
@@ -543,22 +548,22 @@ async function readTopNavigationGeometry(page: Page): Promise<TopNavigationGeome
           ...actionStrip.querySelectorAll<HTMLElement>(
             ':scope > button, :scope > a, :scope > div > button',
           ),
-        ].filter((control) => control.getBoundingClientRect().width > 0)
+        ].filter(control => control.getBoundingClientRect().width > 0)
       : []
     const searchControl = actionControls[0]
     const notificationControl = actionControls.find(
-      (control) =>
-        control instanceof HTMLAnchorElement &&
-        new URL(control.href).pathname === '/message-center',
+      control =>
+        control instanceof HTMLAnchorElement
+        && new URL(control.href).pathname === '/message-center',
     )
     const accountControl = [...actionControls]
       .reverse()
-      .find((control) => control instanceof HTMLButtonElement)
+      .find(control => control instanceof HTMLButtonElement)
     const trackedActions = [searchControl, notificationControl, accountControl].filter(
       (control): control is HTMLElement => Boolean(control),
     )
     const navigationControls = [
-      ...visibleRoots.flatMap((root) => [
+      ...visibleRoots.flatMap(root => [
         ...root.querySelectorAll<HTMLElement>(':scope > a, :scope > button'),
       ]),
       ...(moreButton ? [moreButton] : []),
@@ -567,17 +572,17 @@ async function readTopNavigationGeometry(page: Page): Promise<TopNavigationGeome
     function rectanglesIntersect(left: DOMRect, right: DOMRect): boolean {
       const tolerance = 0.5
       return (
-        left.right > right.left + tolerance &&
-        left.left < right.right - tolerance &&
-        left.bottom > right.top + tolerance &&
-        left.top < right.bottom - tolerance
+        left.right > right.left + tolerance
+        && left.left < right.right - tolerance
+        && left.bottom > right.top + tolerance
+        && left.top < right.bottom - tolerance
       )
     }
 
     const intersectionCount = navigationControls.reduce(
       (count, navigationControl) =>
-        count +
-        trackedActions.filter((actionControl) =>
+        count
+        + trackedActions.filter(actionControl =>
           rectanglesIntersect(
             navigationControl.getBoundingClientRect(),
             actionControl.getBoundingClientRect(),
@@ -586,15 +591,15 @@ async function readTopNavigationGeometry(page: Page): Promise<TopNavigationGeome
       0,
     )
     const headerRectangle = header?.getBoundingClientRect()
-    const isWithinHeader =
-      Boolean(headerRectangle) &&
-      [...navigationControls, ...trackedActions].every((control) => {
-        const rectangle = control.getBoundingClientRect()
-        return (
-          rectangle.left >= headerRectangle!.left - 0.5 &&
-          rectangle.right <= headerRectangle!.right + 0.5
-        )
-      })
+    const isWithinHeader
+      = Boolean(headerRectangle)
+        && [...navigationControls, ...trackedActions].every((control) => {
+          const rectangle = control.getBoundingClientRect()
+          return (
+            rectangle.left >= headerRectangle!.left - 0.5
+            && rectangle.right <= headerRectangle!.right + 0.5
+          )
+        })
 
     return {
       actionControlCount: actionControls.length,
@@ -631,6 +636,12 @@ test('keeps all layout contracts on one rail and one context boundary when colla
       layout: layout.id,
       sidebarDefault: 'expanded',
     })
+    // AI modified: WebKit can expose the hydrated shell before its persisted layout width settles.
+    await expect
+      .poll(async () =>
+        (await readShellGeometry(page)).verticalNavigationWidths.map(width => Math.round(width)),
+      )
+      .toEqual(layout.expandedWidths)
     const expandedGeometry = await readShellGeometry(page)
     expectStableShellGeometry(expandedGeometry, layout.expandedRails)
     expectNavigationWidths(expandedGeometry.verticalNavigationWidths, layout.expandedWidths)
@@ -640,14 +651,15 @@ test('keeps all layout contracts on one rail and one context boundary when colla
       exact: true,
     })
     await expect(collapseControl).toHaveCount(layout.canCollapse ? 1 : 0)
-    if (!layout.canCollapse) continue
+    if (!layout.canCollapse)
+      continue
 
     // AI modified: this gate checks the user-facing collapse entry and the resulting geometry together.
     await collapseControl.click()
     await expect(page.getByRole('button', { name: 'Expand sidebar', exact: true })).toBeVisible()
     await expect
       .poll(async () =>
-        (await readShellGeometry(page)).verticalNavigationWidths.map((width) => Math.round(width)),
+        (await readShellGeometry(page)).verticalNavigationWidths.map(width => Math.round(width)),
       )
       .toEqual(layout.collapsedWidths)
     const collapsedGeometry = await readShellGeometry(page)
@@ -657,7 +669,7 @@ test('keeps all layout contracts on one rail and one context boundary when colla
     if (layout.id === 'mixed') {
       const secondaryWidth = await page
         .locator('aside[data-layout-region="secondary-navigation"]')
-        .evaluate((element) => element.getBoundingClientRect().width)
+        .evaluate(element => element.getBoundingClientRect().width)
       expect(secondaryWidth).toBeLessThanOrEqual(1)
     }
   }
@@ -678,7 +690,8 @@ test('animates sidebar collapse without breaking shell geometry', async ({ page 
   const collapseFrames = await readSidebarMotionTrace(page)
   expectSidebarMotionGeometry(collapseFrames, 68)
   for (const [index, frame] of collapseFrames.entries()) {
-    if (index === 0) continue
+    if (index === 0)
+      continue
     expect(frame.sidebarWidth).toBeLessThanOrEqual(
       (collapseFrames[index - 1]?.sidebarWidth ?? 0) + 1,
     )
@@ -703,7 +716,7 @@ test('switches sidebar endpoints without interpolation when motion is reduced', 
   )
   const initialSidebarWidth = await page
     .locator('aside[data-layout-region="primary-navigation"]')
-    .evaluate((element) => element.getBoundingClientRect().width)
+    .evaluate(element => element.getBoundingClientRect().width)
   await armSidebarMotionTrace(page, 68)
   await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click()
   const reducedMotionFrames = await readSidebarMotionTrace(page)
@@ -911,10 +924,10 @@ test('keeps every layout and locale stable across the responsive acceptance matr
           .poll(async () => {
             const geometry = await readResponsivePageGeometry(page)
             return (
-              geometry.documentScrollWidth <= geometry.documentClientWidth &&
-              geometry.mainScrollWidth <= geometry.mainClientWidth &&
-              geometry.isHeadingWithinMain &&
-              geometry.isHeadingUncovered
+              geometry.documentScrollWidth <= geometry.documentClientWidth
+              && geometry.mainScrollWidth <= geometry.mainClientWidth
+              && geometry.isHeadingWithinMain
+              && geometry.isHeadingUncovered
             )
           })
           .toBe(true)
@@ -924,7 +937,8 @@ test('keeps every layout and locale stable across the responsive acceptance matr
         expect(pageGeometry.visibleDesktopNavigationCount).toBeGreaterThanOrEqual(
           width < 1024 ? 0 : 1,
         )
-        if (width < 1024) expect(pageGeometry.visibleDesktopNavigationCount).toBe(0)
+        if (width < 1024)
+          expect(pageGeometry.visibleDesktopNavigationCount).toBe(0)
 
         const shellGeometry = await readShellGeometry(page)
         expectStableShellGeometry(shellGeometry, width < 1024 ? 0 : layout.expandedRails)
@@ -1025,7 +1039,8 @@ test('moves keyboard focus through the skip link into the active route', async (
   await page.setViewportSize({ width: 1280, height: 900 })
   await signInAsAdmin(page)
   await page.evaluate(() => {
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+    if (document.activeElement instanceof HTMLElement)
+      document.activeElement.blur()
   })
   await expect.poll(() => page.evaluate(() => document.activeElement?.tagName)).toBe('BODY')
 
@@ -1068,10 +1083,10 @@ test('keeps representative native and composite controls at least 44px on coarse
         const rectangle = element.getBoundingClientRect()
         return { height: rectangle.height, width: rectangle.width }
       })
-      const accessibleName =
-        (await touchTarget.getAttribute('aria-label')) ??
-        (await touchTarget.getAttribute('placeholder')) ??
-        (await touchTarget.textContent())
+      const accessibleName
+        = (await touchTarget.getAttribute('aria-label'))
+          ?? (await touchTarget.getAttribute('placeholder'))
+          ?? (await touchTarget.textContent())
       expect(targetSize.height, `${accessibleName} height`).toBeGreaterThanOrEqual(44)
       expect(targetSize.width, `${accessibleName} width`).toBeGreaterThanOrEqual(44)
     }
@@ -1087,7 +1102,8 @@ test('keeps representative native and composite controls at least 44px on coarse
     expect(mobileGeometry.documentScrollWidth).toBeLessThanOrEqual(
       mobileGeometry.documentClientWidth,
     )
-  } finally {
+  }
+  finally {
     await touchContext.close()
   }
 })
@@ -1112,11 +1128,13 @@ test('applies light and dark themes at standard and compact density', async ({ p
       // AI modified: density sets the row floor; wrapped business text may grow beyond it.
       expect(geometry.tableRowHeight).toBeGreaterThan(expectedTableRowHeight)
       expect(geometry.tableRowVariable).toBe(expectedTableRowVariable)
-      if (themeMode === 'dark') await expect(page.locator('html')).toHaveClass(/dark/)
+      if (themeMode === 'dark')
+        await expect(page.locator('html')).toHaveClass(/dark/)
       else await expect(page.locator('html')).not.toHaveClass(/dark/)
 
       const existingSurface = themeSurfaces.get(themeMode)
-      if (existingSurface) expect(geometry.bodyBackgroundColor).toBe(existingSurface)
+      if (existingSurface)
+        expect(geometry.bodyBackgroundColor).toBe(existingSurface)
       else themeSurfaces.set(themeMode, geometry.bodyBackgroundColor)
     }
   }
@@ -1140,7 +1158,8 @@ test('honors normal and reduced motion for routes, sheets, and theme view transi
     )
 
     const originalStartViewTransition = document.startViewTransition?.bind(document)
-    if (!originalStartViewTransition) return
+    if (!originalStartViewTransition)
+      return
     Object.defineProperty(document, 'startViewTransition', {
       configurable: true,
       value: (updateCallback: () => Promise<void> | void) => {
@@ -1207,7 +1226,8 @@ test('honors normal and reduced motion for routes, sheets, and theme view transi
     if (reducedMotion === 'reduce') {
       expect(routeDuration).toBeLessThanOrEqual(1)
       expect(sheetDuration).toBeLessThanOrEqual(1)
-    } else {
+    }
+    else {
       expect(routeDuration).toBeGreaterThan(100)
       expect(sheetDuration).toBeGreaterThan(100)
     }

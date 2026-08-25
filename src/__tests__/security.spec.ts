@@ -1,6 +1,6 @@
 import type { PositionRecord } from '@/features/positions/types'
 import type { CaptchaChallenge } from '@/types/auth'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { isUploadFileNameSafe, isUploadFileTypeAllowed } from '@/components/admin'
 import { updateRolePermissions } from '@/features/roles/role-policy'
 import { ApiError, del, get, http as httpClient, post, put } from '@/lib/http'
@@ -17,8 +17,10 @@ async function requestPasswordLogin(email: string, password: string): Promise<Ap
       captchaCode: solveCaptchaChallenge(captcha.challenge),
       provider: 'password',
     })
-  } catch (error: unknown) {
-    if (error instanceof ApiError) return error
+  }
+  catch (error: unknown) {
+    if (error instanceof ApiError)
+      return error
     throw error
   }
   throw new Error('Expected password login to fail')

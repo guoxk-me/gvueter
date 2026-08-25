@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import type { PositionListFilters } from '@/features/positions/types'
 import type { SystemParameterListFilters } from '@/features/system-parameters/types'
 import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import PositionsWorkspace from '@/features/positions/components/PositionsWorkspace.vue'
 import SystemParametersWorkspace from '@/features/system-parameters/components/SystemParametersWorkspace.vue'
@@ -80,7 +80,7 @@ describe('workspace filter accessibility', () => {
 
     await wrapper
       .findAll('button')
-      .find((button) => button.text() === 'Reset')!
+      .find(button => button.text() === 'Reset')!
       .trigger('click')
     expect(managementFilters.positions?.value).toEqual({ keyword: '', status: 'all' })
   })

@@ -1,6 +1,6 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { toast } from 'vue-sonner'
 import { Toaster } from '@/components/ui/sonner'
@@ -85,12 +85,12 @@ describe('primitive catalog route', () => {
   it('keeps the installed 65-entry catalog authoritative and wires the dedicated route', () => {
     // AI modified: inventory includes every installed shadcn primitive, even before product adoption.
     expect(uiPrimitiveCatalog).toHaveLength(65)
-    expect(new Set(uiPrimitiveCatalog.map((primitive) => primitive.id)).size).toBe(65)
-    expect(uiPrimitiveCatalog.every((primitive) => primitive.kind === 'ui-primitive')).toBe(true)
+    expect(new Set(uiPrimitiveCatalog.map(primitive => primitive.id)).size).toBe(65)
+    expect(uiPrimitiveCatalog.every(primitive => primitive.kind === 'ui-primitive')).toBe(true)
 
-    const adminRoot = adminRoutes.find((route) => route.name === 'admin-root')
+    const adminRoot = adminRoutes.find(route => route.name === 'admin-root')
     const primitivesRoute = adminRoot?.children?.find(
-      (route) => route.name === 'component-primitives',
+      route => route.name === 'component-primitives',
     )
     expect(primitivesRoute?.path).toBe('components/primitives')
     expect(primitivesRoute?.props).toBeUndefined()
@@ -101,22 +101,22 @@ describe('primitive catalog route', () => {
     const englishDecisions = getPrimitiveGapDecisions('en-US')
     const chineseDecisions = getPrimitiveGapDecisions('zh-CN')
 
-    expect(englishDecisions.map((decision) => decision.id).sort()).toEqual(
+    expect(englishDecisions.map(decision => decision.id).sort()).toEqual(
       [...requestedGapIds].sort(),
     )
-    expect(chineseDecisions.map((decision) => decision.id)).toEqual(
-      englishDecisions.map((decision) => decision.id),
+    expect(chineseDecisions.map(decision => decision.id)).toEqual(
+      englishDecisions.map(decision => decision.id),
     )
-    expect(englishDecisions.every((decision) => decision.reason.length > 20)).toBe(true)
-    expect(englishDecisions.every((decision) => decision.alternative.length > 20)).toBe(true)
+    expect(englishDecisions.every(decision => decision.reason.length > 20)).toBe(true)
+    expect(englishDecisions.every(decision => decision.alternative.length > 20)).toBe(true)
     expect(
-      englishDecisions.every((decision) => ['defer', 'not-applicable'].includes(decision.status)),
+      englishDecisions.every(decision => ['defer', 'not-applicable'].includes(decision.status)),
     ).toBe(true)
     expect(
       chineseDecisions.every(
-        (decision) =>
-          decision.reason !==
-          englishDecisions.find((candidate) => candidate.id === decision.id)?.reason,
+        decision =>
+          decision.reason
+          !== englishDecisions.find(candidate => candidate.id === decision.id)?.reason,
       ),
     ).toBe(true)
   })
@@ -128,7 +128,7 @@ describe('primitive live examples', () => {
     const renderedDemoIds = new Set(
       wrapper
         .findAll('[data-primitive-demo]')
-        .map((demo) => demo.attributes('data-primitive-demo')),
+        .map(demo => demo.attributes('data-primitive-demo')),
     )
 
     for (const expectedDemoId of expectedDirectDemoIds)
@@ -182,7 +182,7 @@ describe('primitive live examples', () => {
     await flushPromises()
     const exportAction = [
       ...document.body.querySelectorAll<HTMLElement>('[data-slot="dropdown-menu-item"]'),
-    ].find((menuEntry) => menuEntry.textContent?.trim() === 'Export record')
+    ].find(menuEntry => menuEntry.textContent?.trim() === 'Export record')
     expect(exportAction).toBeDefined()
     exportAction!.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }))
     exportAction!.click()
@@ -223,7 +223,7 @@ describe('primitive live examples', () => {
       ...document.body.querySelectorAll<HTMLButtonElement>(
         '[data-primitive-overlay="dialog"] button',
       ),
-    ].find((dialogButton) => dialogButton.textContent?.trim() === 'Close')
+    ].find(dialogButton => dialogButton.textContent?.trim() === 'Close')
     dialogClose?.click()
     await nextTick()
 
@@ -232,7 +232,7 @@ describe('primitive live examples', () => {
     expect(document.body.querySelector('[data-primitive-overlay="drawer"]')).not.toBeNull()
     const drawerClose = [
       ...document.body.querySelectorAll<HTMLButtonElement>('[data-slot="sheet-content"] button'),
-    ].find((drawerButton) => drawerButton.textContent?.trim() === 'Close')
+    ].find(drawerButton => drawerButton.textContent?.trim() === 'Close')
     drawerClose?.click()
     await nextTick()
 

@@ -36,19 +36,27 @@ async function expectNoAccessibilityViolations(page: Page): Promise<void> {
   )
   await page.evaluate(
     () =>
-      new Promise<void>((resolve) =>
+      new Promise<void>(resolve =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       ),
   )
+  // AI modified: WebKit must finish finite theme and control transitions before axe samples colors.
+  await page.evaluate(async () => {
+    const finiteAnimations = document.getAnimations().filter((animation) => {
+      const iterations = animation.effect?.getTiming().iterations
+      return animation.playState === 'running' && iterations !== Infinity
+    })
+    await Promise.all(finiteAnimations.map(animation => animation.finished.catch(() => undefined)))
+  })
   // AI modified: browser acceptance runs the WCAG A/AA and axe best-practice rules on real pages.
   const scan = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa', 'best-practice'])
     .analyze()
   const diagnostic = scan.violations
     .map(
-      (violation) =>
+      violation =>
         `${violation.id} (${violation.impact ?? 'unknown'}): ${violation.nodes
-          .map((node) => node.target.join(' '))
+          .map(node => node.target.join(' '))
           .join(', ')}`,
     )
     .join('\n')

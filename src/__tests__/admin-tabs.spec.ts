@@ -1,7 +1,7 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick, shallowRef } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import AdminRouteOutlet from '@/components/layout/AdminRouteOutlet.vue'
@@ -114,20 +114,20 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('AdminTabs overflow affordance', () => {
+describe('adminTabs overflow affordance', () => {
   it('uses one roving tab stop and supports standard horizontal keyboard navigation', async () => {
     const wrapper = await mountAdminTabs()
     let tabs = wrapper.findAll<HTMLButtonElement>('button[role="tab"]')
 
-    expect(tabs.map((tab) => tab.attributes('tabindex'))).toEqual(['-1', '-1', '0'])
+    expect(tabs.map(tab => tab.attributes('tabindex'))).toEqual(['-1', '-1', '0'])
     tabs[2]!.element.focus()
 
     await tabs[2]!.trigger('keydown', { key: 'ArrowRight' })
     await flushPromises()
     tabs = wrapper.findAll<HTMLButtonElement>('button[role="tab"]')
     expect(document.activeElement).toBe(tabs[0]!.element)
-    expect(tabs.map((tab) => tab.attributes('aria-selected'))).toEqual(['true', 'false', 'false'])
-    expect(tabs.map((tab) => tab.attributes('tabindex'))).toEqual(['0', '-1', '-1'])
+    expect(tabs.map(tab => tab.attributes('aria-selected'))).toEqual(['true', 'false', 'false'])
+    expect(tabs.map(tab => tab.attributes('tabindex'))).toEqual(['0', '-1', '-1'])
 
     await tabs[0]!.trigger('keydown', { key: 'End' })
     await flushPromises()
@@ -151,9 +151,9 @@ describe('AdminTabs overflow affordance', () => {
 
     expect(closeAffordances).toHaveLength(2)
     expect(
-      closeAffordances.every((affordance) => affordance.attributes('aria-hidden') === 'true'),
+      closeAffordances.every(affordance => affordance.attributes('aria-hidden') === 'true'),
     ).toBe(true)
-    expect(closeAffordances.map((affordance) => affordance.attributes('title'))).toEqual([
+    expect(closeAffordances.map(affordance => affordance.attributes('title'))).toEqual([
       'Close User Management With A Long Label',
       'Close Settings',
     ])
@@ -167,7 +167,7 @@ describe('AdminTabs overflow affordance', () => {
 
     const remainingTabs = wrapper.findAll<HTMLButtonElement>('button[role="tab"]')
     expect(remainingTabs).toHaveLength(2)
-    expect(remainingTabs.map((tab) => tab.attributes('tabindex'))).toEqual(['-1', '0'])
+    expect(remainingTabs.map(tab => tab.attributes('tabindex'))).toEqual(['-1', '0'])
     expect(document.activeElement).toBe(remainingTabs[1]!.element)
 
     await remainingTabs[1]!.trigger('keydown', { key: 'Delete' })
@@ -251,7 +251,7 @@ describe('AdminTabs overflow affordance', () => {
   })
 })
 
-describe('AdminRouteOutlet cached route identity', () => {
+describe('adminRouteOutlet cached route identity', () => {
   it('updates query state in the active logical tab without opening a duplicate', async () => {
     const pinia = createPinia()
     const router = createRouter({
@@ -288,9 +288,12 @@ describe('AdminRouteOutlet cached route identity', () => {
       const styles = browserGetComputedStyle(element, pseudoElement)
       return new Proxy(styles, {
         get(target, property, receiver) {
-          if (property === 'transitionDelay') return '0s'
-          if (property === 'transitionDuration') return '0.16s'
-          if (property === 'transitionProperty') return 'opacity, transform'
+          if (property === 'transitionDelay')
+            return '0s'
+          if (property === 'transitionDuration')
+            return '0.16s'
+          if (property === 'transitionProperty')
+            return 'opacity, transform'
           return Reflect.get(target, property, receiver)
         },
       })
@@ -337,15 +340,15 @@ describe('AdminRouteOutlet cached route identity', () => {
     tabsStore.activateTab('/records?view=second')
     await router.push('/records?view=second')
     await flushPromises()
-    await new Promise((resolve) => globalThis.setTimeout(resolve, 50))
-    expect(wrapper.findAll('h1').some((heading) => heading.text() === 'second')).toBe(true)
+    await new Promise(resolve => globalThis.setTimeout(resolve, 50))
+    expect(wrapper.findAll('h1').some(heading => heading.text() === 'second')).toBe(true)
     // AI modified: the outgoing animated page stays visual but leaves the accessibility tree immediately.
     expect(
       wrapper
         .findAll('h1')
-        .filter((heading) => heading.element.closest('[aria-hidden="true"]') === null),
+        .filter(heading => heading.element.closest('[aria-hidden="true"]') === null),
     ).toHaveLength(1)
-    await new Promise((resolve) => globalThis.setTimeout(resolve, 250))
+    await new Promise(resolve => globalThis.setTimeout(resolve, 250))
     expect(wrapper.get('h1').text()).toBe('second')
   })
 
@@ -455,6 +458,6 @@ describe('tabs storage resilience', () => {
       }),
     ).not.toThrow()
     expect(tabsStore.activeTabId).toBe('/dashboard')
-    expect(tabsStore.tabs.map((tab) => tab.fullPath)).toEqual(['/dashboard'])
+    expect(tabsStore.tabs.map(tab => tab.fullPath)).toEqual(['/dashboard'])
   })
 })

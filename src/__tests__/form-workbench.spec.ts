@@ -7,7 +7,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { HttpResponse, http as mswHttp } from 'msw'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import { DateTimePicker } from '@/components/admin'
 import FormWorkbench from '@/features/form-workbench/components/FormWorkbench.vue'
@@ -93,7 +93,7 @@ class MemoryStorage implements Storage {
 
 describe('form workbench rules', () => {
   it('exposes schema-driven basic controls and linked cascade behavior', () => {
-    expect(FORM_WORKBENCH_FIELDS.map((field) => field.name)).toEqual([
+    expect(FORM_WORKBENCH_FIELDS.map(field => field.name)).toEqual([
       'title',
       'budget',
       'category',
@@ -106,7 +106,7 @@ describe('form workbench rules', () => {
   })
 
   it('validates synchronous content and category-linked reviewer rules with Zod', () => {
-    const schema = getFormWorkbenchSchema((key) => key)
+    const schema = getFormWorkbenchSchema(key => key)
     const validValues = schema.safeParse(validSubmission)
     expect(validValues.success).toBe(true)
     expect(hasRichTextContent('<p><br></p>')).toBe(false)
@@ -118,7 +118,7 @@ describe('form workbench rules', () => {
     })
     expect(invalidValues.success).toBe(false)
     if (!invalidValues.success) {
-      expect(invalidValues.error.issues.map((issue) => issue.path[0])).toEqual(
+      expect(invalidValues.error.issues.map(issue => issue.path[0])).toEqual(
         expect.arrayContaining(['reviewers', 'richContent']),
       )
     }
@@ -256,7 +256,8 @@ describe('form workbench basic-field accessibility', () => {
     expect(
       wrapper
         .get('#workbench-title')
-        .element.closest('[data-slot="field"]')
+        .element
+        .closest('[data-slot="field"]')
         ?.getAttribute('data-invalid'),
     ).toBe('true')
   })
@@ -299,7 +300,7 @@ describe('form workbench basic-field accessibility', () => {
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 
     const confirmButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.trim() === 'Confirm',
+      button => button.textContent?.trim() === 'Confirm',
     )
     expect(confirmButton?.disabled).toBe(false)
     confirmButton?.click()
@@ -310,7 +311,7 @@ describe('form workbench basic-field accessibility', () => {
     await trigger.trigger('click')
     await flushPromises()
     const resetButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.trim() === 'Reset',
+      button => button.textContent?.trim() === 'Reset',
     )
     resetButton?.click()
     await flushPromises()
@@ -346,8 +347,8 @@ describe('form workbench basic-field accessibility', () => {
     })
     expect(wrapper.get('#workbench-active-range-message').attributes('role')).toBe('alert')
     expect(wrapper.get('#workbench-markdown').attributes()).toMatchObject({
-      name: 'markdown',
-      autocomplete: 'off',
+      'name': 'markdown',
+      'autocomplete': 'off',
       'aria-invalid': 'true',
       'aria-describedby': 'workbench-markdown-message',
     })
@@ -454,7 +455,7 @@ describe('form workbench browser behavior', () => {
     })
     await flushPromises()
 
-    const nextButton = wrapper.findAll('button').find((button) => button.text() === 'Next')
+    const nextButton = wrapper.findAll('button').find(button => button.text() === 'Next')
     expect(nextButton).toBeDefined()
     await nextButton!.trigger('click')
     await flushPromises()
@@ -520,7 +521,7 @@ describe('form workbench browser behavior', () => {
     await requestStarted
     await flushPromises()
 
-    const nextButton = wrapper.findAll('button').find((button) => button.text() === 'Next')
+    const nextButton = wrapper.findAll('button').find(button => button.text() === 'Next')
     expect(nextButton).toBeDefined()
     // AI modified: an in-flight blur check must not disable the click that advances the workflow.
     expect(nextButton!.attributes('disabled')).toBeUndefined()
@@ -557,7 +558,8 @@ describe('form workbench browser behavior', () => {
         if (requestNumber === 1) {
           markFirstStarted()
           await firstResponseGate
-        } else {
+        }
+        else {
           markSecondStarted()
           await secondResponseGate
         }

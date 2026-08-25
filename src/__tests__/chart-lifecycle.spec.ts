@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import ChartContainer from '@/components/ui/chart/ChartContainer.vue'
 import { componentToString } from '@/components/ui/chart/utils'
@@ -30,8 +30,7 @@ class ChartResizeObserver implements ResizeObserver {
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', ChartResizeObserver)
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) =>
-    window.setTimeout(callback, 0, 0),
-  )
+    window.setTimeout(callback, 0, 0))
   vi.stubGlobal('cancelAnimationFrame', (frame: number) => window.clearTimeout(frame))
 })
 
@@ -40,7 +39,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('ChartContainer lifecycle', () => {
+describe('chartContainer lifecycle', () => {
   it('bounds cached tooltip markup across many unique payloads', () => {
     const tooltipCallbacks: NonNullable<ReturnType<typeof componentToString>>[] = []
     let renderCount = 0
@@ -59,13 +58,15 @@ describe('ChartContainer lifecycle', () => {
           { users: { label: 'Users', color: '#000' } },
           TooltipContent,
         )
-        if (tooltipMarkup) tooltipCallbacks.push(tooltipMarkup)
+        if (tooltipMarkup)
+          tooltipCallbacks.push(tooltipMarkup)
         return () => h('div')
       },
     })
     const wrapper = mount(TooltipHarness)
     const tooltipMarkup = tooltipCallbacks[0]
-    if (!tooltipMarkup) throw new Error('Expected the tooltip renderer to initialize')
+    if (!tooltipMarkup)
+      throw new Error('Expected the tooltip renderer to initialize')
 
     for (let payload = 0; payload <= 200; payload += 1) tooltipMarkup(payload, payload)
     tooltipMarkup(0, 0)
@@ -118,12 +119,12 @@ describe('ChartContainer lifecycle', () => {
 
     expect(wrapper.get('[data-testid="revision"]').text()).toBe('0')
     ChartResizeObserver.latest?.notify(640, 256)
-    await new Promise((resolve) => window.setTimeout(resolve, 0))
+    await new Promise(resolve => window.setTimeout(resolve, 0))
     await nextTick()
     expect(wrapper.get('[data-testid="revision"]').text()).toBe('1')
 
     ChartResizeObserver.latest?.notify(640, 256)
-    await new Promise((resolve) => window.setTimeout(resolve, 0))
+    await new Promise(resolve => window.setTimeout(resolve, 0))
     await nextTick()
     expect(wrapper.get('[data-testid="revision"]').text()).toBe('1')
   })

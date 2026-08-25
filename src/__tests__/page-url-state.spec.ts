@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
 import { enableAutoUnmount, flushPromises, shallowMount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import TableExamplesPage from '@/pages/admin/components/TableExamplesPage.vue'

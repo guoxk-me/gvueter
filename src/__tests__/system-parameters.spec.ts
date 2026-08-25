@@ -3,7 +3,7 @@ import type {
   SystemParameterRecord,
 } from '@/features/system-parameters/types'
 import { mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   createSystemParameter,
   deleteSystemParameter,

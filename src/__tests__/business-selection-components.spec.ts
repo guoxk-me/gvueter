@@ -2,7 +2,7 @@ import type { DepartmentRecord } from '@/features/departments/types'
 import type { UserListResponse } from '@/features/users/types'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import {
   CodeEditor,
@@ -80,7 +80,7 @@ describe('business identity selectors', () => {
     await nextTick()
     const editorOption = [
       ...document.body.querySelectorAll<HTMLButtonElement>('[role="option"]'),
-    ].find((option) => option.textContent?.includes('Content Editor'))
+    ].find(option => option.textContent?.includes('Content Editor'))
     editorOption?.click()
     await nextTick()
     expect(roleWrapper.emitted('update:modelValue')?.[0]).toEqual(['editor'])
@@ -106,7 +106,7 @@ describe('business identity selectors', () => {
   })
 })
 
-describe('DepartmentTree', () => {
+describe('departmentTree', () => {
   const departments: readonly DepartmentRecord[] = [
     { id: 'company', name: 'Company', parentId: null, order: 1, status: 'active' },
     { id: 'product', name: 'Product', parentId: 'company', order: 1, status: 'active' },

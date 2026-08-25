@@ -1,5 +1,5 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import ActivityTimeline from '@/components/admin/ActivityTimeline.vue'
 import ConfirmAction from '@/components/admin/ConfirmAction.vue'
@@ -36,7 +36,7 @@ describe('workflow and feedback components', () => {
     })
 
     expect(wrapper.findAll('ol > li')).toHaveLength(2)
-    expect(wrapper.findAll('time').map((time) => time.text())).toEqual([
+    expect(wrapper.findAll('time').map(time => time.text())).toEqual([
       '2026-07-16 09:30',
       '2026-07-16 09:45',
     ])
@@ -61,13 +61,13 @@ describe('workflow and feedback components', () => {
     await nextTick()
 
     const pendingButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.includes('Deleting…'),
+      button => button.textContent?.includes('Deleting…'),
     )
     expect(pendingButton?.disabled).toBe(true)
 
     await wrapper.setProps({ isPending: false })
     const confirmButton = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent?.trim() === 'Delete',
+      button => button.textContent?.trim() === 'Delete',
     )
     expect(confirmButton).toBeDefined()
     confirmButton?.click()

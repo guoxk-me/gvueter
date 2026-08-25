@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { MotionConfig } from 'motion-v'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, shallowRef } from 'vue'
 import { useAdminMotionTransition } from '@/composables/use-admin-motion-transition'
 import {
@@ -57,8 +57,7 @@ describe('admin motion contract', () => {
       setup() {
         return () =>
           h(MotionConfig, { skipAnimations: shouldReduceMotion.value }, () =>
-            h(MotionTransitionProbe),
-          )
+            h(MotionTransitionProbe))
       },
     })
     const wrapper = mount(MotionTransitionHost)
