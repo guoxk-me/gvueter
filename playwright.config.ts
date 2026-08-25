@@ -103,7 +103,9 @@ export default defineConfig({
      * Use the preview server on CI for more realistic testing.
      * Playwright will re-use the local server if there is already a dev-server running.
      */
-    command: isCI ? 'vp preview --host 127.0.0.1' : 'vp dev --host 127.0.0.1',
+    command: isCI
+      ? 'pnpm run preview --host 127.0.0.1'
+      : 'pnpm run dev --host 127.0.0.1',
     port: isCI ? 4173 : 5173,
     // AI modified: CI owns an isolated preview process and never trusts a stale port occupant.
     reuseExistingServer: !isCI,

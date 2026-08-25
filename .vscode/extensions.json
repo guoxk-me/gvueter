@@ -4,7 +4,6 @@
     "vitest.explorer",
     "ms-playwright.playwright",
     "dbaeumer.vscode-eslint",
-    "EditorConfig.EditorConfig",
-    "VoidZero.vite-plus-extension-pack"
+    "EditorConfig.EditorConfig"
   ]
 }

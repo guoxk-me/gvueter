@@ -6,6 +6,7 @@ export interface PseudoLocaleOptions {
   protectedTerms?: readonly string[]
 }
 
+// AI modified: protected tool names reflect the current official Vite toolchain.
 const DEFAULT_PROTECTED_TERMS = [
   'Admin Panel',
   'Tailwind CSS',
@@ -17,7 +18,6 @@ const DEFAULT_PROTECTED_TERMS = [
   'Markdown',
   'VitePress',
   'Vue.js',
-  'Vite+',
   'Pinia',
   'Reka',
   'Vue',
@@ -85,7 +85,7 @@ function escapeRegularExpression(term: string) {
 
 function getProtectedTokenPattern(options: PseudoLocaleOptions = {}) {
   const protectedTerms = [...DEFAULT_PROTECTED_TERMS, ...(options.protectedTerms ?? [])]
-    .filter((term) => term.length > 0)
+    .filter(term => term.length > 0)
     .sort((leftTerm, rightTerm) => rightTerm.length - leftTerm.length)
     .map(escapeRegularExpression)
 
@@ -107,11 +107,11 @@ function getProtectedTokenPattern(options: PseudoLocaleOptions = {}) {
 }
 
 function getPseudoText(messagePart: string) {
-  return messagePart.replace(/[a-z]/gi, (character) => PSEUDO_LETTERS[character] ?? character)
+  return messagePart.replace(/[a-z]/gi, character => PSEUDO_LETTERS[character] ?? character)
 }
 
 function getMessageParts(message: string, options: PseudoLocaleOptions) {
-  const messageParts: Array<{ isProtected: boolean; text: string }> = []
+  const messageParts: Array<{ isProtected: boolean, text: string }> = []
   const protectedTokenPattern = getProtectedTokenPattern(options)
   let ordinaryStart = 0
 
@@ -136,7 +136,7 @@ function getMessageParts(message: string, options: PseudoLocaleOptions) {
 }
 
 export function getProtectedMessageTokens(message: string, options: PseudoLocaleOptions = {}) {
-  return [...message.matchAll(getProtectedTokenPattern(options))].map((tokenMatch) => tokenMatch[0])
+  return [...message.matchAll(getProtectedTokenPattern(options))].map(tokenMatch => tokenMatch[0])
 }
 
 export function createPseudoMessage(message: string, options: PseudoLocaleOptions = {}) {
@@ -147,17 +147,18 @@ export function createPseudoMessage(message: string, options: PseudoLocaleOption
     0,
   )
   const hasOrdinaryText = messageParts.some(
-    (messagePart) => !messagePart.isProtected && /\p{L}/u.test(messagePart.text),
+    messagePart => !messagePart.isProtected && /\p{L}/u.test(messagePart.text),
   )
 
-  if (!hasOrdinaryText) return message
+  if (!hasOrdinaryText)
+    return message
 
   // AI modified: preserve executable message tokens while expanding only human-readable copy for layout tests.
   const extraCharacterCount = Math.max(1, Math.floor(ordinaryLength / 2))
   const shouldAddBoundaryMarkers = extraCharacterCount >= 2
   const fillerCharacterCount = extraCharacterCount - (shouldAddBoundaryMarkers ? 2 : 0)
   const pseudoText = messageParts
-    .map((messagePart) =>
+    .map(messagePart =>
       messagePart.isProtected ? messagePart.text : getPseudoText(messagePart.text),
     )
     .join('')
@@ -173,8 +174,8 @@ export function createPseudoLocale(
   const pseudoMessages: Record<string, string | LocaleMessageTree> = {}
 
   for (const [messageKey, message] of Object.entries(messages)) {
-    pseudoMessages[messageKey] =
-      typeof message === 'string'
+    pseudoMessages[messageKey]
+      = typeof message === 'string'
         ? createPseudoMessage(message, options)
         : createPseudoLocale(message, options)
   }

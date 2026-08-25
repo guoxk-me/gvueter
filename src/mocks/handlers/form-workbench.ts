@@ -41,10 +41,10 @@ let schemaSubmissionSequence = 1
 const MAX_MOCK_FORM_SUBMISSIONS = 500
 const MAX_MOCK_SCHEMA_SUBMISSIONS = 500
 const MAX_SCHEMA_SUBMISSION_JSON_BYTES = 256 * 1024
-const MAX_SCHEMA_MULTIPART_BYTES =
-  MAX_SCHEMA_SUBMISSION_JSON_BYTES +
-  SCHEMA_DRIVEN_EVIDENCE_MAX_FILES * SCHEMA_DRIVEN_EVIDENCE_MAX_BYTES +
-  64 * 1024
+const MAX_SCHEMA_MULTIPART_BYTES
+  = MAX_SCHEMA_SUBMISSION_JSON_BYTES
+    + SCHEMA_DRIVEN_EVIDENCE_MAX_FILES * SCHEMA_DRIVEN_EVIDENCE_MAX_BYTES
+    + 64 * 1024
 const schemaOwnerOptions: Record<SchemaEnvironment, SchemaOwnerOptionsResponse['options']> = {
   development: [
     { value: 'developer-experience', label: 'Developer Experience' },
@@ -67,9 +67,9 @@ function getComparableTitle(title: string): string {
 function isTitleAvailable(title: string): boolean {
   const comparableTitle = getComparableTitle(title)
   return (
-    Boolean(comparableTitle) &&
-    !reservedTitles.has(comparableTitle) &&
-    !savedSubmissions.some((submission) => getComparableTitle(submission.title) === comparableTitle)
+    Boolean(comparableTitle)
+    && !reservedTitles.has(comparableTitle)
+    && !savedSubmissions.some(submission => getComparableTitle(submission.title) === comparableTitle)
   )
 }
 
@@ -81,13 +81,13 @@ interface SchemaEvidenceCandidate {
   fileName: string
 }
 
-type SchemaMultipartRead =
-  | {
-      isValid: true
-      evidenceFiles: SchemaEvidenceCandidate[]
-      submission: SchemaDrivenSubmissionFields
-    }
-  | { isValid: false; response: Response }
+type SchemaMultipartRead
+  = | {
+    isValid: true
+    evidenceFiles: SchemaEvidenceCandidate[]
+    submission: SchemaDrivenSubmissionFields
+  }
+  | { isValid: false, response: Response }
 
 function schemaSubmissionFailure(
   code: string,
@@ -118,9 +118,12 @@ function hasSchemaEvidenceExtension(
   contentType: SchemaDrivenEvidenceMimeType,
 ): boolean {
   const lowerFileName = fileName.toLocaleLowerCase()
-  if (contentType === 'application/pdf') return lowerFileName.endsWith('.pdf')
-  if (contentType === 'text/csv') return lowerFileName.endsWith('.csv')
-  if (contentType === 'image/png') return lowerFileName.endsWith('.png')
+  if (contentType === 'application/pdf')
+    return lowerFileName.endsWith('.pdf')
+  if (contentType === 'text/csv')
+    return lowerFileName.endsWith('.csv')
+  if (contentType === 'image/png')
+    return lowerFileName.endsWith('.png')
   return lowerFileName.endsWith('.jpg') || lowerFileName.endsWith('.jpeg')
 }
 
@@ -131,14 +134,17 @@ function hasSchemaEvidenceSignature(
   const startsWith = (signature: readonly number[]) =>
     signature.every((byte, index) => bytes[index] === byte)
 
-  if (contentType === 'application/pdf') return startsWith([0x25, 0x50, 0x44, 0x46, 0x2d])
+  if (contentType === 'application/pdf')
+    return startsWith([0x25, 0x50, 0x44, 0x46, 0x2D])
   if (contentType === 'image/png')
-    return startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-  if (contentType === 'image/jpeg') return startsWith([0xff, 0xd8, 0xff])
+    return startsWith([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+  if (contentType === 'image/jpeg')
+    return startsWith([0xFF, 0xD8, 0xFF])
   try {
     const csvText = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
     return Boolean(csvText.trim()) && !csvText.includes('\0')
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -148,7 +154,8 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
   let requestBytes: ArrayBuffer
   try {
     requestBytes = await request.arrayBuffer()
-  } catch {
+  }
+  catch {
     return {
       isValid: false,
       response: schemaSubmissionFailure(
@@ -159,8 +166,8 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
       ),
     }
   }
-  const multipartParts =
-    requestBytes.byteLength <= MAX_SCHEMA_MULTIPART_BYTES
+  const multipartParts
+    = requestBytes.byteLength <= MAX_SCHEMA_MULTIPART_BYTES
       ? readMockMultipartParts(contentType, requestBytes)
       : undefined
   if (!multipartParts) {
@@ -176,7 +183,7 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
   }
 
   const unexpectedField = multipartParts.find(
-    (part) => part.name !== 'submission' && part.name !== 'evidence',
+    part => part.name !== 'submission' && part.name !== 'evidence',
   )
   if (unexpectedField) {
     return {
@@ -190,14 +197,14 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
     }
   }
 
-  const submissionParts = multipartParts.filter((part) => part.name === 'submission')
+  const submissionParts = multipartParts.filter(part => part.name === 'submission')
   const submissionPart = submissionParts[0]
   if (
-    submissionParts.length !== 1 ||
-    !submissionPart ||
-    submissionPart.fileName !== 'submission.json' ||
-    submissionPart.contentType !== 'application/json' ||
-    submissionPart.bytes.byteLength > MAX_SCHEMA_SUBMISSION_JSON_BYTES
+    submissionParts.length !== 1
+    || !submissionPart
+    || submissionPart.fileName !== 'submission.json'
+    || submissionPart.contentType !== 'application/json'
+    || submissionPart.bytes.byteLength > MAX_SCHEMA_SUBMISSION_JSON_BYTES
   ) {
     return {
       isValid: false,
@@ -214,7 +221,8 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
   try {
     const submissionJson = new TextDecoder('utf-8', { fatal: true }).decode(submissionPart.bytes)
     submissionCandidate = JSON.parse(submissionJson) as unknown
-  } catch {
+  }
+  catch {
     return {
       isValid: false,
       response: schemaSubmissionFailure(
@@ -239,10 +247,10 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
     }
   }
 
-  const evidenceParts = multipartParts.filter((part) => part.name === 'evidence')
+  const evidenceParts = multipartParts.filter(part => part.name === 'evidence')
   if (
-    evidenceParts.length > SCHEMA_DRIVEN_EVIDENCE_MAX_FILES ||
-    evidenceParts.some((evidencePart) => evidencePart.fileName === undefined)
+    evidenceParts.length > SCHEMA_DRIVEN_EVIDENCE_MAX_FILES
+    || evidenceParts.some(evidencePart => evidencePart.fileName === undefined)
   ) {
     return {
       isValid: false,
@@ -254,7 +262,9 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
       ),
     }
   }
-  if (submissionDecision.data.requiresEvidence !== evidenceParts.length > 0) {
+  // AI modified: name evidence presence explicitly so the requirement comparison is unambiguous.
+  const hasEvidence = evidenceParts.length > 0
+  if (submissionDecision.data.requiresEvidence !== hasEvidence) {
     return {
       isValid: false,
       response: schemaSubmissionFailure(
@@ -274,10 +284,10 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
   for (const evidencePart of evidenceParts) {
     const fileName = evidencePart.fileName
     if (
-      !fileName ||
-      !isUploadFileNameSafe(fileName) ||
-      !isSchemaEvidenceMimeType(evidencePart.contentType) ||
-      !hasSchemaEvidenceExtension(fileName, evidencePart.contentType)
+      !fileName
+      || !isUploadFileNameSafe(fileName)
+      || !isSchemaEvidenceMimeType(evidencePart.contentType)
+      || !hasSchemaEvidenceExtension(fileName, evidencePart.contentType)
     ) {
       return {
         isValid: false,
@@ -292,9 +302,9 @@ async function readSchemaMultipartSubmission(request: Request): Promise<SchemaMu
 
     const bytes = evidencePart.bytes
     if (
-      bytes.byteLength === 0 ||
-      bytes.byteLength > SCHEMA_DRIVEN_EVIDENCE_MAX_BYTES ||
-      !hasSchemaEvidenceSignature(new Uint8Array(bytes), evidencePart.contentType)
+      bytes.byteLength === 0
+      || bytes.byteLength > SCHEMA_DRIVEN_EVIDENCE_MAX_BYTES
+      || !hasSchemaEvidenceSignature(new Uint8Array(bytes), evidencePart.contentType)
     ) {
       return {
         isValid: false,
@@ -332,7 +342,8 @@ export const formWorkbenchTitleAvailabilityHandler = http.get(
   '/api/form-workbench/title-availability',
   ({ request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const title = new URL(request.url).searchParams.get('title')?.trim() ?? ''
     return HttpResponse.json<ApiResponse<TitleAvailabilityResponse>>({
@@ -347,13 +358,14 @@ export const schemaOwnerOptionsHandler = http.get(
   '/api/component-gallery/form/service-owners',
   ({ request }) => {
     const authentication = authorizeMockPermission(request, 'read', 'Dashboard')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const environment = new URL(request.url).searchParams.get('environment')
     if (
-      environment !== 'development' &&
-      environment !== 'staging' &&
-      environment !== 'production'
+      environment !== 'development'
+      && environment !== 'staging'
+      && environment !== 'production'
     ) {
       return HttpResponse.json<ApiResponse<null>>(
         { code: 'INVALID_ENVIRONMENT', message: 'Unknown environment', data: null },
@@ -374,15 +386,17 @@ export const saveSchemaDrivenSubmissionHandler = http.post(
   '/api/component-gallery/form/submissions',
   async ({ request }) => {
     const authentication = authorizeMockPermission(request, 'create', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readSchemaMultipartSubmission(request)
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const { evidenceFiles, submission } = requestBody
 
     if (
       !schemaOwnerOptions[submission.environment].some(
-        (owner) => owner.value === submission.serviceOwner,
+        owner => owner.value === submission.serviceOwner,
       )
     ) {
       return schemaSubmissionFailure(
@@ -395,9 +409,9 @@ export const saveSchemaDrivenSubmissionHandler = http.post(
 
     const comparableRequestName = submission.requestName.trim().toLocaleLowerCase()
     if (
-      comparableRequestName.includes('conflict') ||
-      savedSchemaSubmissions.some(
-        (savedSubmission) =>
+      comparableRequestName.includes('conflict')
+      || savedSchemaSubmissions.some(
+        savedSubmission =>
           savedSubmission.requestName.trim().toLocaleLowerCase() === comparableRequestName,
       )
     ) {
@@ -418,7 +432,7 @@ export const saveSchemaDrivenSubmissionHandler = http.post(
 
     const submittedAt = new Date().toISOString()
     // AI modified: every file is validated before the first byte is retained, keeping the Mock write atomic.
-    const evidence: UploadReceipt[] = evidenceFiles.map((evidenceFile) =>
+    const evidence: UploadReceipt[] = evidenceFiles.map(evidenceFile =>
       saveGalleryEvidenceFile({
         ...evidenceFile,
         uploadedAt: submittedAt,
@@ -428,7 +442,7 @@ export const saveSchemaDrivenSubmissionHandler = http.post(
     savedSchemaSubmissions.push({
       ...submission,
       richBrief: sanitizeRichTextHtml(submission.richBrief),
-      evidenceFileIds: evidence.map((receipt) => receipt.fileId),
+      evidenceFileIds: evidence.map(receipt => receipt.fileId),
       submissionId,
       submittedAt,
     })
@@ -449,13 +463,15 @@ export const saveFormWorkbenchHandler = http.post<never, FormWorkbenchSubmitInpu
   async ({ request }) => {
     // AI modified: submissions are Content creation, so editors can use their configured write grant.
     const authentication = authorizeMockPermission(request, 'create', 'Content')
-    if (!authentication.isAuthenticated) return authentication.response
+    if (!authentication.isAuthenticated)
+      return authentication.response
 
     const requestBody = await readMockJsonBody(request, FORM_WORKBENCH_SUBMIT_INPUT_SCHEMA, {
       code: 'INVALID_FORM_SUBMISSION',
       message: '表单数据校验失败',
     })
-    if (!requestBody.isValid) return requestBody.response
+    if (!requestBody.isValid)
+      return requestBody.response
     const submission = requestBody.body
     if (!isTitleAvailable(submission.title)) {
       return HttpResponse.json<ApiResponse<null>>(

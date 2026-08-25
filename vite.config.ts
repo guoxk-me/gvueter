@@ -1,5 +1,5 @@
+import type { Plugin } from 'vite'
 import type { VitePWAOptions } from 'vite-plugin-pwa'
-import type { Plugin } from 'vite-plus'
 import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import process from 'node:process'
@@ -8,9 +8,9 @@ import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
+import { defineConfig, loadEnv } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { defineConfig, loadEnv } from 'vite-plus'
 
 const projectRoot = fileURLToPath(new URL('.', import.meta.url))
 
@@ -88,7 +88,8 @@ function browserMockBoundary(): Plugin {
       shouldBundleMocks = shouldBundleBrowserMocks(command, mode)
       // AI modified: the PWA plugin resolves this shared option after the worker-mode boundary runs.
       pwaOptions.disable = shouldBundleMocks
-      if (pwaOptions.pwaAssets) pwaOptions.pwaAssets.disabled = shouldBundleMocks
+      if (pwaOptions.pwaAssets)
+        pwaOptions.pwaAssets.disabled = shouldBundleMocks
 
       return {
         resolve: {
@@ -123,18 +124,6 @@ function browserMockBoundary(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  // AI modified: Vite+ owns the repository format/lint gate while ESLint remains a Vue/Antfu supplement.
-  fmt: {
-    ignorePatterns: ['public/mockServiceWorker.js', 'src/auto-imports.d.ts'],
-    semi: false,
-    singleQuote: true,
-    // AI modified: package metadata ordering remains an ESLint/project convention, not a formatter rewrite.
-    sortPackageJson: false,
-  },
-  staged: {
-    // AI modified: lint-staged does not spawn through a shell, so avoid `CI=true ...`.
-    '*': 'eslint --fix --cache',
-  },
   plugins: [
     // AI modified: production substitutes a typed no-op and removes the public worker after Vite copies it.
     browserMockBoundary(),
@@ -159,38 +148,12 @@ export default defineConfig({
         manualChunks(moduleId) {
           // AI modified: keep the Mock-only MSW runtime separate from application handlers under the async budget.
           if (
-            moduleId.includes('/node_modules/msw/') ||
-            moduleId.includes('/node_modules/@mswjs/')
+            moduleId.includes('/node_modules/msw/')
+            || moduleId.includes('/node_modules/@mswjs/')
           ) {
             return 'mock-service-worker'
           }
         },
-      },
-    },
-  },
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    globals: true,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov', 'json-summary'],
-      // AI modified: an explicit source glob makes completely untested production files count as zero.
-      include: ['src/**/*.{ts,vue}'],
-      exclude: [
-        'src/**/*.d.ts',
-        'src/**/__tests__/**',
-        'src/**/types.ts',
-        'src/i18n/locales/**',
-        'src/mocks/**',
-        'src/types/**',
-      ],
-      // AI modified: measured whole-source baselines block coverage regression without hiding untested files.
-      thresholds: {
-        statements: 74,
-        branches: 66,
-        functions: 67,
-        lines: 76,
       },
     },
   },

@@ -17,6 +17,8 @@ overrides:
   '@vue/shared': 3.5.39
   # AI modified: axios' transitive multipart dependency must stay on the patched release.
   form-data: 4.0.6
+  # AI modified: patch the Nano ID zero-size infinite loop in the Vite/PostCSS dependency chain.
+  nanoid: 3.3.18
   # AI modified: block the previous-source-map path traversal fixed after PostCSS 8.5.17.
   postcss: 8.5.23
   # AI modified: resolve@1.22.12 ships .claude files that break installs in this environment.
@@ -44,13 +46,15 @@ catalog:
   '@types/jsdom': ^28.0.3
   '@types/node': ^24.13.3
   '@types/qrcode': ^1.5.6
+  # AI modified: Antfu's command plugin declares rule-tester as a required peer under strict pnpm resolution.
+  '@typescript-eslint/rule-tester': ^8.63.0
   '@unovis/ts': ^1.6.7
   '@unovis/vue': ^1.6.7
   '@vee-validate/zod': ^4.15.1
   '@vite-pwa/assets-generator': 1.0.2
   '@vitejs/plugin-vue': ^6.0.7
-  # AI modified: use the exact coverage provider peer expected by the pinned Vite+ test runtime.
-  '@vitest/coverage-v8': 4.1.4
+  # AI modified: Vitest and its coverage provider stay on the same stable release.
+  '@vitest/coverage-v8': 4.1.11
   '@vue/test-utils': ^2.4.11
   '@vue/tsconfig': ^0.9.1
   '@vueup/vue-quill': ^1.5.5
@@ -62,8 +66,10 @@ catalog:
   # AI modified: carousel UI depends on Embla through a workspace catalog pin.
   embla-carousel-vue: ^8.6.0
   eslint: ^10.6.0
+  husky: ^9.1.7
   jiti: ^2.7.0
   jsdom: ^29.1.1
+  lint-staged: ^17.0.8
   motion-v: ^2.3.0
   msw: ^2.15.0
   npm-run-all2: ^8.0.4
@@ -80,12 +86,11 @@ catalog:
   # AI modified: drawer primitive uses Vaul through a workspace catalog pin.
   vaul-vue: ^0.4.1
   vee-validate: ^4.15.1
-  # AI modified: pin the Vite+ core, CLI, and test aliases together so lockfile regeneration cannot drift their protocol.
-  vite: npm:@voidzero-dev/vite-plus-core@0.1.19
+  # AI modified: use the stable official Vite and Vitest packages without toolchain aliases.
+  vite: ^8.2.2
   vite-plugin-pwa: 1.3.0
   vite-plugin-vue-devtools: ^8.1.5
-  vite-plus: 0.1.19
-  vitest: npm:@voidzero-dev/vite-plus-test@0.1.19
+  vitest: 4.1.11
   vue: 3.5.39
   vue-i18n: 11.4.6
   # AI modified: OTP input primitive shares one catalog entry across the workspace.
@@ -96,10 +101,3 @@ catalog:
   workbox-window: 7.4.1
   yaml: 2.9.0
   zod: 3.25.76
-peerDependencyRules:
-  allowAny:
-    - vite
-    - vitest
-  allowedVersions:
-    vite: '*'
-    vitest: '*'
