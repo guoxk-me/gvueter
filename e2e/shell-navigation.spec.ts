@@ -123,6 +123,24 @@ const layouts = [
 
 const responsiveWidths = [390, 768, 1024, 1280, 1440] as const
 
+async function waitForAdminShell(page: Page): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        if (page.url().includes('/login'))
+          return false
+        const isShellVisible = await page.locator('.admin-layout').isVisible()
+        if (!isShellVisible)
+          return false
+        return page.locator('[data-layout-region="context-bar"]').isVisible()
+      },
+      {
+        timeout: 20_000,
+      },
+    )
+    .toBe(true)
+}
+
 function durationToMilliseconds(durationList: string): number {
   let longestDuration = 0
   for (const duration of durationList.split(',')) {
@@ -172,7 +190,7 @@ async function signInAsAdmin(page: Page): Promise<void> {
     .fill(String(Number(operands[1]) + Number(operands[2])))
   await page.getByRole('button', { name: 'Sign In' }).click()
   await expect(page).toHaveURL('/dashboard')
-  await expect(page.locator('.admin-layout')).toBeVisible()
+  await waitForAdminShell(page)
 }
 
 async function useShellSettings(
@@ -207,7 +225,9 @@ async function useShellSettings(
     { layout: settings.layout, locale, sidebarDefault },
   )
   // AI modified: render assertions own readiness after the refreshed document commits.
-  await page.reload({ waitUntil: 'commit' })
+  await page.reload({ waitUntil: 'load' })
+  await page.waitForLoadState('networkidle')
+  await waitForAdminShell(page)
   await expect(page.locator(`.admin-layout[data-layout="${settings.layout}"]`)).toBeVisible()
   await expect(page.locator('[data-layout-region="context-bar"]')).toBeVisible()
 }
@@ -217,7 +237,7 @@ async function useThemeDensitySettings(
   settings: { density: UiDensity, themeMode: ThemeMode },
 ): Promise<void> {
   // AI modified: document load can precede Mock/Vue startup; refresh only a mounted Shell.
-  await expect(page.locator('.admin-layout')).toBeVisible()
+  await waitForAdminShell(page)
   await page.evaluate(({ density, themeMode }) => {
     const storedAppearance = JSON.parse(localStorage.getItem('appearance') ?? '{}') as Record<
       string,
@@ -230,9 +250,10 @@ async function useThemeDensitySettings(
       JSON.stringify({ ...storedAppearance, componentSize, themeMode }),
     )
   }, settings)
-  await page.reload({ waitUntil: 'commit' })
+  await page.reload({ waitUntil: 'load' })
+  await page.waitForLoadState('networkidle')
   // AI modified: theme attributes initialize before Vue remounts, so wait for the shell too.
-  await expect(page.locator('.admin-layout')).toBeVisible()
+  await waitForAdminShell(page)
   await expect(page.locator('html')).toHaveAttribute('data-theme', settings.themeMode)
   await expect(page.locator('html')).toHaveAttribute(
     'data-component-size',
