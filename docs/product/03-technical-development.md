@@ -624,7 +624,15 @@ Executed（平台基线）：macOS/Linux 各 20 张当前截图逐张审核，�
 
 Confirmed（基线提交与推送）：用户已授权本次平台基线迁移及相关文档提交并推送至 `origin/main-admin`，触发现有 CI。此前未提交、未推送记录为授权前状态；不修改远端保护、不合并主干、不发布制品，Phase 1 完成仍以新版同 Commit 的托管验收为准。
 
+Executed / Inspected（新版托管复核）：Commit `7951277` 已推送，[CI 34817039823](https://github.com/guoxk-me/gvueter/actions/runs/34817039823) 的 Linux/Windows `verify` 和 Chromium 截图用例通过。E2E 为 148 项直接通过、1 项 WebKit 主题/密度 Flaky；刷新后 `.admin-layout` 在 10 秒内未出现，重试通过，但既定 Flaky 阻断使 CI 失败，容器未执行。具体恢复失败原因仍需 Trace 与无重试复现，本轮未修改应用或测试，不放宽门禁，Phase 1 保持 Implemented。
+
+Executed / Inspected（刷新时序定位）：原主题用例在 Ubuntu/WebKit 零重试失败 `1/30`；快速刷新最小探针可高概率复现，空白时 Worker 注册/注销尚未完成、MSW 握手和 Vue 挂载未开始。删除应用的注册前清理不能解决问题；纯原生 Worker 页面在 Playwright `1.63.0` 与 `1.61.1` 各失败 `3/3`，因此保留当前版本及 Firefox 兼容处理。Implemented：主题设置测试先等待 Shell 可见，再写入偏好并真实刷新；原超时、几何/颜色断言、Flaky 门禁和基线均不变。未修改应用/PWA 运行时，独立探针中的连续刷新中断安装问题仍可复现，不属于本次测试时序修复的解决范围。
+
 运行时公开配置在首个 Minor 保留 `VITE_*` 构建期回退并提示弃用，下一个 Breaking 版本移除旧入口。分支保护、Environment、GHCR、Pages、Private Vulnerability Reporting、分支合并和正式发布均属于远端状态，实际执行前必须再次确认目标。
+
+Executed / Inspected（隔离复验）：并行就绪探针最终为 `3/5`，含 Worker 已激活但 Shell 延迟渲染的失败；旧容器串行原用例仍有登录验证码不可用，均未作为通过证据。随后全新 Ubuntu 24.04 容器固定 Playwright `1.63.0`、Node `24.18.0`、pnpm `12.4.1`，原主题用例串行三轮各 `10/10`，共 `30/30` 零重试通过。本地冻结安装和完整 `release:check` 退出码 0，676 项单元测试、三浏览器 `149/149` 无重试、全部门禁及生产产物恢复通过；Linux 本轮仅执行目标主题用例。未提交或推送修复，Phase 1 保持 Implemented，仍待新版同 Commit 托管矩阵与容器验收。
+
+Confirmed（主题修复提交授权）：用户已授权将本次测试时序修复和验收文档本地提交，本轮不推送；此前未提交记录为授权前状态，Phase 1 仍待新版同 Commit 托管验收。
 
 公开 Demo 默认使用 GitHub Pages 的独立 Mock 构建并明确标识；GHCR 镜像可见性继承仓库。每个 Release 保留 Commit、Node/pnpm、门禁、浏览器、制品摘要、已知限制和迁移链接。PR 不依赖外部服务，Release 外部步骤有限重试后仍失败则停止发布。工程进度统一记录 Planned、Implemented、Executed、Blocked，并关联实际证据。
 

@@ -106,6 +106,18 @@ Inspected（Linux 采集环境）：官方镜像为 `mcr.microsoft.com/playwrigh
 
 Confirmed（基线托管验收授权）：用户已授权将本次平台截图基线迁移与相关文档提交并推送到 `origin/main-admin`，触发现有 CI；不修改远端保护、合并主干或发布制品。上述未提交、未推送记录为授权前状态；Phase 1 仍需新版同 Commit 的托管矩阵与容器结果才能收口。
 
+Executed / Inspected（基线新版托管复核）：迁移已提交并推送为 `7951277`；[Run 34817039823](https://github.com/guoxk-me/gvueter/actions/runs/34817039823) 的 Linux/Windows `verify` 均通过，全部 Chromium 截图用例通过。E2E 为 148 项直接通过、1 项 WebKit Flaky：主题/密度用例刷新后等待 `.admin-layout`，10 秒内未找到元素，首次重试通过；`failOnFlakyTests` 按既定策略使任务退出码为 1，容器因此未执行。日志能确认失败发生在 Shell 恢复就绪阶段，不能据此认定为颜色/尺寸错误或 WebKit 运行时缺陷；需检查 Trace 和无重试复现后确定原因。本轮仅诊断并同步记录，未修改测试或应用，Phase 1 保持 Implemented。
+
+Executed / Inspected（WebKit 刷新诊断）：原用例在 macOS 零重试 `20/20`，固定 Ubuntu/WebKit `1.63.0` 环境零重试 `29/30`；失败截图为空白，`#app` 无子节点。最小快速刷新探针最初失败 `3/5`，调用阶段探针失败 `3/3`，停在 Worker 注册或注销等待，尚未发出 MSW 启动握手；去掉应用注册前清理仍失败 `4/5`，不能采用删除 Firefox 兼容处理的方案。纯原生 Worker 页面在 Playwright `1.63.0` 和 `1.61.1` 各失败 `3/3`，说明中断安装的现象不依赖 Vue/MSW，也没有证据支持回退版本。
+
+Implemented（主题用例前置条件）：`useThemeDensitySettings` 在写入设置前先等待可见 Shell，避免文档 load 已完成但 Mock/Vue 尚未挂载时就刷新并中断 Worker 安装。保留真实 reload、原 10 秒预算、全部主题/密度断言与 Flaky 阻断，不修改应用、生成 Worker、依赖或基线。独立探针中安装被连续刷新中断的问题仍可复现，并未由本次测试时序修复解决；PWA 运行时不属于本轮变更。
+
+Executed / Inspected（验证隔离）：就绪探针并行验证最终为 `3/5`，后续失败包含 MSW 已激活、Shell 在采集截图时已渲染的延迟场景。并行原用例出现登录与总时长超时，已停止该轮；旧诊断容器的串行复验为 5 项通过、1 项登录验证码不可用、1 项中断、3 项未执行，不能当作成功证据。随后结束旧容器，在全新临时容器中隔离复验。
+
+Executed（修复后，本地与隔离 Ubuntu）：冻结安装及完整 `release:check` 退出码 0，676 项单元测试、三浏览器 `149/149` 无重试通过，静态、文档、契约、安全、生产审计、Mock/生产构建及生产产物恢复全部通过。全新 Ubuntu 24.04 AMD64 容器使用固定 Playwright `1.63.0` 镜像、Node `24.18.0`、pnpm `12.4.1`，原主题用例串行三轮各 `10/10`，共 `30/30` 零重试通过；Linux 证据仅覆盖该目标用例，不代表完整 Linux E2E。诊断文件仅存临时目录，未进入仓库；未提交或推送本次修复，Phase 1 仍为 Implemented，待新版同 Commit 托管矩阵及容器验收。
+
+Confirmed（主题修复提交授权）：用户已授权将本次测试时序修复与验收文档本地提交。本轮不推送；上述未提交记录为授权前状态，Phase 1 仍待新版同 Commit 托管验收。
+
 ### Phase 2 — 运行配置、PWA 与容器
 
 Status：Planned

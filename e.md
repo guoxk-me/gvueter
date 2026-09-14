@@ -466,6 +466,11 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 - macOS/Linux 各 20 张基线逐张审核，每个平台相关 25 项无更新、零重试回归通过。macOS 完整 `release:check` 退出码 0，676 项单元测试、三浏览器 `149/149`、全部本地门禁及生产产物恢复通过；Linux 固定 Playwright `1.63.0` Ubuntu 24.04 镜像、Node `24.18.0`、pnpm `12.4.1`，冻结安装、类型检查与 Mock 构建通过，18 张截图与最新 CI 实际截图按原容差对比通过。旧共享图片已移至可恢复备份；本次迁移未提交、未推送，Phase 1 仍为 Implemented，待同 Commit 新版托管矩阵与容器验收。
 
 - 用户已授权本次 macOS/Linux 基线迁移与相关文档提交并推送到 `origin/main-admin`，触发现有 CI；上述未提交、未推送记录为授权前状态。不修改远端保护、不合并主干、不发布制品，Phase 1 待新版同 Commit 的托管矩阵与容器验收后收口。
+- 基线迁移已推送为 `7951277`；[托管 Run 34817039823](https://github.com/guoxk-me/gvueter/actions/runs/34817039823) 的 Linux/Windows `verify` 与 Chromium 截图用例通过。E2E 为 148 项直接通过、1 项 WebKit 主题/密度 Flaky：刷新后 `.admin-layout` 10 秒内未出现，重试通过；Flaky 阻断使 CI 失败、容器未执行。具体 Shell 恢复失败原因待 Trace 与无重试复现；本轮仅诊断和同步记录，不修改应用或测试，Phase 1 仍为 Implemented。
+- 刷新诊断在 Ubuntu/WebKit 零重试复现原用例失败 `1/30`；最小探针停在 Worker 注册/注销等待，MSW/Vue 尚未启动。删除应用清理及回退 Playwright 均无解决证据。主题用例增加写入偏好前的 Shell 可见断言，保留真实刷新、原超时及全部门禁，不改应用、PWA 或基线；独立探针的连续刷新中断安装问题仍可复现，不属于本次修复范围。
+- 并行就绪探针最终为 `3/5`，旧容器串行原用例也有登录验证码不可用，均未作为成功证据。全新 Ubuntu 24.04 容器固定 Playwright `1.63.0`、Node `24.18.0`、pnpm `12.4.1`，原主题用例三轮各 `10/10`，共 `30/30` 零重试通过；本地冻结安装及完整 `release:check` 退出码 0，676 项单元测试、三浏览器 `149/149` 无重试、全部门禁与生产产物恢复通过。Linux 仅覆盖目标主题用例；本次修复未提交或推送，Phase 1 仍为 Implemented，待新版同 Commit 托管矩阵与容器验收。
+
+- 用户已授权将本次主题测试时序修复与验收文档本地提交，本轮不推送；上述未提交记录为授权前状态，Phase 1 仍待新版同 Commit 托管验收。
 
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。

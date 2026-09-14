@@ -216,6 +216,8 @@ async function useThemeDensitySettings(
   page: Page,
   settings: { density: UiDensity, themeMode: ThemeMode },
 ): Promise<void> {
+  // AI modified: document load can precede Mock/Vue startup; refresh only a mounted Shell.
+  await expect(page.locator('.admin-layout')).toBeVisible()
   await page.evaluate(({ density, themeMode }) => {
     const storedAppearance = JSON.parse(localStorage.getItem('appearance') ?? '{}') as Record<
       string,
