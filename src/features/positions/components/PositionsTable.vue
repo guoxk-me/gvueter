@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { PositionRecord } from '@/features/positions/types'
 import { Pencil, Trash2 } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -22,7 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const columnHelper = createColumnHelper<PositionRecord>()
+const columnHelper = createDataTableColumnHelper<PositionRecord>()
 const columns = computed(() => [
   columnHelper.accessor('code', { header: t('positions.code') }),
   columnHelper.accessor('name', { header: t('positions.name') }),

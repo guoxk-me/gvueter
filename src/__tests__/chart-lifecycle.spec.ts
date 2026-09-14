@@ -27,8 +27,27 @@ class ChartResizeObserver implements ResizeObserver {
   }
 }
 
+class ChartMutationObserver implements MutationObserver {
+  static latest: ChartMutationObserver | undefined
+
+  constructor(private readonly callback: MutationCallback) {
+    ChartMutationObserver.latest = this
+  }
+
+  disconnect(): void {}
+  observe(): void {}
+  takeRecords(): MutationRecord[] {
+    return []
+  }
+
+  notify(): void {
+    this.callback([], this)
+  }
+}
+
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', ChartResizeObserver)
+  vi.stubGlobal('MutationObserver', ChartMutationObserver)
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) =>
     window.setTimeout(callback, 0, 0))
   vi.stubGlobal('cancelAnimationFrame', (frame: number) => window.clearTimeout(frame))
@@ -36,6 +55,7 @@ beforeEach(() => {
 
 afterEach(() => {
   ChartResizeObserver.latest = undefined
+  ChartMutationObserver.latest = undefined
   vi.unstubAllGlobals()
 })
 
@@ -129,13 +149,43 @@ describe('chartContainer lifecycle', () => {
     expect(wrapper.get('[data-testid="revision"]').text()).toBe('1')
   })
 
-  it('disconnects resize observation when the chart unmounts', () => {
+  it('refreshes token and locale rendering after a root document change', async () => {
+    const ChartConsumer = defineComponent({
+      setup() {
+        return () =>
+          h(
+            ChartContainer,
+            { config: { users: { label: 'Users', color: '#000' } } },
+            {
+              default: ({ revision }: { revision: number }) =>
+                h('span', { 'data-testid': 'revision' }, String(revision)),
+            },
+          )
+      },
+    })
+    const wrapper = mount(ChartConsumer)
+    vi.spyOn(wrapper.get('[data-slot="chart"]').element, 'getBoundingClientRect').mockReturnValue({
+      height: 256,
+      width: 640,
+    } as DOMRect)
+
+    ChartMutationObserver.latest?.notify()
+    await new Promise(resolve => window.setTimeout(resolve, 0))
+    await nextTick()
+
+    // AI modified: root theme/locale mutations force a renderer refresh even when bounds stay stable.
+    expect(wrapper.get('[data-testid="revision"]').text()).toBe('1')
+  })
+
+  it('disconnects chart observation when the chart unmounts', () => {
     const disconnect = vi.spyOn(ChartResizeObserver.prototype, 'disconnect')
+    const disconnectTheme = vi.spyOn(ChartMutationObserver.prototype, 'disconnect')
     const wrapper = mount(ChartContainer, {
       props: { config: { users: { label: 'Users', color: '#000' } } },
     })
 
     wrapper.unmount()
     expect(disconnect).toHaveBeenCalledOnce()
+    expect(disconnectTheme).toHaveBeenCalledOnce()
   })
 })

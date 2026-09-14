@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, shallowRef } from 'vue'
 import { AsyncState } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getTableExampleScenario, TABLE_WORK_ORDERS } from '../table-examples'
@@ -15,7 +15,7 @@ const props = defineProps<{
   copy: TableExamplesCopy
 }>()
 
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createDataTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('states')
 const demoState = shallowRef<DemoState>('ready')
 const visibleRows = computed(() =>

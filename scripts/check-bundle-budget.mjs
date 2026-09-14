@@ -24,6 +24,8 @@ const entryAssets = new Set(
 )
 const violations = []
 const isMockBuild = process.env.VITE_ENABLE_MOCKS === 'true'
+const forbiddenChartArtifactPattern
+  = /maplibre|mapboxgl|leaflet-flow-map|leaflet-map|topojson-map/i
 const browserMockEntry = manifest['src/mocks/browser.ts']
 const mockWorkerPath = resolve(projectRoot, 'dist/mockServiceWorker.js')
 const hasMockWorker = await readFile(mockWorkerPath).then(
@@ -53,6 +55,9 @@ else {
 if (!isMockBuild) {
   for (const asset of javascriptAssets) {
     const source = await readFile(resolve(projectRoot, 'dist', asset))
+    // AI modified: core chart chunks must not silently retain the optional Unovis map stack.
+    if (forbiddenChartArtifactPattern.test(source.toString('utf8')))
+      violations.push(`${asset}: contains an excluded map renderer.`)
     const compressedBytes = gzipSync(source).byteLength
     const allowedBytes = entryAssets.has(asset) ? budget.entryGzipBytes : budget.asyncChunkGzipBytes
 

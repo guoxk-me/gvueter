@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { PaginationState } from '@tanstack/vue-table'
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, shallowRef } from 'vue'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { getTableExampleScenario, TABLE_WORK_ORDERS } from '../table-examples'
 import TableExampleCard from '../TableExampleCard.vue'
@@ -12,7 +12,7 @@ const props = defineProps<{
   copy: TableExamplesCopy
 }>()
 
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createProTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('virtual-scroll')
 const pagination = shallowRef<PaginationState>({ pageIndex: 0, pageSize: 1000 })
 // AI modified: unique stable IDs make virtual row recycling observable and safe under sorting.

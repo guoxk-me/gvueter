@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { getTableExampleScenario, TABLE_WORK_ORDERS } from '../table-examples'
 import TableExampleCard from '../TableExampleCard.vue'
@@ -11,7 +11,7 @@ const props = defineProps<{
   copy: TableExamplesCopy
 }>()
 
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createDataTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('responsive')
 const columns = computed(() => [
   columnHelper.accessor('id', {

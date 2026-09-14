@@ -2,11 +2,11 @@
 import type { StatusTone } from '@/components/admin'
 import type { ScheduledJob, ScheduledJobStatus } from '@/features/monitoring/types'
 import { Play } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction, StatusTag } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Button } from '@/components/ui/button'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel, getNumberLabel } from '@/lib/display-format'
 
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
-const columnHelper = createColumnHelper<ScheduledJob>()
+const columnHelper = createDataTableColumnHelper<ScheduledJob>()
 const columns = computed(() => [
   columnHelper.accessor('nameKey', { header: t('monitoring.jobsTable.job') }),
   columnHelper.accessor('schedule', { header: t('monitoring.jobsTable.schedule') }),

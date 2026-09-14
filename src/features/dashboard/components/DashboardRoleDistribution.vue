@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { RoleDistributionEntry } from '@/features/dashboard/types'
 import type { UserRole } from '@/features/users/types'
-import { VisAxis, VisStackedBar, VisXYContainer } from '@unovis/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer } from '@/components/ui/chart'
+import { ChartAxis, ChartBar, ChartContainer, ChartXYContainer } from '@/components/ui/chart'
 import { getNumberLabel, getPercentageLabel } from '@/lib/display-format'
 
 const props = defineProps<{
@@ -67,8 +66,8 @@ function displayPercentage(percentage: number): string {
     </CardHeader>
     <CardContent class="min-w-0 space-y-4">
       <ChartContainer v-slot="{ revision }" :config="chartConfig" class="h-52" aria-hidden="true">
-        <VisXYContainer :key="revision" :data="entries" :height="208">
-          <VisStackedBar
+        <ChartXYContainer :key="revision" :data="entries" :height="208">
+          <ChartBar
             :data="entries"
             :x="getRoleIndex"
             :y="getRoleCount"
@@ -76,14 +75,14 @@ function displayPercentage(percentage: number): string {
             :rounded-corners="4"
             :bar-padding="0.35"
           />
-          <VisAxis
+          <ChartAxis
             type="x"
             :tick-values="entries.map((_, index) => index)"
             :tick-format="displayRole"
             :grid-line="false"
           />
-          <VisAxis type="y" :tick-format="displayCount" :num-ticks="4" :tick-line="false" />
-        </VisXYContainer>
+          <ChartAxis type="y" :tick-format="displayCount" :num-ticks="4" :tick-line="false" />
+        </ChartXYContainer>
       </ChartContainer>
 
       <ul class="grid gap-2 sm:grid-cols-3" :aria-label="t('dashboard.charts.roleDistribution')">

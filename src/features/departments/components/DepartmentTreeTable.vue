@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { DepartmentRecord, DepartmentTreeNode } from '@/features/departments/types'
 import { Building2, Pencil, Trash2 } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getDepartmentTree } from '@/features/departments/department-tree'
@@ -27,7 +27,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const columnHelper = createColumnHelper<DepartmentRow>()
+const columnHelper = createDataTableColumnHelper<DepartmentRow>()
 const departmentsById = computed(
   () => new Map(props.departments.map(department => [department.id, department])),
 )

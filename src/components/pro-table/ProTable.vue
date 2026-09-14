@@ -1,19 +1,15 @@
 <script setup lang="ts" generic="TData extends RowData">
 import type {
-  Cell,
-  Column,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnVisibilityState,
   ExpandedState,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
-  TableState,
   Updater,
-  VisibilityState,
 } from '@tanstack/vue-table'
 import type { VirtualItem } from '@tanstack/vue-virtual'
 import type { CSSProperties } from 'vue'
@@ -23,16 +19,18 @@ import type {
   ProTableEditCommit,
   ProTableLabels,
 } from './types'
+import type {
+  ProTableCell,
+  ProTableColumn,
+  ProTableFeatureColumnDef,
+  ProTableRow,
+  ProTableState,
+} from '@/components/table-features'
 import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown } from '@lucide/vue'
 import {
   FlexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   isFunction,
-  useVueTable,
+  useTable,
 } from '@tanstack/vue-table'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { computed, nextTick, onMounted, onUnmounted, shallowRef, useTemplateRef, watch } from 'vue'
@@ -44,6 +42,7 @@ import {
   getTablePageCount,
 } from '@/components/data-table/pagination-contract'
 import { TABLE_COLUMN_TEXT_CLASSES } from '@/components/data-table/types'
+import { proTableFeatures } from '@/components/table-features'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -51,9 +50,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import ProTablePagination from './ProTablePagination.vue'
 import ProTableToolbar from './ProTableToolbar.vue'
 
-interface RenderedRow<T> {
+interface RenderedRow<T extends RowData> {
   key: string | number
-  row: Row<T>
+  row: ProTableRow<T>
   virtualItem?: VirtualItem
 }
 
@@ -79,11 +78,11 @@ const props = withDefaults(
     enableColumnPinning?: boolean
     enableDensity?: boolean
     enableFullscreen?: boolean
-    getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string
+    getRowId?: (originalRow: TData, index: number, parent?: ProTableRow<TData>) => string
     getRowLabel?: (originalRow: TData) => string
     getSubRows?: (originalRow: TData, index: number) => TData[] | undefined
     getRowCanSelect?: (originalRow: TData) => boolean
-    getRowCanExpand?: (row: Row<TData>) => boolean
+    getRowCanExpand?: (row: ProTableRow<TData>) => boolean
   }>(),
   {
     isLoading: false,
@@ -115,8 +114,8 @@ const emit = defineEmits<{
 }>()
 
 const slots = defineSlots<{
-  'cell'?: (props: { cell: Cell<TData, unknown>, row: Row<TData> }) => unknown
-  'expanded-row'?: (props: { row: Row<TData> }) => unknown
+  'cell'?: (props: { cell: ProTableCell<TData>, row: ProTableRow<TData> }) => unknown
+  'expanded-row'?: (props: { row: ProTableRow<TData> }) => unknown
   'toolbar-leading'?: () => unknown
   'toolbar-import'?: () => unknown
   'toolbar-export'?: () => unknown
@@ -174,16 +173,16 @@ const pagination = defineModel<PaginationState>('pagination', {
 const sorting = defineModel<SortingState>('sorting', { default: () => [] })
 const columnFilters = defineModel<ColumnFiltersState>('columnFilters', { default: () => [] })
 const selectedRowIds = defineModel<RowSelectionState>('selectedRowIds', { default: () => ({}) })
-const columnVisibility = defineModel<VisibilityState>('columnVisibility', { default: () => ({}) })
+const columnVisibility = defineModel<ColumnVisibilityState>('columnVisibility', { default: () => ({}) })
 const columnOrder = defineModel<ColumnOrderState>('columnOrder', { default: () => [] })
 const columnPinning = defineModel<ColumnPinningState>('columnPinning', {
-  default: () => ({ left: [], right: [] }),
+  default: () => ({ start: [], end: [] }),
 })
 const expanded = defineModel<ExpandedState>('expanded', { default: () => ({}) })
 const density = defineModel<ProTableDensity>('density', { default: 'standard' })
 const allowedPageSizes = computed(() => getAllowedPageSizes(props.pageSizeOptions))
 
-const reactiveTableState = computed<Partial<TableState>>(() => ({
+const reactiveTableState = computed<Partial<ProTableState>>(() => ({
   pagination: pagination.value,
   sorting: sorting.value,
   columnFilters: columnFilters.value,
@@ -200,18 +199,20 @@ const editingCellId = shallowRef<string>()
 const editingCellTrigger = shallowRef<HTMLElement>()
 const editValue = shallowRef('')
 const isFullscreen = shallowRef(false)
+// AI modified: Table 9's invariant TValue slot cannot represent heterogeneous accessor columns directly.
+const tableColumns = computed(
+  () => props.columns as readonly ProTableFeatureColumnDef<TData, unknown>[],
+)
+const tableData = computed(() => props.data)
 
 function nextState<T>(updater: Updater<T>, currentValue: T): T {
   return isFunction(updater) ? updater(currentValue) : updater
 }
 
-const table = useVueTable({
-  get columns() {
-    return props.columns
-  },
-  get data() {
-    return props.data
-  },
+const table = useTable({
+  features: proTableFeatures,
+  columns: tableColumns,
+  data: tableData,
   get rowCount() {
     return props.rowCount
   },
@@ -220,11 +221,9 @@ const table = useVueTable({
   },
   getRowId: props.getRowId,
   getSubRows: props.getSubRows,
-  getCoreRowModel: getCoreRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
-  getSortedRowModel: getSortedRowModel(),
-  getExpandedRowModel: getExpandedRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
+  // AI modified: async child insertion must preserve controlled expansion and pagination state.
+  autoResetExpanded: false,
+  autoResetPageIndex: false,
   manualPagination: props.manualPagination,
   manualSorting: props.manualSorting,
   manualFiltering: props.manualFiltering,
@@ -299,7 +298,7 @@ const table = useVueTable({
   },
 })
 
-function syncTableState(state: Partial<TableState>): void {
+function syncTableState(state: Partial<ProTableState>): void {
   // AI modified: controlled model updates reach TanStack memoized row models in the same interaction.
   table.setOptions(previousOptions => ({
     ...previousOptions,
@@ -325,35 +324,35 @@ const rowHeight = computed(() => {
     return 56
   return 44
 })
-function getRowsForState(_state: Partial<TableState>): Row<TData>[] {
+function getRowsForState(_state: Partial<ProTableState>): ProTableRow<TData>[] {
   return table.getRowModel().rows
 }
 
-function getHeaderGroupsForState(_state: Partial<TableState>) {
+function getHeaderGroupsForState(_state: Partial<ProTableState>) {
   return table.getHeaderGroups()
 }
 
-function getColumnCountForState(_state: Partial<TableState>): number {
+function getColumnCountForState(_state: Partial<ProTableState>): number {
   return table.getVisibleLeafColumns().length
 }
 
-function getColumnWidth(column: Column<TData>): number {
+function getColumnWidth(column: ProTableColumn<TData>): number {
   const declaredMinimumWidth = column.columnDef.meta?.minWidth
   return typeof declaredMinimumWidth === 'number' && Number.isFinite(declaredMinimumWidth)
     ? Math.max(column.getSize(), declaredMinimumWidth)
     : column.getSize()
 }
 
-function getTableSizeForState(_state: Partial<TableState>): number {
+function getTableSizeForState(_state: Partial<ProTableState>): number {
   return table
     .getVisibleLeafColumns()
     .reduce((totalWidth, column) => totalWidth + getColumnWidth(column), 0)
 }
 
-function getPaginationRowCountForState(_state: Partial<TableState>): number {
+function getPaginationRowCountForState(_state: Partial<ProTableState>): number {
   return props.manualPagination
     ? (props.rowCount ?? 0)
-    : table.getPrePaginationRowModel().rows.length
+    : table.getPrePaginatedRowModel().rows.length
 }
 
 const rows = computed(() => getRowsForState(reactiveTableState.value))
@@ -522,27 +521,27 @@ function getExpandedRowStyle(renderedRow: RenderedRow<TData>): CSSProperties | u
   }
 }
 
-function getColumnStyle(column: Column<TData>): CSSProperties {
+function getColumnStyle(column: ProTableColumn<TData>): CSSProperties {
   const pinned = column.getIsPinned()
   const leadingWidth = leadingColumnCount.value * 44
   // AI modified: declared content minima participate in the actual flex width instead of being cosmetic metadata.
   const columnWidth = getColumnWidth(column)
   const pinnedColumns
-    = pinned === 'left'
-      ? table.getLeftVisibleLeafColumns()
-      : pinned === 'right'
-        ? table.getRightVisibleLeafColumns()
+    = pinned === 'start'
+      ? table.getStartVisibleLeafColumns()
+      : pinned === 'end'
+        ? table.getEndVisibleLeafColumns()
         : []
   const pinnedIndex = pinnedColumns.findIndex(pinnedColumn => pinnedColumn.id === column.id)
   const leftOffset
-    = pinned === 'left'
+    = pinned === 'start'
       ? leadingWidth
       + pinnedColumns
         .slice(0, Math.max(pinnedIndex, 0))
         .reduce((totalWidth, pinnedColumn) => totalWidth + getColumnWidth(pinnedColumn), 0)
       : undefined
   const rightOffset
-    = pinned === 'right'
+    = pinned === 'end'
       ? pinnedColumns
           .slice(pinnedIndex + 1)
           .reduce((totalWidth, pinnedColumn) => totalWidth + getColumnWidth(pinnedColumn), 0)
@@ -552,8 +551,8 @@ function getColumnStyle(column: Column<TData>): CSSProperties {
     minWidth: `${columnWidth}px`,
     flex: `1 0 ${columnWidth}px`,
     position: pinned ? 'sticky' : 'relative',
-    left: leftOffset === undefined ? undefined : `${leftOffset}px`,
-    right: rightOffset === undefined ? undefined : `${rightOffset}px`,
+    insetInlineStart: leftOffset === undefined ? undefined : `${leftOffset}px`,
+    insetInlineEnd: rightOffset === undefined ? undefined : `${rightOffset}px`,
     zIndex: pinned ? 2 : 0,
     background: pinned ? 'var(--background)' : undefined,
   }
@@ -563,11 +562,11 @@ function updateAllRowSelection(value: boolean | 'indeterminate'): void {
   table.toggleAllPageRowsSelected(value === true)
 }
 
-function updateRowSelection(row: Row<TData>, value: boolean | 'indeterminate'): void {
+function updateRowSelection(row: ProTableRow<TData>, value: boolean | 'indeterminate'): void {
   row.toggleSelected(value === true)
 }
 
-function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 'none' | undefined {
+function getColumnAriaSort(column: ProTableColumn<TData>): 'ascending' | 'descending' | 'none' | undefined {
   if (!column.getCanSort())
     return undefined
 
@@ -580,13 +579,13 @@ function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 
   return 'none'
 }
 
-function getRowSelectionLabel(row: Row<TData>): string {
+function getRowSelectionLabel(row: ProTableRow<TData>): string {
   // AI modified: row selection names include a stable business identifier when one is supplied.
   const readableRowLabel = props.getRowLabel?.(row.original).trim() || row.id
   return `${resolvedLabels.value.selectRow}: ${readableRowLabel}`
 }
 
-function beginCellEdit(cell: Cell<TData, unknown>, event: MouseEvent | KeyboardEvent): void {
+function beginCellEdit(cell: ProTableCell<TData>, event: MouseEvent | KeyboardEvent): void {
   if (!cell.column.columnDef.meta?.editable || props.isLoading)
     return
   if (!(event.currentTarget instanceof HTMLElement))
@@ -597,7 +596,7 @@ function beginCellEdit(cell: Cell<TData, unknown>, event: MouseEvent | KeyboardE
   editValue.value = String(cell.getValue() ?? '')
 }
 
-function handleCellEditKeydown(cell: Cell<TData, unknown>, event: KeyboardEvent): void {
+function handleCellEditKeydown(cell: ProTableCell<TData>, event: KeyboardEvent): void {
   if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== 'F2'))
     return
 
@@ -621,8 +620,8 @@ function cancelCellEdit(): void {
 }
 
 function commitCellEdit(
-  cell: Cell<TData, unknown>,
-  row: Row<TData>,
+  cell: ProTableCell<TData>,
+  row: ProTableRow<TData>,
   shouldRestoreFocus = true,
 ): void {
   if (editingCellId.value !== cell.id)
@@ -735,7 +734,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                 :model-value="
                   table.getIsAllPageRowsSelected()
                     ? true
-                    : table.getIsSomePageRowsSelected()
+                    : table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
                       ? 'indeterminate'
                       : false
                 "
@@ -768,10 +767,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                   class="-ml-3 h-auto min-h-8 min-w-0 px-3 py-1 text-left text-xs font-medium whitespace-normal"
                   @click="header.column.toggleSorting()"
                 >
-                  <FlexRender
-                    :render="header.column.columnDef.header"
-                    :props="header.getContext()"
-                  />
+                  <FlexRender :header="header" />
                   <ArrowUp
                     v-if="header.column.getIsSorted() === 'asc'"
                     class="ml-1 size-3.5"
@@ -784,11 +780,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                   />
                   <ChevronsUpDown v-else class="ml-1 size-3.5" aria-hidden="true" />
                 </Button>
-                <FlexRender
-                  v-else
-                  :render="header.column.columnDef.header"
-                  :props="header.getContext()"
-                />
+                <FlexRender v-else :header="header" />
               </template>
             </th>
           </tr>
@@ -888,7 +880,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
                   @keydown.esc.prevent="cancelCellEdit"
                 />
                 <slot v-else name="cell" :cell="cell" :row="renderedRow.row">
-                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                  <FlexRender :cell="cell" />
                 </slot>
               </td>
             </tr>

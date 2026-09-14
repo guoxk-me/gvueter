@@ -18,6 +18,23 @@ import { resetMockSystemConfig } from './src/mocks/handlers/system-config'
 import { resetMockSystemParameters } from './src/mocks/handlers/system-parameters'
 import { server } from './src/mocks/node'
 
+// AI modified: jsdom omits the browser scroll API used by VueUse's virtual list.
+Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+  configurable: true,
+  value(optionsOrX: ScrollToOptions | number, y?: number): void {
+    if (typeof optionsOrX === 'number') {
+      this.scrollLeft = optionsOrX
+      this.scrollTop = y ?? 0
+      return
+    }
+
+    if (optionsOrX.left !== undefined)
+      this.scrollLeft = optionsOrX.left
+    if (optionsOrX.top !== undefined)
+      this.scrollTop = optionsOrX.top
+  },
+})
+
 // 所有测试开始前启动 MSW server
 // AI modified: missing handlers fail tests so API contract drift cannot silently hit the network.
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))

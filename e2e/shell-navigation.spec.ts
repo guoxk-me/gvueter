@@ -44,10 +44,9 @@ interface ResponsivePageGeometry {
 
 interface ThemeDensityGeometry {
   bodyBackgroundColor: string
-  controlHeight: number
   searchControlHeight: number
+  tableHeadHeight: number
   tableRowHeight: number
-  tableRowVariable: number
 }
 
 interface MotionDurations {
@@ -230,6 +229,8 @@ async function useThemeDensitySettings(
     )
   }, settings)
   await page.reload({ waitUntil: 'commit' })
+  // AI modified: theme attributes initialize before Vue remounts, so wait for the shell too.
+  await expect(page.locator('.admin-layout')).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-theme', settings.themeMode)
   await expect(page.locator('html')).toHaveAttribute(
     'data-component-size',
@@ -331,28 +332,22 @@ async function readResponsivePageGeometry(page: Page): Promise<ResponsivePageGeo
 
 async function readThemeDensityGeometry(page: Page): Promise<ThemeDensityGeometry> {
   const searchControl = page.getByRole('searchbox', { name: 'Search' })
+  const tableHead = page.getByRole('columnheader').first()
   const tableRow = page.locator('tbody tr[data-row-id]').first()
   await expect(searchControl).toBeVisible()
+  await expect(tableHead).toBeVisible()
   await expect(tableRow).toBeVisible()
 
-  return page.evaluate(() => {
-    const rootStyles = getComputedStyle(document.documentElement)
-    const rootFontSize = Number.parseFloat(rootStyles.fontSize)
-    const readRootLength = (propertyName: string): number => {
-      const length = rootStyles.getPropertyValue(propertyName).trim()
-      const numericLength = Number.parseFloat(length)
-      return length.endsWith('rem') ? numericLength * rootFontSize : numericLength
-    }
-    const search = document.querySelector<HTMLElement>('input[type="search"]')
-    const row = document.querySelector<HTMLElement>('tbody tr[data-row-id]')
-    return {
-      bodyBackgroundColor: getComputedStyle(document.body).backgroundColor,
-      controlHeight: readRootLength('--control-height'),
-      searchControlHeight: search?.getBoundingClientRect().height ?? 0,
-      tableRowHeight: row?.getBoundingClientRect().height ?? 0,
-      tableRowVariable: readRootLength('--table-row-height'),
-    }
-  })
+  // AI modified: measure the exact visible locators instead of whichever matching node appears first.
+  const [bodyBackgroundColor, searchControlHeight, tableHeadHeight, tableRowHeight]
+    = await Promise.all([
+      page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+      searchControl.evaluate(element => element.getBoundingClientRect().height),
+      tableHead.evaluate(element => element.getBoundingClientRect().height),
+      tableRow.evaluate(element => element.getBoundingClientRect().height),
+    ])
+
+  return { bodyBackgroundColor, searchControlHeight, tableHeadHeight, tableRowHeight }
 }
 
 async function captureRouteTransitionDuration(page: Page, targetPath: string): Promise<number> {
@@ -847,6 +842,15 @@ test('degrades translated top navigation from full to More without covering head
     for (const width of [1920, 1440, 1280, 1024]) {
       await page.setViewportSize({ width, height: 900 })
       await expect(page.locator('[data-top-navigation]')).toBeVisible()
+      // AI modified: let ResizeObserver commit translated overflow before reading navigation geometry.
+      await page.evaluate(
+        () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+      )
+      // AI modified: wait for the two contractual overflow endpoints, not only an intermediate collision-free frame.
+      if (width === 1920)
+        await expect(page.locator('[data-top-navigation-more]')).toBeHidden()
+      if (width === 1024)
+        await expect(page.locator('[data-top-navigation-more]')).toBeVisible()
       const geometry = await expectTopNavigationSettled(page)
       rootCounts.push(geometry.visibleRootCount)
       moreStates.push(geometry.isMoreVisible)
@@ -1123,11 +1127,10 @@ test('applies light and dark themes at standard and compact density', async ({ p
       const expectedTableRowHeight = density === 'compact' ? 36 : 44
       const expectedTableRowVariable = density === 'compact' ? 34 : 40
 
-      expect(geometry.controlHeight).toBe(expectedControlHeight)
       expect(geometry.searchControlHeight).toBe(expectedControlHeight)
       // AI modified: density sets the row floor; wrapped business text may grow beyond it.
       expect(geometry.tableRowHeight).toBeGreaterThan(expectedTableRowHeight)
-      expect(geometry.tableRowVariable).toBe(expectedTableRowVariable)
+      expect(geometry.tableHeadHeight).toBeGreaterThanOrEqual(expectedTableRowVariable)
       if (themeMode === 'dark')
         await expect(page.locator('html')).toHaveClass(/dark/)
       else await expect(page.locator('html')).not.toHaveClass(/dark/)

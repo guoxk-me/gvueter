@@ -10,19 +10,14 @@ Run from the repository root with the pnpm-managed toolchain:
 
 On a new machine, install the browser runtimes once with `pnpm exec playwright install chromium firefox webkit`.
 
-```sh
-pnpm install --frozen-lockfile
-pnpm run check
-pnpm run check:contracts
-pnpm run check:security
-pnpm run test:inventory
-pnpm audit --prod --audit-level high
-pnpm run test:coverage
-VITE_ENABLE_MOCKS=false pnpm run build
-VITE_ENABLE_MOCKS=true pnpm run build
-CI=true VITE_ENABLE_MOCKS=true pnpm run test:e2e
-VITE_ENABLE_MOCKS=false pnpm run build
-```
+<!-- quality-commands:start -->
+- `pnpm run verify` runs the reproducible PR and local quality gate.
+- `pnpm run release:check` adds the Mock build, three-browser E2E, and guaranteed production artifact restoration.
+<!-- quality-commands:end -->
+
+<!-- AI modified: the typed release runner owns environment flags and always restores the deployable artifact. -->
+
+Run `pnpm install --frozen-lockfile` first. `verify` performs the read-only CI diagnosis, TypeScript/ESLint, documentation, contract, security, inventory, production audit, coverage, and production build gates. `release:check` runs `verify`, creates the isolated Mock test build, executes all three Playwright engines, and restores a non-Mock production `dist` even when a browser check fails.
 
 <!-- AI modified: ESLint is the one formatting and semantic gate for supported source and documentation files. -->
 
@@ -30,7 +25,7 @@ VITE_ENABLE_MOCKS=false pnpm run build
 
 The contract gate compares every literal MSW API path with `docs/openapi.yaml` in both directions, requires the OpenAPI/package versions to match, requires every Mock JSON reader to use an executable request schema, requires every JSON OpenAPI request body to resolve to a closed domain object, and rejects production request calls that bypass an explicit runtime response schema. Binary media types and download headers are checked separately. The sensitive-file gate rejects private-key files and common credential signatures without sending source to an external service. The production dependency audit fails on high or critical advisories; the container CI job also publishes an SPDX JSON SBOM of the production image.
 
-`pnpm run test:inventory` is a regression floor for spec files, declared tests, and direct feature references; it complements, but does not replace, execution coverage. `pnpm run test:coverage` runs the unit suite with the matching V8 provider and fails below the configured statement, branch, function, or line thresholds. Keep both gates: inventory catches deleted suites and feature-reference drift, while coverage measures executed production code. CI retains the generated coverage report for 14 days, including failed threshold runs when output exists.
+`pnpm run test:inventory` is a regression floor for spec files, declared tests, and direct feature references; it complements, but does not replace, execution coverage. `pnpm run test:coverage` runs the unit suite with the matching V8 provider and fails below the configured statement, branch, function, or line thresholds. Keep both gates: inventory catches deleted suites and feature-reference drift, while coverage measures executed production code. CI retains failed PR evidence for 14 days and main-branch evidence for 30 days.
 
 The catalog keeps Vitest and `@vitest/coverage-v8` on the same exact stable version. Treat changes to Vite, Vitest, the coverage provider, TypeScript, or ESLint as coordinated toolchain migrations followed by this entire release matrix.
 
@@ -51,7 +46,11 @@ The plain build is the deployable production artifact and includes the productio
 | Shell and responsive behavior | measurable overflow, overlap, boundaries, navigation reachability, focus, themes and motion          | `e2e/shell-navigation.spec.ts`                                  |
 | Visual regression             | stable component pages and 150% copy expansion                                                       | `e2e/component-modules.spec.ts`, `e2e/long-text-visual.spec.ts` |
 
-CI runs the behavioral suite in Chromium, Firefox, and WebKit. Chromium remains the only pixel-baseline engine; Firefox and WebKit exclude the two visual-regression specifications so engine-specific text rasterization cannot rewrite shared baselines. A retry is diagnostic only: `failOnFlakyTests` makes any retry-pass fail CI. HTML, JUnit, trace, screenshot, and retained-failure video evidence is uploaded for 14 days.
+PR runs Ubuntu `verify` and Chromium Smoke in parallel. Trusted `main` and transitional `main-admin` pushes, manual runs, and Monday 02:00 UTC schedules run Windows verification, the full Chromium/Firefox/WebKit suite, and container checks; Chromium is not duplicated in a second trusted-run job. Scheduled runs use the default branch. Node `24.18.0` and packageManager-pinned pnpm `12.4.1` are installed by the official SHA-pinned `pnpm/setup` action. Chromium remains the only pixel-baseline engine; Firefox and WebKit exclude the two visual-regression specifications so engine-specific text rasterization cannot rewrite shared baselines. A retry is diagnostic only: `failOnFlakyTests` makes any retry-pass fail CI. HTML, JUnit, trace, screenshot, and retained-failure video evidence is retained for 14 days on PRs and 30 days on trusted runs.
+
+<!-- AI modified: Doctor validates all present environment modes without logging values; host-specific hints are non-blocking. -->
+
+Doctor checks the exact runtime baseline and both pnpm 12 lockfile documents, dependency/catalog/override consistency, and declarations in `env.d.ts`. Present `.env`, `.env.local`, development/test/production and their `.local` variants are inspected. Undeclared variables, browser-visible secret naming, invalid boolean/URL/origin configuration, and effective production Mock inherited from shared files fail the gate. Output contains only file/variable names and issue types, never environment values. Development-only Mock remains valid; a shared Mock setting requires an explicit production override. Optional browser availability and occupied development ports warn only. CI omits those host-specific hints.
 
 <!-- AI modified: recovery evidence separates portable browser behavior from deterministic fault injection. -->
 

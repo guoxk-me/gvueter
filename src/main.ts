@@ -18,6 +18,7 @@ import { installGlobalErrorHandling } from './lib/observability'
 import { registerSessionStateBoundary } from './lib/session-state-boundary'
 import router from './router'
 import { useAppearanceStore } from './stores/appearance'
+// AI modified: self-host Inter so startup and browser tests never wait on a third-party font request.
 import '@fontsource/inter/400.css'
 import '@fontsource/inter/500.css'
 import '@fontsource/inter/600.css'

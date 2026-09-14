@@ -3,11 +3,11 @@ import type { PaginationState, RowSelectionState, SortingState } from '@tanstack
 import type { ProTableDensity, ProTableEditCommit } from '@/components/pro-table'
 import type { AdminUser } from '@/features/users/types'
 import { FileUp, MoreHorizontal, Pencil, Printer, RefreshCw, Trash2 } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CopyButton, CsvExportButton } from '@/components/admin'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -51,7 +51,7 @@ const sorting = defineModel<SortingState>('sorting', { required: true })
 const selectedRowIds = defineModel<RowSelectionState>('selectedRowIds', { required: true })
 const density = defineModel<ProTableDensity>('density', { default: 'standard' })
 const { locale, t } = useI18n()
-const columnHelper = createColumnHelper<AdminUser>()
+const columnHelper = createProTableColumnHelper<AdminUser>()
 const selectedCount = computed(() => Object.values(selectedRowIds.value).filter(Boolean).length)
 
 const columns = computed(() => [

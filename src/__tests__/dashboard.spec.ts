@@ -24,15 +24,12 @@ import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import { getTestPrincipal } from './auth-test-helpers'
 
-vi.mock('@unovis/vue', () => ({
-  VisAxis: { template: '<span />' },
-  VisLine: { template: '<span />' },
-  VisStackedBar: { template: '<span />' },
-  VisXYContainer: { template: '<div data-testid="chart"><slot /></div>' },
-}))
-
 vi.mock('@/components/ui/chart', () => ({
+  ChartAxis: { template: '<span />' },
+  ChartBar: { template: '<span />' },
   ChartContainer: { template: '<div><slot /></div>' },
+  ChartLine: { template: '<span />' },
+  ChartXYContainer: { template: '<div data-testid="chart"><slot /></div>' },
 }))
 
 enableAutoUnmount(afterEach)

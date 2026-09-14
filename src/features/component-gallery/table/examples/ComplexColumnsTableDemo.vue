@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import type { ColumnOrderState, ColumnPinningState, VisibilityState } from '@tanstack/vue-table'
+import type {
+  ColumnOrderState,
+  ColumnPinningState,
+  ColumnVisibilityState,
+} from '@tanstack/vue-table'
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
 import type { ProTableDensity } from '@/components/pro-table'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getBrowserStorage, safeStorageGet, safeStorageSet } from '@/lib/browser-storage'
@@ -14,9 +18,9 @@ import { getTableExampleScenario, TABLE_WORK_ORDERS } from '../table-examples'
 import TableExampleCard from '../TableExampleCard.vue'
 
 interface ColumnPreferences {
-  version: 1
+  version: 2
   density: ProTableDensity
-  visibility: VisibilityState
+  visibility: ColumnVisibilityState
   order: ColumnOrderState
   pinning: ColumnPinningState
 }
@@ -37,22 +41,22 @@ const columnIds = [
   'updatedAt',
 ] as const
 const defaultPreferences: ColumnPreferences = {
-  version: 1,
+  version: 2,
   density: 'compact',
   visibility: {},
   order: [],
-  pinning: { left: ['id'], right: [] },
+  pinning: { start: ['id'], end: [] },
 }
 const restoredPreferences = readColumnPreferences()
 const { locale } = useI18n()
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createProTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('complex-columns')
 const density = shallowRef<ProTableDensity>(restoredPreferences.density)
-const columnVisibility = shallowRef<VisibilityState>({ ...restoredPreferences.visibility })
+const columnVisibility = shallowRef<ColumnVisibilityState>({ ...restoredPreferences.visibility })
 const columnOrder = shallowRef<ColumnOrderState>([...restoredPreferences.order])
 const columnPinning = shallowRef<ColumnPinningState>({
-  left: [...(restoredPreferences.pinning.left ?? [])],
-  right: [...(restoredPreferences.pinning.right ?? [])],
+  start: [...restoredPreferences.pinning.start],
+  end: [...restoredPreferences.pinning.end],
 })
 const preferenceStatus = shallowRef(props.copy.preferences.saved)
 const preferenceSummary = computed(() =>
@@ -127,7 +131,7 @@ function readColumnPreferences(): ColumnPreferences {
     if (!preferenceText)
       return defaultPreferences
     const candidate: unknown = JSON.parse(preferenceText)
-    if (!isRecord(candidate) || candidate.version !== 1)
+    if (!isRecord(candidate) || (candidate.version !== 1 && candidate.version !== 2))
       return defaultPreferences
     if (!['compact', 'standard', 'comfortable'].includes(String(candidate.density)))
       return defaultPreferences
@@ -147,21 +151,23 @@ function readColumnPreferences(): ColumnPreferences {
     ) {
       return defaultPreferences
     }
+    const startPinning = candidate.version === 1 ? candidate.pinning.left : candidate.pinning.start
+    const endPinning = candidate.version === 1 ? candidate.pinning.right : candidate.pinning.end
     if (
       !hasAllowedColumnIds(candidate.order)
-      || !hasAllowedColumnIds(candidate.pinning.left)
-      || !hasAllowedColumnIds(candidate.pinning.right)
+      || !hasAllowedColumnIds(startPinning)
+      || !hasAllowedColumnIds(endPinning)
     ) {
       return defaultPreferences
     }
 
-    // AI modified: persisted browser input is accepted only after a versioned allowlist check.
+    // AI modified: migrate v1 physical pinning to Table 9 logical directions after allowlist checks.
     return {
-      version: 1,
+      version: 2,
       density: candidate.density as ProTableDensity,
-      visibility: candidate.visibility as VisibilityState,
+      visibility: candidate.visibility as ColumnVisibilityState,
       order: candidate.order,
-      pinning: { left: candidate.pinning.left, right: candidate.pinning.right },
+      pinning: { start: startPinning, end: endPinning },
     }
   }
   catch {
@@ -171,7 +177,7 @@ function readColumnPreferences(): ColumnPreferences {
 
 function saveColumnPreferences(): void {
   const preferences: ColumnPreferences = {
-    version: 1,
+    version: 2,
     density: density.value,
     visibility: columnVisibility.value,
     order: columnOrder.value,
@@ -187,7 +193,7 @@ function restoreDefaultColumns(): void {
   density.value = defaultPreferences.density
   columnVisibility.value = {}
   columnOrder.value = []
-  columnPinning.value = { left: ['id'], right: [] }
+  columnPinning.value = { start: ['id'], end: [] }
   preferenceStatus.value = props.copy.preferences.reset
   // AI modified: resetting every controlled preference prevents hidden stale pin/order state from surviving.
 }

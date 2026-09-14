@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="TData extends RowData">
-import type { Column, ColumnOrderState, RowData, Table as TanStackTable } from '@tanstack/vue-table'
+import type { ColumnOrderState, RowData } from '@tanstack/vue-table'
 import type { ProTableDensity, ProTableLabels } from './types'
+import type { ProTableColumn, ProTableInstance } from '@/components/table-features'
 import {
   ArrowDown,
   ArrowUp,
@@ -26,7 +27,7 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    table: TanStackTable<TData>
+    table: ProTableInstance<TData>
     labels: ProTableLabels
     density: ProTableDensity
     columnOrder: ColumnOrderState
@@ -67,11 +68,11 @@ const densityOptions: readonly { id: ProTableDensity, label: keyof ProTableLabel
   { id: 'comfortable', label: 'densityComfortable' },
 ]
 
-function getColumnLabel(column: Column<TData>): string {
+function getColumnLabel(column: ProTableColumn<TData>): string {
   return column.columnDef.meta?.label ?? column.id
 }
 
-function updateColumnVisibility(column: Column<TData>, value: boolean | 'indeterminate'): void {
+function updateColumnVisibility(column: ProTableColumn<TData>, value: boolean | 'indeterminate'): void {
   column.toggleVisibility(value === true)
 }
 
@@ -237,7 +238,7 @@ function reorderColumn(targetColumnId: string): void {
                 class="rounded p-1 text-muted-foreground hover:bg-background hover:text-foreground"
                 :title="labels.pinLeft"
                 :aria-label="`${labels.pinLeft}: ${getColumnLabel(column)}`"
-                @click.stop="column.pin('left')"
+                @click.stop="column.pin('start')"
               >
                 <Pin class="size-3.5 -rotate-45" aria-hidden="true" />
               </button>
@@ -246,7 +247,7 @@ function reorderColumn(targetColumnId: string): void {
                 class="rounded p-1 text-muted-foreground hover:bg-background hover:text-foreground"
                 :title="labels.pinRight"
                 :aria-label="`${labels.pinRight}: ${getColumnLabel(column)}`"
-                @click.stop="column.pin('right')"
+                @click.stop="column.pin('end')"
               >
                 <Pin class="size-3.5 rotate-45" aria-hidden="true" />
               </button>

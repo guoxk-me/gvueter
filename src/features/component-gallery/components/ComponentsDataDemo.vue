@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { Activity, DollarSign, ShoppingCart, Users } from '@lucide/vue'
-import { VisAxis, VisLine, VisXYContainer } from '@unovis/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MetricCard } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import {
+  ChartAxis,
+  ChartContainer,
+  ChartLine,
+  ChartTooltip,
+  ChartXYContainer,
+} from '@/components/ui/chart'
 import {
   ADMIN_DISPLAY_TIME_ZONE,
   getCurrencyLabel,
@@ -192,32 +197,44 @@ function displayConversionRate(rate: number | Date): string {
       :title="t('components.data.chartTitle')"
       :description="t('components.data.chartDescription')"
     >
-      <ChartContainer v-slot="{ revision }" :config="trendChartConfig" class="h-64">
-        <VisXYContainer :key="revision" :data="conversionTrend" :height="256">
-          <VisLine
+      <ChartContainer
+        v-slot="{ revision }"
+        :config="trendChartConfig"
+        class="h-64"
+        aria-hidden="true"
+      >
+        <ChartXYContainer :key="revision" :data="conversionTrend" :height="256">
+          <ChartLine
             :data="conversionTrend"
             :x="getConversionDay"
             :y="getConversionRate"
             color="var(--chart-1)"
             :line-width="3"
           />
-          <VisAxis
+          <ChartAxis
             type="x"
             :tick-values="conversionTrend.map((point) => point.day)"
             :tick-format="displayConversionDay"
             :grid-line="false"
           />
-          <VisAxis
+          <ChartAxis
             type="y"
             :tick-format="displayConversionRate"
             :num-ticks="4"
             :tick-line="false"
           />
           <ChartTooltip />
-        </VisXYContainer>
+        </ChartXYContainer>
       </ChartContainer>
+      <!-- AI modified: the gallery chart exposes the same non-visual data path required of business charts. -->
+      <dl class="sr-only">
+        <template v-for="point in conversionTrend" :key="point.day">
+          <dt>{{ displayConversionDay(point.day) }}</dt>
+          <dd>{{ displayConversionRate(point.rate) }}</dd>
+        </template>
+      </dl>
       <template #usage>
-        &lt;VisLine :data="trend" :x="getDay" :y="getRate" /&gt;
+        &lt;ChartLine :data="trend" :x="getDay" :y="getRate" /&gt;
       </template>
     </ComponentDemoCard>
 

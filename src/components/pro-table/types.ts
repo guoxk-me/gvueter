@@ -2,14 +2,15 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnVisibilityState,
   ExpandedState,
   PaginationState,
   RowData,
   RowSelectionState,
   SortingState,
-  VisibilityState,
 } from '@tanstack/vue-table'
-import type { DataTableColumnDef, DataTableColumnMeta } from '@/components/data-table/types'
+import type { DataTableColumnMeta } from '@/components/data-table/types'
+import type { ProTableFeatureColumnDef } from '@/components/table-features'
 
 export type ProTableDensity = 'compact' | 'standard' | 'comfortable'
 
@@ -56,11 +57,14 @@ export interface ProTableState {
   sorting: SortingState
   columnFilters: ColumnFiltersState
   selectedRowIds: RowSelectionState
-  columnVisibility: VisibilityState
+  columnVisibility: ColumnVisibilityState
   columnOrder: ColumnOrderState
   columnPinning: ColumnPinningState
   expanded: ExpandedState
   density: ProTableDensity
 }
 
-export type ProTableColumnDef<TData extends RowData> = DataTableColumnDef<TData>
+// AI modified: ProTable columns expose only the features registered by its Table 9 profile.
+export type ProTableColumnDef<TData extends RowData>
+  = | ProTableFeatureColumnDef<TData, unknown>
+    | { [TKey in keyof TData]-?: ProTableFeatureColumnDef<TData, TData[TKey]> }[keyof TData]

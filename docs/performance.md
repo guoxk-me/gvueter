@@ -26,15 +26,18 @@ The thresholds are regression budgets, not a claim that every device downloads t
 
 ## Charts and hidden content
 
-`ChartContainer` observes positive container bounds, coalesces resize work to one animation frame, and exposes a `revision` slot value. Dashboard and Gallery Unovis containers key themselves by that revision so a chart hidden by a Tab, restored from KeepAlive, or resized by the Shell redraws with current geometry. Observers, visibility listeners, fallback resize listeners, and pending frames are released on unmount. Every business chart still owns a screen-reader/table alternative and its loading/empty/error states.
+`@/components/ui/chart` is the only business-facing provider entry and exposes the approved Line, Bar, and Donut surface through direct Unovis subpaths. `check:charts` rejects direct provider imports and map renderers in source; the production bundle gate also rejects map signatures in emitted JavaScript.
+
+`ChartContainer` observes positive container bounds, coalesces resize work to one animation frame, and exposes a `revision` slot value. Dashboard and Gallery Unovis containers key themselves by that revision so a chart hidden by a Tab, restored from KeepAlive, resized by the Shell, or affected by theme/Locale changes redraws with current geometry. Observers, visibility listeners, fallback resize listeners, and pending frames are released on unmount. Every business chart still owns a screen-reader/table alternative and its loading/empty/error states.
 
 ## Verification
 
 ```sh
+pnpm run check:charts
 pnpm exec vitest run src/__tests__/performance-contract.spec.ts src/__tests__/chart-lifecycle.spec.ts
 pnpm run build
 ```
 
 Build output proves asset budgets. Browser E2E and production RUM are required for first-screen, transition, and interaction percentiles; unit tests cannot prove wall-clock user experience.
 
-<!-- AI modified: performance acceptance now has explicit thresholds, runtime owners, cleanup behavior, and an automated bundle gate. -->
+<!-- AI modified: chart acceptance now includes the stable provider boundary, map exclusion, theme/Locale refresh, cleanup, accessibility, and bundle evidence. -->

@@ -1,4 +1,5 @@
-import type { ColumnDef, RowData } from '@tanstack/vue-table'
+import type { CellData, RowData, TableFeatures } from '@tanstack/vue-table'
+import type { DataTableFeatureColumnDef } from '@/components/table-features'
 
 export type TableColumnTextBehavior = 'nowrap' | 'truncate' | 'wrap'
 
@@ -10,9 +11,15 @@ export interface DataTableColumnMeta {
   minWidth?: number
 }
 
-export interface TableColumnMeta<TData, TValue> extends DataTableColumnMeta {
+export interface TableColumnMeta<
+  TFeatures extends TableFeatures,
+  TData,
+  TValue,
+> extends DataTableColumnMeta {
   editable?: boolean
-  getExportValue?: (row: TData) => TValue | null | undefined
+  getExportValue?: (
+    row: TData,
+  ) => TFeatures extends TableFeatures ? TValue | null | undefined : never
 }
 
 // AI modified: both table implementations consume one declarative long-text and minimum-width contract.
@@ -24,8 +31,8 @@ export const TABLE_COLUMN_TEXT_CLASSES: Record<TableColumnTextBehavior, string> 
 
 // AI modified: retain each accessor's value type without falling back to `any` for mixed columns.
 export type DataTableColumnDef<TData extends RowData>
-  = | ColumnDef<TData, unknown>
-    | { [TKey in keyof TData]-?: ColumnDef<TData, TData[TKey]> }[keyof TData]
+  = | DataTableFeatureColumnDef<TData, unknown>
+    | { [TKey in keyof TData]-?: DataTableFeatureColumnDef<TData, TData[TKey]> }[keyof TData]
 
 export interface DataTableFilterOption {
   label: string
@@ -44,5 +51,9 @@ export interface DataTableFilterDefinition {
 export type DataTableFilterValues = Record<string, string>
 
 declare module '@tanstack/vue-table' {
-  interface ColumnMeta<TData, TValue> extends TableColumnMeta<TData, TValue> {}
+  interface ColumnMeta<
+    in out TFeatures extends TableFeatures,
+    in out TData extends RowData,
+    TValue extends CellData = CellData,
+  > extends TableColumnMeta<TFeatures, TData, TValue> {}
 }

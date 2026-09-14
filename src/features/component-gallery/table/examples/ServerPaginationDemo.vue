@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { PaginationState, SortingState } from '@tanstack/vue-table'
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, ref, shallowRef, watch } from 'vue'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useTableUrlState } from '@/composables/use-table-url-state'
@@ -28,7 +28,7 @@ const props = defineProps<{
   copy: TableExamplesCopy
 }>()
 
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createProTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('server-pagination')
 const pagination = shallowRef<PaginationState>({ pageIndex: 0, pageSize: 5 })
 const sorting = shallowRef<SortingState>([])

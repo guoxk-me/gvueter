@@ -16,9 +16,13 @@ The frontend permission layer improves the user experience. Every protected back
 
 ## Start locally
 
-<!-- AI modified: the documented runtime range matches Babel 8's exact supported Node branches. -->
+<!-- AI modified: one Node 24 baseline keeps local, CI, and container behavior reproducible. -->
 
-Node.js `^22.18.0 || >=24.11.0` is required. CI and the production container use Node.js 24.18.0.
+Node.js `>=24.18.0 <25` and pnpm `12.4.1` are required. Version managers can read the repository's `.node-version` file.
+
+<!-- AI modified: older pnpm launchers may not activate pnpm 12's native executable correctly. -->
+
+If upgrading from pnpm 10, use `corepack pnpm install --frozen-lockfile` and `corepack pnpm run dev` until your pnpm launcher is upgraded. CI installs the native runtime directly through the official `pnpm/setup` action; no global package-manager change is required for local verification.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -37,31 +41,30 @@ The Mock system configuration enables “Mock Enterprise SSO” by default so th
 
 ## Verification
 
-```sh
-# All TypeScript projects (including E2E), ESLint formatting, and semantic rules
-pnpm run check
+<!-- quality-commands:start -->
+- `pnpm run verify` runs the reproducible PR and local quality gate.
+- `pnpm run release:check` adds the Mock build, three-browser E2E, and guaranteed production artifact restoration.
+<!-- quality-commands:end -->
 
-# Unit tests
-pnpm run test:unit --run
-
-# Unit tests with enforced release coverage thresholds
-pnpm run test:coverage
-
-# Contract, sensitive-file, and test-inventory policy gates
-pnpm run check:contracts
-pnpm run check:security
-pnpm run test:inventory
-
-# Type-check, production build, and bundle budget
-pnpm run build
-
-# Local E2E (see docs/testing.md for the release-equivalent Mock preview)
-pnpm run test:e2e
-```
+Use `pnpm run doctor` for a read-only local environment diagnosis. Individual commands such as `pnpm run check`, `pnpm run test:unit --run`, and `pnpm run test:coverage` remain available during development.
 
 <!-- AI modified: ESLint is the single formatting and semantic gate after the standard Vite migration. -->
 
-`pnpm run check` combines `vue-tsc --build` with the Antfu ESLint configuration. Use `pnpm run format` for mechanical ESLint fixes; CSS and standalone HTML intentionally retain their existing style without an additional formatter. See [Testing and visual acceptance](./docs/testing.md) for the production/Mock build split and complete release matrix.
+`pnpm run check` combines `vue-tsc --build` with the Antfu ESLint configuration. Use `pnpm run format` for mechanical ESLint fixes; CSS and standalone HTML intentionally retain their existing style without an additional formatter. See [Testing and visual acceptance](./docs/testing.md) for the production/Mock build split, browser prerequisites, and complete evidence policy.
+
+## Product documentation
+
+<!-- AI modified: expose the four detailed product documents without conflating confirmed targets with the current implementation. -->
+
+- [01 产品总览文档](./docs/product/01-product-overview.md)
+- [02 业务规则](./docs/product/02-business-rules.md)
+- [03 技术开发](./docs/product/03-technical-development.md)
+- [04 UI 与交互](./docs/product/04-ui-and-interaction.md)
+
+These documents distinguish the confirmed product and prototype targets from inspected repository behavior and remaining implementation gaps. They are not a release-certification report.
+
+<!-- AI modified: link the confirmed Permission decisions to the existing product sources instead of creating a parallel specification. -->
+The confirmed `08 — Permission` scope is documented in [business rules](./docs/product/02-business-rules.md#3-角色权限与数据范围), [implementation contracts](./docs/product/03-technical-development.md#103-permission-阶段的已确认目标契约), and [UI flows](./docs/product/04-ui-and-interaction.md#103-角色管理与授权-drawer). Prototype progress and review evidence remain in the [prototype plan](./docs/prototype-plan.md).
 
 ## Architecture
 

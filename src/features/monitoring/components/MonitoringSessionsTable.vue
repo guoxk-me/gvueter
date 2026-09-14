@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { OnlineSession } from '@/features/monitoring/types'
 import { LogOut } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel } from '@/lib/display-format'
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
-const columnHelper = createColumnHelper<OnlineSession>()
+const columnHelper = createDataTableColumnHelper<OnlineSession>()
 const columns = computed(() => [
   columnHelper.accessor('userName', { header: t('monitoring.sessions.user') }),
   columnHelper.accessor('role', { header: t('monitoring.sessions.role') }),

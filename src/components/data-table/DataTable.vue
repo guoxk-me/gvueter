@@ -1,26 +1,27 @@
 <script setup lang="ts" generic="TData extends RowData">
 import type {
-  Column,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
-  TableState,
   Updater,
 } from '@tanstack/vue-table'
 import type { DataTableColumnDef } from './types'
+import type {
+  DataTableColumn,
+  DataTableFeatureColumnDef,
+  DataTableRow,
+  DataTableState,
+} from '@/components/table-features'
 import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/vue'
 import {
   FlexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   isFunction,
-  useVueTable,
+  useTable,
 } from '@tanstack/vue-table'
 import { computed, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { dataTableFeatures } from '@/components/table-features'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -50,7 +51,7 @@ const props = withDefaults(
     isLoading?: boolean
     defaultPageSize?: number
     pageSizeOptions?: readonly number[]
-    getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string
+    getRowId?: (originalRow: TData, index: number, parent?: DataTableRow<TData>) => string
     getRowLabel?: (originalRow: TData) => string
     enableRowSelection?: boolean
     getRowCanSelect?: (originalRow: TData) => boolean
@@ -99,32 +100,33 @@ const sorting = computed<SortingState>({
     else sortingModel.value = nextSorting
   },
 })
-const reactiveTableState = computed<Partial<TableState>>(() => ({
+const reactiveTableState = computed<Partial<DataTableState>>(() => ({
   pagination: pagination.value,
   sorting: sorting.value,
   rowSelection: selectedRowIds.value,
 }))
 const pageCount = computed(() => getTablePageCount(props.data.length, pagination.value.pageSize))
+// AI modified: Table 9's invariant TValue slot cannot represent heterogeneous accessor columns directly.
+const tableColumns = computed(
+  () => props.columns as readonly DataTableFeatureColumnDef<TData, unknown>[],
+)
+const tableData = computed(() => props.data)
 
 function nextState<T>(updater: Updater<T>, currentValue: T): T {
   return isFunction(updater) ? updater(currentValue) : updater
 }
 
-const table = useVueTable({
+const table = useTable({
+  features: dataTableFeatures,
   // AI modified: centralize sorting and pagination so feature tables only describe their columns.
-  get columns() {
-    return props.columns
-  },
-  get data() {
-    return props.data
-  },
+  columns: tableColumns,
+  data: tableData,
   getRowId: props.getRowId,
+  // AI modified: wrapper-owned pagination performs explicit clamping instead of library auto resets.
+  autoResetPageIndex: false,
   get state() {
     return reactiveTableState.value
   },
-  getCoreRowModel: getCoreRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
-  getSortedRowModel: getSortedRowModel(),
   enableRowSelection: row =>
     props.enableRowSelection && (props.getRowCanSelect?.(row.original) ?? true),
   onPaginationChange: updater => applyPaginationChange(nextState(updater, pagination.value)),
@@ -152,11 +154,11 @@ const table = useVueTable({
   },
 })
 
-function syncTableState(state: Partial<TableState>): void {
+function syncTableState(state: Partial<DataTableState>): void {
   // AI modified: controlled updates also restore reactive option values materialized by object spread.
   table.setOptions(previousOptions => ({
     ...previousOptions,
-    columns: props.columns,
+    columns: tableColumns.value,
     data: props.data,
     state: { ...table.initialState, ...previousOptions.state, ...state },
   }))
@@ -199,11 +201,11 @@ function applyPaginationChange(requestedPagination: PaginationState): void {
   emit('paginationChange', nextPagination)
 }
 
-function getRowsForState(_state: Partial<TableState>, _data: TData[]): Row<TData>[] {
+function getRowsForState(_state: Partial<DataTableState>, _data: TData[]): DataTableRow<TData>[] {
   return table.getRowModel().rows
 }
 
-function getHeaderGroupsForState(_state: Partial<TableState>) {
+function getHeaderGroupsForState(_state: Partial<DataTableState>) {
   return table.getHeaderGroups()
 }
 
@@ -218,11 +220,11 @@ function updateAllRowSelection(value: boolean | 'indeterminate'): void {
   table.toggleAllPageRowsSelected(value === true)
 }
 
-function updateRowSelection(row: Row<TData>, value: boolean | 'indeterminate'): void {
+function updateRowSelection(row: DataTableRow<TData>, value: boolean | 'indeterminate'): void {
   row.toggleSelected(value === true)
 }
 
-function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 'none' | undefined {
+function getColumnAriaSort(column: DataTableColumn<TData>): 'ascending' | 'descending' | 'none' | undefined {
   if (!column.getCanSort())
     return undefined
 
@@ -235,7 +237,7 @@ function getColumnAriaSort(column: Column<TData>): 'ascending' | 'descending' | 
   return 'none'
 }
 
-function getRowSelectionLabel(row: Row<TData>): string {
+function getRowSelectionLabel(row: DataTableRow<TData>): string {
   // AI modified: selection controls identify the business row instead of repeating a generic name.
   const readableRowLabel = props.getRowLabel?.(row.original).trim() || row.id
   return `${t('dataTable.selectRow')}: ${readableRowLabel}`
@@ -294,7 +296,7 @@ watch(
               :model-value="
                 table.getIsAllPageRowsSelected()
                   ? true
-                  : table.getIsSomePageRowsSelected()
+                  : table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
                     ? 'indeterminate'
                     : false
               "
@@ -325,7 +327,7 @@ watch(
                 class="-ml-3 h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
                 @click="header.column.toggleSorting()"
               >
-                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+                <FlexRender :header="header" />
                 <ArrowUp
                   v-if="header.column.getIsSorted() === 'asc'"
                   class="ml-1 size-3.5"
@@ -341,11 +343,7 @@ watch(
               <span v-else-if="header.column.id === 'actions'" class="sr-only">
                 {{ t('common.actions') }}
               </span>
-              <FlexRender
-                v-else
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
+              <FlexRender v-else :header="header" />
             </template>
           </TableHead>
         </TableRow>
@@ -387,7 +385,7 @@ watch(
             "
           >
             <slot name="cell" :cell="cell" :row="row">
-              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              <FlexRender :cell="cell" />
             </slot>
           </TableCell>
         </TableRow>

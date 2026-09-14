@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
 import type { ProTableEditCommit } from '@/components/pro-table'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, onUnmounted, shallowRef } from 'vue'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,7 @@ const props = defineProps<{
   copy: TableExamplesCopy
 }>()
 
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createProTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('editable')
 const rows = shallowRef<TableWorkOrder[]>(freshRows())
 const rowEditDraft = shallowRef<RowEditDraft>()

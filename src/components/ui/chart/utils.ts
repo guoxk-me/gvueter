@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { ChartConfig } from '.'
+import type { ChartConfig } from './chart-context'
 import { isClient } from '@vueuse/core'
 import { h, render } from 'vue'
 

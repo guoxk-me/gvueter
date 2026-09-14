@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.34.4",
+  "packageManager": "pnpm@12.4.1",
   "engines": {
-    "node": "^22.18.0 || >=24.11.0"
+    "node": ">=24.18.0 <25"
   },
   "scripts": {
     "dev": "vite",
@@ -15,17 +15,25 @@
     "test:coverage": "vitest run --coverage",
     "test:inventory": "node scripts/check-test-inventory.mjs",
     "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
     "lint:staged": "lint-staged",
     "format": "eslint . --fix --cache",
-    "check": "run-s type-check lint",
+    "check": "run-s type-check lint check:charts",
+    "check:charts": "node scripts/check-chart-boundary.ts",
     "check:contracts": "node scripts/check-openapi-contract.mjs && node scripts/check-runtime-api-contracts.mjs",
     "check:security": "node scripts/check-sensitive-files.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:pwa": "node scripts/check-pwa-artifact.mjs",
+    "docs:check": "node scripts/check-documentation.ts",
+    "doctor": "node scripts/doctor.ts",
+    "doctor:ci": "node scripts/doctor.ts --ci",
+    "audit:prod": "pnpm audit --prod --audit-level high",
+    "verify": "run-s doctor:ci check docs:check check:contracts check:security test:inventory audit:prod test:coverage build",
+    "release:check": "node scripts/run-release-check.ts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -46,7 +54,6 @@
     "axios": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
-    "dayjs": "catalog:",
     "embla-carousel-vue": "catalog:",
     "motion-v": "catalog:",
     "nprogress": "catalog:",

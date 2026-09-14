@@ -1,10 +1,18 @@
 <script lang="ts">
 import type { HTMLAttributes } from 'vue'
-import type { ChartConfig } from '.'
+import type { ChartConfig } from './chart-context'
 import { useId } from 'reka-ui'
-import { computed, onBeforeUnmount, onMounted, shallowRef, toRefs, useTemplateRef } from 'vue'
+import {
+  computed,
+  onActivated,
+  onBeforeUnmount,
+  onMounted,
+  shallowRef,
+  toRefs,
+  useTemplateRef,
+} from 'vue'
 import { cn } from '@/lib/utils'
-import { provideChartContext } from '.'
+import { provideChartContext } from './chart-context'
 import ChartStyle from './ChartStyle.vue'
 </script>
 
@@ -51,59 +59,104 @@ let committedBounds: ChartBounds | undefined
 let pendingBounds: ChartBounds | undefined
 let resizeFrame: number | undefined
 let resizeObserver: ResizeObserver | undefined
+let themeObserver: MutationObserver | undefined
+let shouldForceRevision = false
 
 function hasSameBounds(first: ChartBounds | undefined, second: ChartBounds): boolean {
   return first?.width === second.width && first.height === second.height
 }
 
-onMounted(() => {
-  const container = containerRef.value
-  if (!container || typeof ResizeObserver === 'undefined')
-    return
-
-  // AI modified: remount size-sensitive chart children only after a distinct visible resize.
-  resizeObserver = new ResizeObserver(([entry]) => {
-    if (!entry)
-      return
-
-    const nextBounds = {
-      height: entry.contentRect.height,
-      width: entry.contentRect.width,
-    }
+function queueRevision(nextBounds?: ChartBounds, shouldForce = false): void {
+  if (nextBounds) {
     if (nextBounds.width <= 0 || nextBounds.height <= 0)
       return
-    if (hasSameBounds(pendingBounds, nextBounds))
+    if (!shouldForce && hasSameBounds(pendingBounds ?? committedBounds, nextBounds))
       return
-    if (!pendingBounds && hasSameBounds(committedBounds, nextBounds))
-      return
-
     pendingBounds = nextBounds
-    if (resizeFrame !== undefined)
+  }
+
+  shouldForceRevision ||= shouldForce
+  if (resizeFrame !== undefined)
+    return
+
+  resizeFrame = requestAnimationFrame(() => {
+    resizeFrame = undefined
+    const latestBounds = pendingBounds
+    const mustRefresh = shouldForceRevision
+    pendingBounds = undefined
+    shouldForceRevision = false
+    if (!mustRefresh && (!latestBounds || hasSameBounds(committedBounds, latestBounds)))
       return
 
-    resizeFrame = requestAnimationFrame(() => {
-      resizeFrame = undefined
-      const latestBounds = pendingBounds
-      pendingBounds = undefined
-      if (!latestBounds || hasSameBounds(committedBounds, latestBounds))
-        return
-
+    if (latestBounds)
       committedBounds = latestBounds
-      revision.value += 1
-    })
+    revision.value += 1
   })
-  resizeObserver.observe(container)
+}
+
+function readContainerBounds(): ChartBounds | undefined {
+  const container = containerRef.value
+  if (!container)
+    return undefined
+  const bounds = container.getBoundingClientRect()
+  return { height: bounds.height, width: bounds.width }
+}
+
+function refreshVisibleChart(): void {
+  if (document.visibilityState === 'hidden')
+    return
+  queueRevision(readContainerBounds(), true)
+}
+
+function handleWindowResize(): void {
+  queueRevision(readContainerBounds())
+}
+
+onMounted(() => {
+  const container = containerRef.value
+  if (!container)
+    return
+
+  if (typeof ResizeObserver !== 'undefined') {
+    // AI modified: remount size-sensitive chart children only after a distinct visible resize.
+    resizeObserver = new ResizeObserver(([entry]) => {
+      if (entry)
+        queueRevision({ height: entry.contentRect.height, width: entry.contentRect.width })
+    })
+    resizeObserver.observe(container)
+  }
+
+  // AI modified: theme and locale changes force Unovis axes and token-driven marks to redraw.
+  if (typeof MutationObserver !== 'undefined') {
+    themeObserver = new MutationObserver(refreshVisibleChart)
+    themeObserver.observe(document.documentElement, {
+      attributeFilter: ['class', 'data-theme', 'lang', 'style'],
+      attributes: true,
+    })
+  }
+
+  window.addEventListener('resize', handleWindowResize, { passive: true })
+  document.addEventListener('visibilitychange', refreshVisibleChart)
+  queueRevision(readContainerBounds())
 })
+
+// AI modified: KeepAlive restoration redraws charts after their hidden container becomes measurable again.
+onActivated(refreshVisibleChart)
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   resizeObserver = undefined
+  themeObserver?.disconnect()
+  themeObserver = undefined
+  window.removeEventListener('resize', handleWindowResize)
+  document.removeEventListener('visibilitychange', refreshVisibleChart)
 
   if (resizeFrame !== undefined) {
     cancelAnimationFrame(resizeFrame)
     resizeFrame = undefined
   }
   pendingBounds = undefined
+  shouldForceRevision = false
 })
 
 provideChartContext({

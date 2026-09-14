@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { ManagedMenuRecord } from '@/features/menus/types'
 import { ListTree, Pencil, Trash2 } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getManagedMenuRows } from '@/features/menus/menu-hierarchy'
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const columnHelper = createColumnHelper<ReturnType<typeof getManagedMenuRows>[number]>()
+const columnHelper = createDataTableColumnHelper<ReturnType<typeof getManagedMenuRows>[number]>()
 const rows = computed(() => getManagedMenuRows(props.menus))
 const columns = computed(() => [
   columnHelper.accessor('titleKey', { header: t('menus.name'), enableSorting: false }),

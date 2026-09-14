@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { StatusTone } from '@/components/admin'
 import type { MonitoringLog, MonitoringLogSeverity } from '@/features/monitoring/types'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { StatusTag } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel, getNumberLabel } from '@/lib/display-format'
 
 defineProps<{
@@ -14,7 +14,7 @@ defineProps<{
 }>()
 
 const { t, locale } = useI18n()
-const columnHelper = createColumnHelper<MonitoringLog>()
+const columnHelper = createDataTableColumnHelper<MonitoringLog>()
 const columns = computed(() => [
   columnHelper.accessor('occurredAt', { header: t('monitoring.logsTable.occurredAt') }),
   columnHelper.accessor('kind', { header: t('monitoring.logsTable.kind') }),

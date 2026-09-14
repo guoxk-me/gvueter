@@ -2,8 +2,18 @@ name: CI
 
 on:
   pull_request:
+    branches: [main]
   push:
-    branches: [main, admin]
+    branches: [main, main-admin]
+  workflow_dispatch:
+  # AI modified: Monday 02:00 UTC is Monday 10:00 Asia/Shanghai; schedules run on the default branch.
+  schedule:
+    - cron: '0 2 * * 1'
+
+# AI modified: obsolete runs are canceled only for pull requests; trusted branch and manual evidence runs finish.
+concurrency:
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
 
 permissions:
   contents: read
@@ -14,53 +24,109 @@ jobs:
     timeout-minutes: 25
     steps:
       # AI modified: third-party actions are pinned to reviewed commits while comments retain update context.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
-          run_install: false
-          version: 10.34.4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          cache: pnpm
-          # AI modified: Babel 8 supports this pinned Node branch and rejects earlier Node 24 releases.
-          node-version: 24.18.0
+          cache: true
+          install: false
+          runtime: node@24.18.0
       - run: pnpm install --frozen-lockfile
-      # AI modified: the single check gate covers Vue/TypeScript projects and ESLint-owned formatting.
-      - run: pnpm run check
-      - run: pnpm run check:contracts
-      - run: pnpm run check:security
-      - run: pnpm run test:inventory
-      - run: pnpm audit --prod --audit-level high
-      # AI modified: the release unit-test gate also enforces configured V8 coverage thresholds.
-      - run: pnpm run test:coverage
+      # AI modified: CI and local development execute the same reproducible core gate.
+      - run: pnpm run verify
       - name: Upload unit coverage evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           if-no-files-found: warn
           name: unit-coverage
           path: coverage/
-          retention-days: 14
+          retention-days: ${{ github.event_name == 'pull_request' && 14 || 30 }}
+
+  windows-clean-check:
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          cache: true
+          install: false
+          runtime: node@24.18.0
+      - run: pnpm install --frozen-lockfile
+      # AI modified: a fresh Windows checkout proves the typed gates do not depend on POSIX shell utilities.
+      - run: pnpm run verify
+
+  chromium-smoke:
+    # AI modified: PR checks run in parallel; trusted runs get Chromium evidence in the full E2E job.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          cache: true
+          install: false
+          runtime: node@24.18.0
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Playwright Chromium
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+          path: ~/.cache/ms-playwright
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
       - run: pnpm run build
         env:
-          VITE_ENABLE_MOCKS: 'false'
+          VITE_ENABLE_MOCKS: 'true'
+      # AI modified: pull requests receive fast Chromium behavior and pixel feedback before the release matrix.
+      - run: pnpm run test:e2e:chromium
+        env:
+          CI: 'true'
+          VITE_ENABLE_MOCKS: 'true'
+      - name: Upload browser failure evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          if-no-files-found: warn
+          name: chromium-smoke-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: ${{ github.event_name == 'pull_request' && 14 || 30 }}
+
   e2e:
+    if: github.event_name != 'pull_request'
+    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
-          run_install: false
-          version: 10.34.4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          cache: pnpm
-          # AI modified: browser verification uses the same Node runtime as static verification and Docker.
-          node-version: 24.18.0
+          cache: true
+          install: false
+          runtime: node@24.18.0
       - run: pnpm install --frozen-lockfile
-      # AI modified: Chromium owns pixels; all three engines run the behavioral suite.
-      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Cache Playwright release browsers
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ runner.os }}-playwright-release-${{ hashFiles('pnpm-lock.yaml') }}
+          path: ~/.cache/ms-playwright
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium firefox webkit
+      # AI modified: trusted branch and manual runs retain the complete three-engine release evidence.
       - run: pnpm run build
         env:
           VITE_ENABLE_MOCKS: 'true'
@@ -70,33 +136,34 @@ jobs:
           VITE_ENABLE_MOCKS: 'true'
       - name: Upload browser failure evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           if-no-files-found: warn
-          name: playwright-evidence
+          name: playwright-release-evidence
           path: |
             playwright-report/
             test-results/
-          retention-days: 14
+          retention-days: 30
 
   container:
     # AI modified: validate the deployable image only after static, unit, and browser release gates pass.
     needs: [verify, e2e]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build the production container
         run: docker build --build-arg VITE_ENABLE_MOCKS=false --tag gvueter-ci:${{ github.sha }} .
       - name: Generate production image SPDX SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
         with:
           artifact-name: gvueter-container-sbom.spdx.json
           format: spdx-json
           image: gvueter-ci:${{ github.sha }}
           output-file: container-sbom.spdx.json
           upload-artifact: true
-          upload-artifact-retention: 14
+          upload-artifact-retention: 30
       - name: Smoke-test the unprivileged runtime
         run: |
           docker network create gvueter-ci-network
@@ -153,7 +220,7 @@ jobs:
           fi
       - name: Scan actionable container vulnerabilities
         # AI modified: a SHA-pinned local image scan blocks fixed high/critical OS or package findings.
-        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           fail-build: true
           image: gvueter-ci:${{ github.sha }}
@@ -163,7 +230,7 @@ jobs:
           severity-cutoff: high
       - name: Upload container scan evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           if-no-files-found: warn
           name: container-security-evidence
@@ -174,7 +241,7 @@ jobs:
             container-scan.json
             proxy-response.json
             readiness-response.json
-          retention-days: 14
+          retention-days: 30
       - name: Stop the smoke container
         if: always()
         run: |

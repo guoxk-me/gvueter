@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { ADMIN_DISPLAY_TIME_ZONE, getCurrencyLabel, getDateTimeLabel } from '@/lib/display-format'
 import { getTableExampleScenario, TABLE_WORK_ORDERS } from '../table-examples'
@@ -14,7 +14,7 @@ const props = defineProps<{
 }>()
 
 const { locale } = useI18n()
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createDataTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('basic')
 const rows = TABLE_WORK_ORDERS.slice(0, 4)
 const columns = computed(() => [

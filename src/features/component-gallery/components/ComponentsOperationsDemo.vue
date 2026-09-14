@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { RowSelectionState } from '@tanstack/vue-table'
 import type { CsvExportColumn, DateRangePreset, DateRangeValue } from '@/components/admin'
+import { getLocalTimeZone, today } from '@internationalized/date'
 import { Archive, RefreshCw } from '@lucide/vue'
 import { useQuery } from '@tanstack/vue-query'
-import dayjs from 'dayjs'
 import { computed, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -57,20 +57,21 @@ const selectedRange = shallowRef<DateRangeValue | null>(null)
 const selectedRowIds = shallowRef<RowSelectionState>({})
 
 const datePresets = computed<readonly DateRangePreset[]>(() => {
-  const today = dayjs()
+  // AI modified: use the project's calendar primitives so presets retain local-date semantics without Day.js.
+  const currentDate = today(getLocalTimeZone())
   return [
     {
       label: t('components.operations.last7Days'),
       value: {
-        start: today.subtract(6, 'day').format('YYYY-MM-DD'),
-        end: today.format('YYYY-MM-DD'),
+        start: currentDate.subtract({ days: 6 }).toString(),
+        end: currentDate.toString(),
       },
     },
     {
       label: t('components.operations.last30Days'),
       value: {
-        start: today.subtract(29, 'day').format('YYYY-MM-DD'),
-        end: today.format('YYYY-MM-DD'),
+        start: currentDate.subtract({ days: 29 }).toString(),
+        end: currentDate.toString(),
       },
     },
   ]

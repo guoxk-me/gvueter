@@ -1,11 +1,11 @@
 import type { PaginationState } from '@tanstack/vue-table'
 import type { ProTableLabels } from '@/components/pro-table/types'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import SearchForm from '@/components/admin/SearchForm.vue'
 import ProTable from '@/components/pro-table/ProTable.vue'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Select } from '@/components/ui/select'
 import UserTable from '@/features/users/components/UserTable.vue'
 import { maskEmail } from '@/features/users/user-privacy'
@@ -18,7 +18,7 @@ interface TestRow {
   children?: TestRow[]
 }
 
-const columnHelper = createColumnHelper<TestRow>()
+const columnHelper = createProTableColumnHelper<TestRow>()
 const columns = [
   columnHelper.accessor('name', {
     header: 'Name',
@@ -466,7 +466,7 @@ describe('proTable public behavior', () => {
     expect(wrapper.text()).toContain('Print users')
     expect(wrapper.findAll('th').map(header => header.text())).toEqual(['Email', 'Name'])
 
-    const pinnedTable = mountTable({ columnPinning: { left: ['name'], right: [] } })
+    const pinnedTable = mountTable({ columnPinning: { start: ['name'], end: [] } })
     expect(pinnedTable.findAll('th')[0]!.text()).toBe('Name')
     expect(pinnedTable.findAll('th')[0]!.attributes('style')).toContain('position: sticky')
 

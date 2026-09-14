@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { ExpandedState } from '@tanstack/vue-table'
 import type { TableExamplesCopy, TableWorkOrder } from '../table-examples'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, onUnmounted, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getCurrencyLabel } from '@/lib/display-format'
@@ -23,7 +23,7 @@ const props = defineProps<{
 }>()
 
 const { locale } = useI18n()
-const columnHelper = createColumnHelper<TableWorkOrder>()
+const columnHelper = createProTableColumnHelper<TableWorkOrder>()
 const scenario = getTableExampleScenario('tree')
 const expandedNodeIds = defineModel<readonly string[]>('expandedNodeIds', {
   default: () => [...DEFAULT_TABLE_TREE_EXPANDED_NODE_IDS],

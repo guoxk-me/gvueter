@@ -18,7 +18,8 @@ export default defineConfig({
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    // AI modified: Firefox 1.63 may need more than five seconds to attach the fresh MSW worker on CI.
+    timeout: 10_000,
     // AI modified: repository screenshots share one bounded tolerance and deterministic animation policy.
     toHaveScreenshot: {
       animations: 'disabled',

@@ -188,6 +188,7 @@ describe('table example behavior', () => {
 
     await card.get('[data-testid="tree-retry"]').trigger('click')
     await vi.advanceTimersByTimeAsync(140)
+    await nextTick()
     expect(card.get('[data-testid="tree-load-state"]').text()).toBe(copy.tree.loaded)
     expect(card.find('[data-row-id="program-identity-access"]').exists()).toBe(true)
   })
@@ -389,15 +390,15 @@ describe('table example behavior', () => {
     expect(wrapper.get('[data-testid="column-preferences"]').text()).toContain(
       '"density":"compact"',
     )
-    expect(wrapper.get('[data-testid="column-preferences"]').text()).toContain('"left":["id"]')
+    expect(wrapper.get('[data-testid="column-preferences"]').text()).toContain('"start":["id"]')
     expect(
       JSON.parse(localStorage.getItem('gvueter:gallery:table-columns:v1') ?? '{}'),
     ).toMatchObject({
-      version: 1,
+      version: 2,
       density: 'compact',
       visibility: {},
       order: [],
-      pinning: { left: ['id'], right: [] },
+      pinning: { start: ['id'], end: [] },
     })
   })
 

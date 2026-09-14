@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { RegistrationTrendPoint } from '@/features/dashboard/types'
-import { VisAxis, VisLine, VisXYContainer } from '@unovis/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer } from '@/components/ui/chart'
+import { ChartAxis, ChartContainer, ChartLine, ChartXYContainer } from '@/components/ui/chart'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel, getNumberLabel } from '@/lib/display-format'
 
 const props = defineProps<{
@@ -58,22 +57,22 @@ function displayUsers(userCount: number | Date): string {
     </CardHeader>
     <CardContent class="min-w-0">
       <ChartContainer v-slot="{ revision }" :config="chartConfig" class="h-64" aria-hidden="true">
-        <VisXYContainer :key="revision" :data="points" :height="256">
-          <VisLine
+        <ChartXYContainer :key="revision" :data="points" :height="256">
+          <ChartLine
             :data="points"
             :x="getWeekIndex"
             :y="getTotalUsers"
             color="var(--chart-1)"
             :line-width="3"
           />
-          <VisAxis
+          <ChartAxis
             type="x"
             :tick-values="points.map((point) => point.weekIndex)"
             :tick-format="displayWeek"
             :grid-line="false"
           />
-          <VisAxis type="y" :tick-format="displayUsers" :num-ticks="4" :tick-line="false" />
-        </VisXYContainer>
+          <ChartAxis type="y" :tick-format="displayUsers" :num-ticks="4" :tick-line="false" />
+        </ChartXYContainer>
       </ChartContainer>
 
       <dl class="sr-only">

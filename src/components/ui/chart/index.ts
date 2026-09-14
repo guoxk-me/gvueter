@@ -1,29 +1,16 @@
-import type { Component, Ref } from 'vue'
-import { createContext } from 'reka-ui'
-
+export { provideChartContext, THEMES, useChart } from './chart-context'
+export type { ChartConfig } from './chart-context'
 export { default as ChartContainer } from './ChartContainer.vue'
 export { default as ChartLegendContent } from './ChartLegendContent.vue'
 export { default as ChartTooltipContent } from './ChartTooltipContent.vue'
 export { componentToString } from './utils'
 
-// Format: { THEME_NAME: CSS_SELECTOR }
-export const THEMES = { light: '', dark: '.dark' } as const
-
-export type ChartConfig = {
-  [k in string]: {
-    label?: string | Component
-    icon?: string | Component
-  } & (
-    | { color?: string, theme?: never }
-    | { color?: never, theme: Record<keyof typeof THEMES, string> }
-  )
-}
-
-interface ChartContextProps {
-  id: string
-  config: Ref<ChartConfig>
-}
-
-export const [useChart, provideChartContext] = createContext<ChartContextProps>('Chart')
-
-export { VisCrosshair as ChartCrosshair, VisTooltip as ChartTooltip } from '@unovis/vue'
+// AI modified: business features consume the stable chart surface while Unovis remains replaceable.
+export { default as ChartAxis } from '@unovis/vue/components/axis'
+export { default as ChartCrosshair } from '@unovis/vue/components/crosshair'
+export { default as ChartDonut } from '@unovis/vue/components/donut'
+export { default as ChartLine } from '@unovis/vue/components/line'
+export { default as ChartBar } from '@unovis/vue/components/stacked-bar'
+export { default as ChartTooltip } from '@unovis/vue/components/tooltip'
+export { default as ChartSingleContainer } from '@unovis/vue/containers/single-container'
+export { default as ChartXYContainer } from '@unovis/vue/containers/xy-container'

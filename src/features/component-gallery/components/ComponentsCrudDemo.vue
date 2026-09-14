@@ -2,12 +2,12 @@
 import type { AcceptableValue } from 'reka-ui'
 import type { DataTableFilterDefinition, DataTableFilterValues } from '@/components/data-table'
 import { Eye, Plus } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, reactive, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { DetailDrawer, FormDialog } from '@/components/admin'
 import { DataTable, DataTableFilterBar } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,7 +33,7 @@ interface DemoProject {
 }
 
 const { t } = useI18n()
-const columnHelper = createColumnHelper<DemoProject>()
+const columnHelper = createDataTableColumnHelper<DemoProject>()
 const projects = shallowRef<DemoProject[]>([
   {
     id: 'project-001',

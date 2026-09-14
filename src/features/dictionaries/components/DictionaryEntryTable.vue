@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { DictionaryColor, DictionaryEntry } from '@/features/dictionaries/types'
 import { Pencil, Trash2 } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -22,7 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const columnHelper = createColumnHelper<DictionaryEntry>()
+const columnHelper = createDataTableColumnHelper<DictionaryEntry>()
 // AI modified: explicit utility classes keep dictionary tags aligned with live semantic CSS tokens.
 const dictionaryColorClasses: Record<DictionaryColor, string> = {
   primary: 'border-primary/35 bg-primary/10 text-primary',

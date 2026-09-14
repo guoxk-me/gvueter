@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { SystemParameterRecord } from '../types'
 import { Pencil, Trash2 } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction, CopyButton, StatusTag } from '@/components/admin'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Button } from '@/components/ui/button'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel } from '@/lib/display-format'
 
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const { locale, t } = useI18n()
-const columnHelper = createColumnHelper<SystemParameterRecord>()
+const columnHelper = createProTableColumnHelper<SystemParameterRecord>()
 const columns = computed(() => [
   columnHelper.accessor('key', {
     header: t('systemParameters.key'),

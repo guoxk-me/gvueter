@@ -2,11 +2,11 @@
 import type { StatusTone } from '@/components/admin'
 import type { CacheHealth, CacheHealthStatus } from '@/features/monitoring/types'
 import { Eraser } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ConfirmAction, StatusTag } from '@/components/admin'
 import { DataTable } from '@/components/data-table'
+import { createDataTableColumnHelper } from '@/components/table-features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,7 +30,7 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
-const columnHelper = createColumnHelper<CacheHealth>()
+const columnHelper = createDataTableColumnHelper<CacheHealth>()
 const columns = computed(() => [
   columnHelper.accessor('name', { header: t('monitoring.cachesTable.cache') }),
   columnHelper.accessor('driver', { header: t('monitoring.cachesTable.driver') }),

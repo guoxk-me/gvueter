@@ -6,7 +6,6 @@ import type {
   ContentFileRecord,
 } from '@/features/content-admin/types/files'
 import { Download, Eye, Trash2, UploadCloud } from '@lucide/vue'
-import { createColumnHelper } from '@tanstack/vue-table'
 import { computed, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -19,6 +18,7 @@ import {
   Upload,
 } from '@/components/admin'
 import { ProTable } from '@/components/pro-table'
+import { createProTableColumnHelper } from '@/components/table-features'
 import { Button } from '@/components/ui/button'
 import { useFileManagement } from '@/features/content-admin/composables/useFileManagement'
 import { isSafeImagePreview } from '@/features/content-admin/content-admin-rules'
@@ -115,7 +115,7 @@ const searchFields = computed<readonly SearchFormField<ContentFileSearchFilters>
     inputMode: 'search',
   },
 ])
-const columnHelper = createColumnHelper<ContentFileRecord>()
+const columnHelper = createProTableColumnHelper<ContentFileRecord>()
 const columns = computed(() => [
   columnHelper.accessor('name', {
     header: t('contentAdmin.files.fields.name'),
