@@ -455,6 +455,10 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - 用户已授权整理相关依赖升级、安全基线与 Phase 1 工具链提交并推送到 `origin/main-admin`，跟踪并补录本次托管 CI；本地 `.codex` 不提交，不修改分支保护、不合并到 `main`、不发布制品。Phase 1 在托管验收实际通过前保持 Implemented。
 
+- 首次已推送 Commit `6fc447e`，见 [托管 Run 34800164248](https://github.com/guoxk-me/gvueter/actions/runs/34800164248)：Linux `verify` 通过，Windows 契约门禁因路径分隔符导致测试/Mock 未排除而失败。原问题已由真实过滤谓词的 Windows/POSIX 回归复现，已修正路径边界并统一 Chart 诊断路径；仍需新版完整本地和托管验证，不降低 Schema 门禁、不跳过 Windows。
+
+- Windows 路径兼容修复已通过完整本地 `release:check`：10 项工具 Fixture、676 项单元测试、三浏览器 `149/149`、全部门禁和生产产物恢复通过；仍需新 Commit 的托管矩阵，Phase 1 暂不标记 Executed。
+
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。
 - Axios 统一处理请求头、超时、错误信封、请求 ID、上传下载和认证失效。

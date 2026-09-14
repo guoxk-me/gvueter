@@ -604,6 +604,12 @@ Implemented（Q1846）：pnpm `12.4.1` 与双文档 Lockfile 已迁移并通过�
 
 Confirmed（托管验收授权）：用户已授权提交本项目此前相关依赖升级、安全边界与 Phase 1 工具链，并推送到 `origin/main-admin` 验证托管 CI。排除本地 `.codex` 配置；不修改远端保护、不合并主干、不发布制品。Phase 1 仍需实际同 Commit 的 Linux、Windows、三浏览器和容器结果才能更新完成状态。
 
+<!-- AI modified: 记录实际托管失败及其路径边界原因，禁止用本地通过覆盖远端失败。 -->
+
+Executed：Commit `6fc447e` 已推送，首次 [托管 CI](https://github.com/guoxk-me/gvueter/actions/runs/34800164248) 的 Linux `verify` 通过，Windows 在生产契约门禁失败。门禁仅按 `/` 排除测试/Mock，导致 Windows `\` 路径被误纳入生产扫描；已建立能复现该问题的回归并修正实际路径边界，Chart 诊断路径统一为 `/`。修复完成状态仍需新版本地与托管执行证据；不补伪生产 Schema、不跳过平台、不放宽契约。
+
+Executed（路径兼容修复，本地）：失败回归修复后，10 项工具 Fixture、676 项单元测试、完整三浏览器 `149/149`、全部本地发布门禁和最终生产产物恢复通过；未修改业务 API、组件契约或远端治理配置。Phase 1 继续等待新 Commit 的完整托管矩阵。
+
 运行时公开配置在首个 Minor 保留 `VITE_*` 构建期回退并提示弃用，下一个 Breaking 版本移除旧入口。分支保护、Environment、GHCR、Pages、Private Vulnerability Reporting、分支合并和正式发布均属于远端状态，实际执行前必须再次确认目标。
 
 公开 Demo 默认使用 GitHub Pages 的独立 Mock 构建并明确标识；GHCR 镜像可见性继承仓库。每个 Release 保留 Commit、Node/pnpm、门禁、浏览器、制品摘要、已知限制和迁移链接。PR 不依赖外部服务，Release 外部步骤有限重试后仍失败则停止发布。工程进度统一记录 Planned、Implemented、Executed、Blocked，并关联实际证据。

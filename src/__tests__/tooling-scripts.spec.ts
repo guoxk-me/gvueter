@@ -1,12 +1,32 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { parse as readYaml } from 'yaml'
 import { inspectChartBoundary } from '../../scripts/check-chart-boundary'
 import { inspectDoctorFiles } from '../../scripts/doctor'
 
 const fixtureRoots: string[] = []
+
+// AI modified: exercise the gate's actual filtering predicate with native Windows and POSIX paths.
+describe('production API contract source boundary', () => {
+  it('excludes test and Mock callers on every platform without excluding production calls', async () => {
+    const gateUrl = pathToFileURL(resolve(import.meta.dirname, '../../scripts/check-runtime-api-contracts.mjs')).href
+    const gate = await import(gateUrl) as { isProductionContractSource: (filePath: string) => boolean }
+    for (const sourcePath of [
+      '/repo/src/__tests__/api-contracts.spec.ts',
+      '/repo/src/mocks/handlers/users.ts',
+      String.raw`D:\a\gvueter\src\__tests__\api-contracts.spec.ts`,
+      String.raw`D:\a\gvueter\src\mocks\handlers\users.ts`,
+      '/repo/src/env.d.ts',
+    ]) {
+      expect(gate.isProductionContractSource(sourcePath), sourcePath).toBe(false)
+    }
+    for (const sourcePath of ['/repo/src/api/users.ts', String.raw`D:\a\gvueter\src\api\users.ts`, '/repo/src/features/mocks-history/Page.vue'])
+      expect(gate.isProductionContractSource(sourcePath), sourcePath).toBe(true)
+  })
+})
 
 async function createChartFixture(files: Record<string, string>): Promise<string> {
   const fixtureRoot = await mkdtemp(join(tmpdir(), 'gvueter-chart-boundary-'))

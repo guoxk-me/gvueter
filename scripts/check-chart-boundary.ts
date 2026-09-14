@@ -1,6 +1,6 @@
 // @env node
 import { readdir, readFile } from 'node:fs/promises'
-import { extname, relative, resolve } from 'node:path'
+import { extname, relative, resolve, sep } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
@@ -40,7 +40,8 @@ export async function inspectChartBoundary(options: ChartBoundaryOptions): Promi
 
   for (const sourcePath of await collectSourceFiles(options.sourceRoot)) {
     const source = await readFile(sourcePath, 'utf8')
-    const sourceName = relative(options.projectRoot, sourcePath)
+    // AI modified: diagnostics keep one portable path contract for Windows and POSIX fixtures.
+    const sourceName = relative(options.projectRoot, sourcePath).split(sep).join('/')
 
     if (sourcePath !== options.chartEntryPath && providerImportPattern.test(source))
       violations.push(`${sourceName}: import Unovis through @/components/ui/chart.`)

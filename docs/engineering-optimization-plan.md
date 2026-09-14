@@ -84,6 +84,12 @@ Executed（2026-09-14，本地）：pnpm `12.4.1` 冻结安装、完整 `release
 
 Confirmed（托管验收授权）：用户已授权整理本项目相关依赖迁移、安全基线和 Phase 1 工具链提交，推送到 `origin/main-admin` 并跟踪托管 CI；本地 `.codex` 配置不交付，不修改分支保护、不合并到 `main`、不发布制品。运行结果须关联实际 Commit SHA 和 Run URL；失败不得绕过门禁。Phase 1 在实际通过前保持 Implemented。
 
+<!-- AI modified: retain failed hosted evidence rather than replacing it with local green results. -->
+
+Executed（首次托管尝试）：相关变更已提交并推送到 `origin/main-admin`，Commit 为 `6fc447eefe648c059ba752e767177ccf10508f08`，见 [CI Run 34800164248](https://github.com/guoxk-me/gvueter/actions/runs/34800164248)。Linux `verify` 通过；Windows 在生产 API 契约门禁失败，原因是只使用 POSIX 分隔符排除测试与 Mock 文件。已新增实际过滤谓词的 Windows/POSIX 回归，并修正目录边界和 Chart 诊断路径输出；原缺陷在本地回归中已复现，修复仍需新版完整本地门禁与托管 CI 验证。Phase 1 保持 Implemented，不跳过 Windows 或放宽响应 Schema 要求。
+
+Executed（Windows 兼容修复，本地）：实际谓词回归先失败、修复后 10 项工具 Fixture 全部通过；完整 `release:check` 退出码为 0，676 项测试、三浏览器 `149/149`、契约、文档、审计、Mock/生产构建及最终生产产物恢复通过。修复不改变业务 API 或组件契约，等待新 Commit 的完整托管矩阵。
+
 ### Phase 2 — 运行配置、PWA 与容器
 
 Status：Planned

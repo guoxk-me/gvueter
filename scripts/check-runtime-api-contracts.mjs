@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
 import process from 'node:process'
+import { pathToFileURL } from 'node:url'
 import ts from 'typescript'
 
 const projectRoot = resolve(import.meta.dirname, '..')
@@ -48,78 +49,86 @@ function getLineLocation(sourceFile, node) {
   return `${line + 1}:${character + 1}`
 }
 
-const sourceFiles = (await getFiles(sourceRoot)).filter(
-  filePath =>
-    (filePath.endsWith('.ts') || filePath.endsWith('.vue'))
+/** @param {string} filePath */
+export function isProductionContractSource(filePath) {
+  // AI modified: production boundaries use directory segments on both Windows and POSIX.
+  return (filePath.endsWith('.ts') || filePath.endsWith('.vue'))
     && !filePath.endsWith('.d.ts')
-    && !filePath.includes('/__tests__/')
-    && !filePath.includes('/mocks/'),
-)
-const violations = []
-let validatedCallCount = 0
+    && !/(?:^|[/\\])(?:__tests__|mocks)(?:[/\\]|$)/.test(filePath)
+}
 
-for (const filePath of sourceFiles) {
-  const fileSource = getExecutableSource(filePath, await readFile(filePath, 'utf8'))
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    fileSource,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  )
-  const importedFunctions = new Map()
+async function runRuntimeApiContracts() {
+  const sourceFiles = (await getFiles(sourceRoot)).filter(isProductionContractSource)
+  const violations = []
+  let validatedCallCount = 0
 
-  for (const statement of sourceFile.statements) {
-    if (
-      !ts.isImportDeclaration(statement)
-      || !ts.isStringLiteral(statement.moduleSpecifier)
-      || statement.moduleSpecifier.text !== '@/lib/http'
-    ) {
-      continue
-    }
-    const bindings = statement.importClause?.namedBindings
-    if (!bindings || !ts.isNamedImports(bindings))
-      continue
+  for (const filePath of sourceFiles) {
+    const fileSource = getExecutableSource(filePath, await readFile(filePath, 'utf8'))
+    const sourceFile = ts.createSourceFile(
+      filePath,
+      fileSource,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TS,
+    )
+    const importedFunctions = new Map()
 
-    for (const binding of bindings.elements) {
-      const importedName = binding.propertyName?.text ?? binding.name.text
-      if (importedName === 'http') {
-        violations.push(
-          `${relative(projectRoot, filePath)}:${getLineLocation(sourceFile, binding)} imports the raw HTTP client.`,
-        )
+    for (const statement of sourceFile.statements) {
+      if (
+        !ts.isImportDeclaration(statement)
+        || !ts.isStringLiteral(statement.moduleSpecifier)
+        || statement.moduleSpecifier.text !== '@/lib/http'
+      ) {
+        continue
       }
-      if (contractOptionIndexByFunction.has(importedName)) {
-        importedFunctions.set(binding.name.text, importedName)
-      }
-    }
-  }
+      const bindings = statement.importClause?.namedBindings
+      if (!bindings || !ts.isNamedImports(bindings))
+        continue
 
-  function visit(node) {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-      const importedName = importedFunctions.get(node.expression.text)
-      if (importedName) {
-        const optionsIndex = contractOptionIndexByFunction.get(importedName)
-        if (optionsIndex === undefined)
-          return
-        validatedCallCount += 1
-        if (!hasResponseSchema(node.arguments[optionsIndex])) {
+      for (const binding of bindings.elements) {
+        const importedName = binding.propertyName?.text ?? binding.name.text
+        if (importedName === 'http') {
           violations.push(
-            `${relative(projectRoot, filePath)}:${getLineLocation(sourceFile, node)} ${importedName}() has no explicit responseSchema.`,
+            `${relative(projectRoot, filePath)}:${getLineLocation(sourceFile, binding)} imports the raw HTTP client.`,
           )
+        }
+        if (contractOptionIndexByFunction.has(importedName)) {
+          importedFunctions.set(binding.name.text, importedName)
         }
       }
     }
-    ts.forEachChild(node, visit)
+
+    function visit(node) {
+      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+        const importedName = importedFunctions.get(node.expression.text)
+        if (importedName) {
+          const optionsIndex = contractOptionIndexByFunction.get(importedName)
+          if (optionsIndex === undefined)
+            return
+          validatedCallCount += 1
+          if (!hasResponseSchema(node.arguments[optionsIndex])) {
+            violations.push(
+              `${relative(projectRoot, filePath)}:${getLineLocation(sourceFile, node)} ${importedName}() has no explicit responseSchema.`,
+            )
+          }
+        }
+      }
+      ts.forEachChild(node, visit)
+    }
+
+    visit(sourceFile)
   }
 
-  visit(sourceFile)
+  if (violations.length > 0) {
+    throw new Error(`Runtime API response contract violations:\n${violations.sort().join('\n')}`)
+  }
+
+  // AI modified: every JSON success path must reject malformed domain payloads before state consumption.
+  process.stdout.write(
+    `Runtime API contract validates ${validatedCallCount} production request call(s) and forbids raw client bypasses.\n`,
+  )
 }
 
-if (violations.length > 0) {
-  throw new Error(`Runtime API response contract violations:\n${violations.sort().join('\n')}`)
-}
-
-// AI modified: every JSON success path must reject malformed domain payloads before state consumption.
-process.stdout.write(
-  `Runtime API contract validates ${validatedCallCount} production request call(s) and forbids raw client bypasses.\n`,
-)
+// AI modified: importing the production boundary for regression tests must not scan the checkout.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  await runRuntimeApiContracts()
