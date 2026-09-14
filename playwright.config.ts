@@ -9,8 +9,8 @@ const visualRegressionSpecs = ['**/component-modules.spec.ts', '**/long-text-vis
  */
 export default defineConfig({
   testDir: './e2e',
-  // AI modified: visual baselines are shared by local macOS and Linux CI Chromium runs.
-  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}{ext}',
+  // AI modified: OS-specific fonts and rasterization must not overwrite another platform's Chromium baseline.
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{platform}/{arg}{ext}',
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {

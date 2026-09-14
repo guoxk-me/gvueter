@@ -74,7 +74,8 @@ Pagination coverage must assert the visible range/total, outgoing page and page-
 - Playwright fixes the browser baseline to `en-US`, `Asia/Shanghai` and a light color preference; visual and motion cases explicitly emulate normal/reduced motion and override locale/theme through the same persisted settings used by the app.
 - Inter is bundled locally. Visual helpers wait for all used weights and two animation frames before capture.
 - Visual cases fix the clock, disable animations/carets, hide transient tooling/toasts where appropriate, and mask nondeterministic canvas/chart/iframe regions.
-- The repository screenshot ceiling is `maxDiffPixelRatio: 0.01`; the long-text regression uses the stricter `0.005`. Baselines are shared across Chromium CI and local runs through the configured snapshot path.
+- The repository screenshot ceiling is `maxDiffPixelRatio: 0.01`; the long-text regression uses the stricter `0.005`. Chromium baselines are isolated by operating system under `<spec>-snapshots/{platform}/` (`darwin` for macOS, `linux` for Ubuntu CI); neither platform may overwrite the other's rendering evidence.
+- Each supported baseline platform contains 20 active images. Updates require explicit authorization and individual visual review, followed by running the affected suites without `--update-snapshots` and with `--retries=0`. Linux capture uses the repository-pinned Node, pnpm, and Playwright versions in Ubuntu 24.04; CI must never regenerate expected screenshots automatically. Existing geometry, behavior, and flaky-test gates remain mandatory.
 - Snapshot updates require inspecting the rendered images and confirming the corresponding geometry assertions still pass; a bulk baseline rewrite is not acceptance evidence.
 
 ## Failure handling

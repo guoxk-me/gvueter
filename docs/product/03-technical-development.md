@@ -616,7 +616,13 @@ Executed / Inspected：首次托管 E2E 为 18 项截图失败、1 项 WebKit �
 
 Executed（PWA 修复，本地）：完整 `release:check` 退出码为 0，676 项单元测试、三浏览器 `149/149`（零失败、跳过、错误）、全部门禁及最终生产产物恢复通过。用户已授权将测试入口修复与验收记录纳入本次本地提交，本轮不推送，仍需 Windows 托管验证；不修改应用逻辑或截图基线。
 
-Proposed（待授权）：旧截图含过期菜单和 `75%` 活跃率，当前 Fixture 为 `87.5%`，并存在系统渲染差异。拟检查并更新当前 Fixture 的 macOS/Linux 独立 Chromium 基线，保留原容差、几何/行为断言和 Flaky 阻断。安全审查要求用户明确授权批量基线更新；当前未执行更新，原路径和基线不变，Phase 1 仍为 Implemented。
+Confirmed：用户已明确授权逐张检查并更新 macOS/Linux 独立 Chromium 基线，路径采用 `{platform}` 子目录，保留原容差、几何/行为断言和 Flaky 阻断；不自动推送或修改业务代码。旧截图含过期菜单和部分 `75%` 活跃率，当前 Fixture 为 `87.5%`，并存在系统渲染差异。每个平台必须完整采集后进行无更新标志回归，前置截图失败导致后续页面未执行时不得误记为通过，Phase 1 仍为 Implemented。
+
+Executed / Inspected：PWA 修复提交 `1ca4f4b` 的 [CI 34803798615](https://github.com/guoxk-me/gvueter/actions/runs/34803798615) 已通过 Windows/Linux `verify`，E2E 仍为 131 项通过、18 项截图失败，容器未执行；PWA 导入问题已取得 Windows 托管修复证据。
+
+Executed（平台基线）：macOS/Linux 各 20 张当前截图逐张审核，每个平台相关 25 项用例均无更新标志、零重试通过。macOS 完整 `release:check` 退出码 0，676 项单元测试、三浏览器 `149/149`、全部本地门禁与生产产物恢复通过；Linux 固定 Playwright `1.63.0` Ubuntu 24.04 镜像、Node `24.18.0` 与 pnpm `12.4.1`，冻结安装、类型检查、Mock 构建通过，18 张截图与最新 CI 实际资产在原容差内一致。旧共享资产已移至可恢复备份。当前变更未提交或推送，尚未取得本次迁移的新版托管矩阵，Phase 1 保持 Implemented。
+
+Confirmed（基线提交与推送）：用户已授权本次平台基线迁移及相关文档提交并推送至 `origin/main-admin`，触发现有 CI。此前未提交、未推送记录为授权前状态；不修改远端保护、不合并主干、不发布制品，Phase 1 完成仍以新版同 Commit 的托管验收为准。
 
 运行时公开配置在首个 Minor 保留 `VITE_*` 构建期回退并提示弃用，下一个 Breaking 版本移除旧入口。分支保护、Environment、GHCR、Pages、Private Vulnerability Reporting、分支合并和正式发布均属于远端状态，实际执行前必须再次确认目标。
 

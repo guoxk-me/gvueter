@@ -461,7 +461,11 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - 首次托管 E2E 实际为 18 项截图失败、1 项 WebKit 分页 Flaky、130 项直接通过，容器未执行。Windows 路径修复已推送为 `639d5e6`，见 [新版 Run 34801243763](https://github.com/guoxk-me/gvueter/actions/runs/34801243763)：第二轮最终失败；Linux `verify` 通过，Windows 契约和工具回归通过，但 PWA 虚拟模块导入仍失败；E2E 为 131 项通过、18 项截图失败，本轮无 Flaky，容器未执行。已添加仅该测试文件的注册入口模拟，本地目标测试与静态检查通过，尚未提交；WebKit 分页本地连续 10 次零重试通过，首次 Linux 后退轨迹页面空白，尚未改业务行为。
 - PWA 测试入口修复已通过完整本地 `release:check`（退出码 0）：676 项单元测试、三浏览器 `149/149`（零失败、跳过、错误）、全部门禁与生产产物恢复通过；用户已授权将修复和验收记录纳入本次本地提交，本轮不推送，仍需 Windows 托管验证。
-- 待授权提案：旧截图缺少操作日志菜单，活跃率仍为 `75%`，当前 Fixture 为 `87.5%`；拟逐张验收并隔离 macOS/Linux Chromium 基线，不提高原容差、不删除几何/行为断言、不接纳 Flaky。批量更新被安全审查阻止，等待用户明确批准；原基线与路径配置未改变，Phase 1 仍为 Implemented。
+- 用户已明确授权逐张检查并更新 macOS/Linux 独立 Chromium 基线，采用 `{platform}` 子目录，不提高原容差、不删除几何/行为断言、不接纳 Flaky；不修改业务逻辑或自动推送。旧基线含过期菜单和部分 `75%` 活跃率，当前 Fixture 为 `87.5%`；前置截图失败导致后续页面未执行时不得认定为通过，两平台需完整采集后无更新标志重跑，Phase 1 仍为 Implemented。
+- PWA 修复已提交为 `1ca4f4b`；[托管 Run 34803798615](https://github.com/guoxk-me/gvueter/actions/runs/34803798615) 的 Windows/Linux `verify` 均通过，E2E 仍为 131 项通过、18 项截图失败，容器未执行。
+- macOS/Linux 各 20 张基线逐张审核，每个平台相关 25 项无更新、零重试回归通过。macOS 完整 `release:check` 退出码 0，676 项单元测试、三浏览器 `149/149`、全部本地门禁及生产产物恢复通过；Linux 固定 Playwright `1.63.0` Ubuntu 24.04 镜像、Node `24.18.0`、pnpm `12.4.1`，冻结安装、类型检查与 Mock 构建通过，18 张截图与最新 CI 实际截图按原容差对比通过。旧共享图片已移至可恢复备份；本次迁移未提交、未推送，Phase 1 仍为 Implemented，待同 Commit 新版托管矩阵与容器验收。
+
+- 用户已授权本次 macOS/Linux 基线迁移与相关文档提交并推送到 `origin/main-admin`，触发现有 CI；上述未提交、未推送记录为授权前状态。不修改远端保护、不合并主干、不发布制品，Phase 1 待新版同 Commit 的托管矩阵与容器验收后收口。
 
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。
