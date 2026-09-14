@@ -90,6 +90,14 @@ Executed（首次托管尝试）：相关变更已提交并推送到 `origin/mai
 
 Executed（Windows 兼容修复，本地）：实际谓词回归先失败、修复后 10 项工具 Fixture 全部通过；完整 `release:check` 退出码为 0，676 项测试、三浏览器 `149/149`、契约、文档、审计、Mock/生产构建及最终生产产物恢复通过。修复不改变业务 API 或组件契约，等待新 Commit 的完整托管矩阵。
 
+<!-- AI modified: distinguish hosted failures, local reproduction, and human-gated baseline changes. -->
+
+Executed / Inspected（托管复核）：首次 Run `34800164248` 最终为失败：Linux `verify` 通过，Windows 契约扫描失败；E2E 为 18 项截图失败、1 项 WebKit 分页 Flaky、130 项直接通过，容器任务未执行。Windows 路径修复已提交并推送为 `639d5e61fea7b1c1897d9c8f474ad45e9cd951d6`，见 [Run 34801243763](https://github.com/guoxk-me/gvueter/actions/runs/34801243763)：第二轮最终失败；Linux `verify` 通过，Windows 已通过契约门禁和 10 项工具 Fixture，但 PWA 测试导入虚拟模块时遭遇非法 Windows 文件 URL；E2E 为 131 项通过、18 项截图失败，本轮未出现 Flaky，容器任务未执行。
+
+Implemented / Executed（PWA 测试入口，本地）：仅在 `pwa-manager.spec.ts` 模拟 `virtual:pwa-register/vue` 注册入口，保留安装提示行为断言；目标测试及完整 `release:check` 通过，退出码为 0：676 项单元测试、三浏览器 `149/149`（零失败、跳过、错误）、全部门禁和最终生产产物恢复通过。用户已授权将该修复与验收记录纳入本次本地提交；本轮不推送，仍未取得 Windows 托管通过证据。原 WebKit 分页用例在本地连续 10 次、零重试通过；首次 Linux 轨迹显示后退恢复时页面空白，第二轮未复现，尚未修改业务代码；本地结果不能替代托管验收。
+
+Proposed（待授权）：实际截图确认旧基线缺少操作日志菜单，活跃账户率仍为 `75%`，当前 Fixture 为 `7/8 = 87.5%`；另有平台字体/渲染差异。拟逐张检查当前 Fixture，并将 macOS/Linux Chromium 基线按平台隔离；`0.01` / `0.005` 容差、几何与行为断言和 Flaky 阻断保持不变。批量基线更新被安全审查阻止，必须取得用户明确授权；原基线与截图路径配置均保持不变，不得作为 Phase 1 完成证据。
+
 ### Phase 2 — 运行配置、PWA 与容器
 
 Status：Planned

@@ -610,6 +610,14 @@ Executed：Commit `6fc447e` 已推送，首次 [托管 CI](https://github.com/gu
 
 Executed（路径兼容修复，本地）：失败回归修复后，10 项工具 Fixture、676 项单元测试、完整三浏览器 `149/149`、全部本地发布门禁和最终生产产物恢复通过；未修改业务 API、组件契约或远端治理配置。Phase 1 继续等待新 Commit 的完整托管矩阵。
 
+<!-- AI modified: 记录真实 CI 失败与基线更新授权边界，不提前标记验收完成。 -->
+
+Executed / Inspected：首次托管 E2E 为 18 项截图失败、1 项 WebKit 分页 Flaky、130 项直接通过，容器因前置失败未执行。路径修复已推送为 `639d5e6`，见 [新版 CI](https://github.com/guoxk-me/gvueter/actions/runs/34801243763)：第二轮最终失败；Linux `verify` 通过，Windows 契约和工具回归通过，但 PWA 测试虚拟模块导入存在非法文件 URL；E2E 为 131 项通过、18 项截图失败，本轮无 Flaky，容器未执行。已在该测试文件模拟浏览器注册入口，本地目标测试和静态检查通过，仍未取得新版 Windows 完成证据。WebKit 分页本地零重试连续 10 次通过，Linux 首次轨迹后退时页面空白，尚未修改应用行为。
+
+Executed（PWA 修复，本地）：完整 `release:check` 退出码为 0，676 项单元测试、三浏览器 `149/149`（零失败、跳过、错误）、全部门禁及最终生产产物恢复通过。用户已授权将测试入口修复与验收记录纳入本次本地提交，本轮不推送，仍需 Windows 托管验证；不修改应用逻辑或截图基线。
+
+Proposed（待授权）：旧截图含过期菜单和 `75%` 活跃率，当前 Fixture 为 `87.5%`，并存在系统渲染差异。拟检查并更新当前 Fixture 的 macOS/Linux 独立 Chromium 基线，保留原容差、几何/行为断言和 Flaky 阻断。安全审查要求用户明确授权批量基线更新；当前未执行更新，原路径和基线不变，Phase 1 仍为 Implemented。
+
 运行时公开配置在首个 Minor 保留 `VITE_*` 构建期回退并提示弃用，下一个 Breaking 版本移除旧入口。分支保护、Environment、GHCR、Pages、Private Vulnerability Reporting、分支合并和正式发布均属于远端状态，实际执行前必须再次确认目标。
 
 公开 Demo 默认使用 GitHub Pages 的独立 Mock 构建并明确标识；GHCR 镜像可见性继承仓库。每个 Release 保留 Commit、Node/pnpm、门禁、浏览器、制品摘要、已知限制和迁移链接。PR 不依赖外部服务，Release 外部步骤有限重试后仍失败则停止发布。工程进度统一记录 Planned、Implemented、Executed、Blocked，并关联实际证据。

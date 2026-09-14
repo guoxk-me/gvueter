@@ -459,6 +459,10 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - Windows 路径兼容修复已通过完整本地 `release:check`：10 项工具 Fixture、676 项单元测试、三浏览器 `149/149`、全部门禁和生产产物恢复通过；仍需新 Commit 的托管矩阵，Phase 1 暂不标记 Executed。
 
+- 首次托管 E2E 实际为 18 项截图失败、1 项 WebKit 分页 Flaky、130 项直接通过，容器未执行。Windows 路径修复已推送为 `639d5e6`，见 [新版 Run 34801243763](https://github.com/guoxk-me/gvueter/actions/runs/34801243763)：第二轮最终失败；Linux `verify` 通过，Windows 契约和工具回归通过，但 PWA 虚拟模块导入仍失败；E2E 为 131 项通过、18 项截图失败，本轮无 Flaky，容器未执行。已添加仅该测试文件的注册入口模拟，本地目标测试与静态检查通过，尚未提交；WebKit 分页本地连续 10 次零重试通过，首次 Linux 后退轨迹页面空白，尚未改业务行为。
+- PWA 测试入口修复已通过完整本地 `release:check`（退出码 0）：676 项单元测试、三浏览器 `149/149`（零失败、跳过、错误）、全部门禁与生产产物恢复通过；用户已授权将修复和验收记录纳入本次本地提交，本轮不推送，仍需 Windows 托管验证。
+- 待授权提案：旧截图缺少操作日志菜单，活跃率仍为 `75%`，当前 Fixture 为 `87.5%`；拟逐张验收并隔离 macOS/Linux Chromium 基线，不提高原容差、不删除几何/行为断言、不接纳 Flaky。批量更新被安全审查阻止，等待用户明确批准；原基线与路径配置未改变，Phase 1 仍为 Implemented。
+
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。
 - Axios 统一处理请求头、超时、错误信封、请求 ID、上传下载和认证失效。

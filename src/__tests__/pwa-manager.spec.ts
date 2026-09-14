@@ -4,6 +4,18 @@ import { nextTick } from 'vue'
 import PwaManager from '@/features/pwa/components/PwaManager.vue'
 import { i18n } from '@/i18n'
 
+// AI modified: jsdom tests exercise lifecycle UI, not the PWA plugin's platform-specific virtual loader.
+vi.mock(import('virtual:pwa-register/vue'), async () => {
+  const { shallowRef } = await import('vue')
+  return {
+    useRegisterSW: () => ({
+      needRefresh: shallowRef(false),
+      offlineReady: shallowRef(false),
+      updateServiceWorker: vi.fn(async () => undefined),
+    }),
+  }
+})
+
 afterEach(() => {
   vi.restoreAllMocks()
 })
