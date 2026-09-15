@@ -472,6 +472,12 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - 用户已授权将本次主题测试时序修复与验收文档本地提交，本轮不推送；上述未提交记录为授权前状态，Phase 1 仍待新版同 Commit 托管验收。
 
+- 已启动 Phase 2「运行配置、PWA 与容器」方案访谈，先核查事实、分轮收敛并等待最终确认。Phase 1 仍待托管验收；主题修复已本地提交为 `1218a38`、未推送，本轮不授权远端变更。运行配置仍为构建期固化、生产 PWA 默认启用，均为 Inspected 待处理项。
+
+<!-- AI modified: keep the readiness regression fix distinct from the remaining Phase 2 design intake. -->
+
+- Implemented / Executed：已本地复现容器 CI 在 `nginx`、`ok` 后失败；`/readyz` 成功代理后端 `/health/ready`，失败来自仍匹配 `/healthz` 的旧断言。CI 已对齐既定 `/health/ready` 契约；Dockerfile 生产镜像构建、完整容器冒烟、冻结安装与 `release:check` 均退出码为 0，676 项单元测试、三浏览器 `149/149` 无重试及无 Mock 生产产物恢复通过。用户已授权将本次修复与验收记录本地提交，本轮不推送，修正后的托管 CI 尚未验证；Phase 2 其他方案仍待确认。
+
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。
 - Axios 统一处理请求头、超时、错误信封、请求 ID、上传下载和认证失效。

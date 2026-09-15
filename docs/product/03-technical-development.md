@@ -636,7 +636,7 @@ Confirmed（主题修复提交授权）：用户已授权将本次测试时序�
 
 公开 Demo 默认使用 GitHub Pages 的独立 Mock 构建并明确标识；GHCR 镜像可见性继承仓库。每个 Release 保留 Commit、Node/pnpm、门禁、浏览器、制品摘要、已知限制和迁移链接。PR 不依赖外部服务，Release 外部步骤有限重试后仍失败则停止发布。工程进度统一记录 Planned、Implemented、Executed、Blocked，并关联实际证据。
 
-Q1817 已确认 11 阶段设计树收口。具体实施依赖、阶段状态和验收顺序以[工程优化实施清单](../engineering-optimization-plan.md)为准；当前已执行依赖刷新与 Phase 0 安全基线，Phase 1 已实现并进入补齐工具链 Major 与托管证据的收口阶段，Phase 2–6 和远端治理操作尚未开始。
+Q1817 已确认 11 阶段设计树收口。具体实施依赖、阶段状态和验收顺序以[工程优化实施清单](../engineering-optimization-plan.md)为准；当前已执行依赖刷新与 Phase 0 安全基线，Phase 1 已实现但仍待托管收口。Confirmed：用户已启动 Phase 2 方案访谈，现状核查与问题收敛不代表实现授权；Phase 2 仍为 Planned，Phase 3–6 和远端治理操作尚未开始。主题修复已本地提交为 `1218a38`、未推送，本轮不执行远端变更。
 
 Phase 0 的核心图表范围为 Line、Bar、Donut，地图不进入核心。业务页面只能消费项目类型化图表入口，第三方 Provider 留在内部；图表需对齐 10D Token，并覆盖可访问摘要/数据替代、Pointer/键盘/触摸以及容器、Sidebar、Tabs/KeepAlive、主题、Locale 的重新测量和清理。
 
@@ -669,7 +669,11 @@ Shell 需按最新原型验证三种正式布局、展开 / 收缩、390 / 768 /
 
 History SPA 需要对非资源未知路径回退 `index.html`；带指纹静态资源长期缓存，HTML 使用 `no-cache`。生产 HTTPS、CSP 和错误恢复必须共同验证。
 
-Inspected：仓库提供非特权 Nginx 多阶段容器，端口 8080，默认 `API_UPSTREAM=backend:8080`。`/healthz` 检查静态服务存活，`/readyz` 检查后端依赖；不能用后端不可用不断重启健康前端。
+Inspected：仓库提供非特权 Nginx 多阶段容器，端口 8080，默认 `API_UPSTREAM=backend:8080`。`/healthz` 检查静态服务存活，`/readyz` 代理后端 `/health/ready` 检查依赖；不能用后端不可用不断重启健康前端。
+
+<!-- AI modified: document the established readiness target and the corrected CI expectation. -->
+
+Implemented / Executed：本地容器已复现旧 CI 将 readiness 回显误判为失败；CI 断言已由后端 `/healthz` 修正为 `/health/ready`，与现有 Nginx 和部署文档一致。Dockerfile 生产镜像的完整冒烟及本地 `release:check` 已通过，修正后的托管 CI 尚未验证；完整证据见[工程优化实施清单](../engineering-optimization-plan.md)。
 
 - `VITE_*` 是构建期公开值；更换 API 地址需要重新构建，不是注入运行时密钥。
 - `CSP_CONNECT_SRC`、`CSP_FRAME_SRC` 是部署端策略，与前端来源白名单分别授权。

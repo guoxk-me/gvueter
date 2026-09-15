@@ -122,6 +122,16 @@ Confirmed（主题修复提交授权）：用户已授权将本次测试时序�
 
 Status：Planned
 
+<!-- AI modified: distinguish Phase 2 design intake from implementation and pending Phase 1 hosted acceptance. -->
+
+Confirmed（访谈启动）：用户已要求进入 Phase 2 方案细化；先核查现状并分轮收敛决策，最终确认前不修改实现。Phase 1 仍为 Implemented；主题修复已本地提交为 `1218a38`，尚未推送，本次进入访谈不构成推送或部署授权。
+
+Inspected（现状差距）：尚无公开运行配置加载器，API 与来源白名单仍由构建期变量提供；非 Mock 生产 PWA 默认启用，缺少默认关闭路径。
+
+<!-- AI modified: record the reproduced readiness assertion failure separately from planned Phase 2 implementation. -->
+
+Implemented / Executed（readiness 断言修复）：本地使用固定摘要的 Nginx 镜像、仓库配置与 Node 回显后端，复现 CI 在 `nginx`、`ok` 后退出码为 1。`/readyz` 实际成功代理 `/health/ready`，旧 `/healthz` 断言失败；CI 已改为校验 `/health/ready`，沿用既定部署契约。仓库 Dockerfile 的生产镜像构建及完整冒烟脚本均退出码为 0，覆盖非特权用户、存活与就绪、代理路径与请求头、SPA 回退、安全头和重置路径日志保护；本地 Docker 为 Linux arm64。冻结安装与 macOS 完整 `release:check` 退出码为 0：676 项单元测试、三浏览器 `149/149` 无重试、全部门禁及无 Mock 生产产物恢复通过。临时容器、网络与测试镜像已清理；用户已授权将本次修复与验收记录本地提交，本轮不推送，尚无修正后的托管 CI 证据，Phase 2 其他方案仍为 Planned。
+
 - 引入只含公开值的类型化运行时配置，并保留一个 Minor 的 `VITE_*` 回退迁移期。
 - 在构建前校验 Development/Test/Production Profile、Mock、API、CSP 和允许来源。
 - PWA 默认关闭；验证无 Worker/Mock 产物，并提供旧 Worker 注销和缓存清理迁移。

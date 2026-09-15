@@ -189,7 +189,8 @@ jobs:
           docker inspect --format '{{.Config.User}}' gvueter-ci | grep --line-regexp nginx
           curl --fail --silent http://127.0.0.1:8080/healthz | grep --line-regexp ok
           curl --fail --silent http://127.0.0.1:8080/readyz --output readiness-response.json
-          grep --fixed-strings '"url":"/healthz"' readiness-response.json
+          # AI modified: readiness must reach gnester-lite's dependency probe, matching the shipped Nginx route.
+          grep --fixed-strings '"url":"/health/ready"' readiness-response.json
           curl --fail --silent \
             --header 'Authorization: Bearer smoke-token' \
             --header 'X-Request-ID: smoke-request' \
