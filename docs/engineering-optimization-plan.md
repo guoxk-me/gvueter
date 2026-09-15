@@ -1,6 +1,6 @@
 # 11 工程优化实施清单
 
-> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现并通过 Release Gate，托管验收仍待同一提交的 CI 证据；Phase 3–6 与远端仓库设置仍为计划。
+> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，Phase 2 托管容器扫描发现固定运行层基础镜像的过期 Alpine 包；本地修复已通过同版 Grype 扫描，仍待新提交的托管验收。Phase 3–6 与远端仓库设置仍为计划。
 
 ## 1. 目标与边界
 
@@ -147,6 +147,14 @@ Confirmed（Q1917–Q1932）：Phase 2 按 Runtime Config、PWA 生命周期、�
 <!-- AI modified: record the actual Phase 2 evidence separately from hosted CI acceptance. -->
 
 Implemented / Executed（2026-09-15，本地）：公开 Runtime Config、显式构建开关与 Legacy 回退、Base-scoped Workbox 预缓存、非 root 只读参考容器、同源 API 网关、CI 双架构任务和平台中立部署文档已落地。冻结安装与 `release:check` 退出码为 0：72 个单元文件、689 项用例和覆盖率门禁通过；PWA Chromium 自动注册和静态预缓存通过；Runtime Config 启动失败/重试在 Chromium、Firefox、WebKit 通过，完整 E2E `155/155` 无重试通过。PWA-off、PWA-on、Mock、Legacy 构建及 Mock + PWA 拒绝门禁通过；最终恢复标准生产 PWA-off `dist`。本地 Docker 构建与安全 Smoke 已执行，包含生成配置/no-store、API Path/Query、健康、日志脱敏、只读根/非 root、无特权和 SIGTERM 快速退出。双架构镜像、Windows 与 Hosted CI 仍待同一 Commit 的托管验收；本轮未提交、推送或部署。
+
+<!-- AI modified: record the hosted container failure and the same-tool red/green security regression without claiming hosted acceptance. -->
+
+Inspected / Executed（运行层安全修复，本地）：[CI Run 34944420897](https://github.com/guoxk-me/gvueter/actions/runs/34944420897) 对 `95e002a` 的 Linux `verify`、Windows 和 E2E 均通过，但 amd64/arm64 容器任务在 Grype `--fail-on high --only-fixed` 失败；两架构报告均有 123 个可修复 High/Critical 匹配，来自固定 Nginx/Alpine 运行层中的 12 种旧 APK 包，而非前端依赖或构建层。保持基础镜像摘要、`jq=1.8.2-r0` 与 CI 阈值不变，在运行层安装 jq 前执行 `apk upgrade --no-cache`。本地 Grype `0.118.0` 对旧镜像复现 `123` 个匹配及退出码 2；重建后同参数为 `0` 个匹配及退出码 0，容器在只读/无特权模式下健康与运行配置响应均返回 200。冻结安装与完整 `release:check` 退出码为 0：689 项单测、覆盖率、各构建模式和三浏览器 E2E `155/155` 通过，最终生产 PWA-off 产物恢复。此为本地 arm64 与 macOS 证据；新提交的双架构托管扫描仍待验证，本轮未提交或推送。
+
+<!-- AI modified: distinguish the authorized delivery from the previous local-only verification status. -->
+
+Confirmed（运行层安全交付）：用户已授权将本次修复和同步文档提交并推送至 `origin/main-admin`。上述“未提交或推送”为上一轮本地验证时的状态；本次交付不包含合并主干、发布镜像或放宽 CI 扫描门禁。提交后的双架构托管扫描须另行验收。
 
 - 引入只含公开值的类型化运行时配置，并保留一个 Minor 的 `VITE_*` 回退迁移期。
 - 在构建前校验 Development/Test/Production Profile、Mock、API、CSP 和允许来源。

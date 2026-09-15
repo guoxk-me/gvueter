@@ -654,6 +654,14 @@ Confirmed（Q1917–Q1932）：实施按 Runtime Config、PWA、容器/Nginx、C
 
 Implemented / Executed（2026-09-15）：同源版本化配置及安全恢复、PWA 默认关闭及受控迁移、可选 Base-scoped 离线静态预缓存、双构建模式与参考容器已实现。冻结安装、Type Check、Lint、契约、生产审计、覆盖率及四种构建/非法组合门禁通过；单元测试 `689/689`，三浏览器 E2E `155/155` 无重试，Chromium PWA 自动注册/预缓存通过；最终产物恢复生产 PWA-off。Docker 本地安全 Smoke 覆盖配置、API、健康、日志与容器权限/退出。Windows、双架构和 Hosted CI 尚未取得新版提交的托管证据；Phase 2 为本地已执行、托管待验收。
 
+<!-- AI modified: update the container security baseline after hosted scanning exposed old APK revisions in the pinned base image. -->
+
+Inspected / Executed（运行层安全，本地）：首次 Phase 2 托管 CI 的应用、Windows 和 E2E 门禁通过，双架构容器扫描因固定 Nginx/Alpine 基础镜像含可修复 High/Critical 旧 APK 包而失败。参考 Dockerfile 在同一 Alpine 分支内先升级已安装系统包，再安装固定版本 `jq`；不关闭 Grype、放宽 `--only-fixed`/High 门禁或把构建层依赖带入运行层。本地同版扫描旧/新镜像由 123 个可修复 High/Critical 匹配降为 0，受限容器健康与运行配置响应通过；冻结安装与完整 `release:check` 通过，包含 689 项单测和三浏览器 E2E `155/155`。双架构托管验收仍待新提交。
+
+<!-- AI modified: track the authorized handoff without conflating it with successful hosted scanning. -->
+
+Confirmed（运行层安全交付）：本次修复与验收记录经用户授权提交并推送至 `origin/main-admin`；托管双架构扫描在新提交的 CI 完成前仍为待验收，不作为已通过能力。
+
 Phase 0 的核心图表范围为 Line、Bar、Donut，地图不进入核心。业务页面只能消费项目类型化图表入口，第三方 Provider 留在内部；图表需对齐 10D Token，并覆盖可访问摘要/数据替代、Pointer/键盘/触摸以及容器、Sidebar、Tabs/KeepAlive、主题、Locale 的重新测量和清理。
 
 用户确认使用 shadcn-vue 推荐的 Unovis。MapLibre 漏洞针对地图 attribution 中的不可信 HTML，当前核心 Line/Bar/Donut 路径不使用地图；这只能降低实际暴露，不能抹除依赖风险。图表快照不得批量接受。日期迁移保持 Locale、业务时区、空值和日期范围边界，依赖与 Lockfile 通过 pnpm 正常更新，禁止手改 Lockfile、未经验证的跨 Major Override 或永久、宽泛的 Audit Ignore。

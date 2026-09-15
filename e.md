@@ -488,6 +488,14 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - Implemented / Executed（2026-09-15）：第六轮 Q1917–Q1932 全部采用 A，Phase 2 已在本地实现：公开 `/runtime-config.json` 安全加载与恢复、构建期 Mock/PWA 开关及 Legacy 回退、默认 PWA-off 的迁移清理、Base-scoped Workbox 静态预缓存、参考 Docker/Nginx/Compose、CI 矩阵和部署/回滚/排障文档。冻结安装和完整 `release:check` 退出码为 0：689 项单元测试、覆盖率门禁、Chromium PWA 自动注册/预缓存及三浏览器 `155/155` E2E 无重试通过；最终 `dist` 恢复生产 PWA-off。Docker 本地安全 Smoke 通过配置生成、API Path/Query、健康、只读/非 root、日志脱敏和退出验证。Windows、双架构及 Hosted CI 仍待同一提交的托管验收；本轮不提交、推送或部署。
 
+<!-- AI modified: preserve the Phase 2 hosted scan failure and local security regression evidence for future handoffs. -->
+
+- Inspected / Executed（运行层安全，本地）：[托管 Run 34944420897](https://github.com/guoxk-me/gvueter/actions/runs/34944420897) 的 Linux、Windows 与 E2E 通过，但 amd64/arm64 容器 Grype 扫描因固定 Nginx/Alpine 运行层中 12 种旧 APK 包的 123 个可修复 High/Critical 匹配而失败。Dockerfile 已在安装固定版 `jq` 前执行同分支 `apk upgrade --no-cache`，保持基础镜像摘要与 CI 阈值不变；本地同版 Grype 旧镜像退出码 2、修复后退出码 0，受限容器健康和运行配置响应均为 200。冻结安装及完整 `release:check` 退出码 0：689 项单测、覆盖率与三浏览器 E2E `155/155` 通过，最终恢复生产 PWA-off `dist`。新提交的双架构托管扫描待验收；本轮未提交或推送。
+
+<!-- AI modified: mark the newly authorized delivery separately from prior local verification. -->
+
+- Confirmed（运行层安全交付）：用户授权本次修复与文档提交并推送至 `origin/main-admin`；上一条“未提交或推送”是授权前的本地验证状态。托管双架构 Grype 扫描仍待新提交的 CI 证据，不合并主干或发布制品。
+
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。
 - Axios 统一处理请求头、超时、错误信封、请求 ID、上传下载和认证失效。

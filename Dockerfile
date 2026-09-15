@@ -18,8 +18,10 @@ RUN pnpm run build
 FROM nginxinc/nginx-unprivileged:1.29.4-alpine@sha256:a6c4f61f456b85b8fdf7ec7ab28cc3e299440e6fb4a9dea520e5fd8fd440025e AS runtime
 
 USER root
-# AI modified: the pinned JSON encoder prevents shell interpolation from producing malformed public config.
-RUN apk add --no-cache jq=1.8.2-r0
+# AI modified: the immutable Alpine base carries old package revisions; refresh installed security fixes before scanning.
+# Keep jq pinned so deployment config generation remains reproducible within each built image.
+RUN apk upgrade --no-cache \
+  && apk add --no-cache jq=1.8.2-r0
 
 ARG VCS_REF=unknown
 ARG VITE_BASE_PATH=/
