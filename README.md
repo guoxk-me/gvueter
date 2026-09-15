@@ -91,24 +91,17 @@ Feature modules keep route pages thin: a page composes focused components and Vu
 
 ## Environment
 
-Copy [`.env.example`](./.env.example) to a local ignored `.env` only when explicit values are needed. Deployment values belong in the platform environment and must never contain secrets:
+Copy [`.env.example`](./.env.example) to a local ignored `.env` only when build capabilities need to change. Standard builds read deployment values from the same-origin [`runtime-config.json`](./public/runtime-config.json) before Vue starts:
 
 ```sh
-VITE_API_BASE_URL=/api
+VITE_BASE_PATH=/
 VITE_ENABLE_MOCKS=true
-VITE_NOTIFICATION_WS_URL=
-VITE_NOTIFICATION_WS_ALLOWED_ORIGINS=
-# Optional cross-origin production example:
-# VITE_NOTIFICATION_WS_URL=wss://admin.example.com/notifications
-# VITE_NOTIFICATION_WS_ALLOWED_ORIGINS=wss://admin.example.com
-VITE_NAVIGATION_ALLOWED_ORIGINS=https://docs.example.com,https://support.example.com
+VITE_ENABLE_PWA=false
 ```
 
-For a production build paired with gnester-lite, use `VITE_API_BASE_URL=/api/v1` and `VITE_ENABLE_MOCKS=false`.
+`runtime-config.json` contains the public API base URL, optional notification socket and separate external-navigation/iframe origin allow-lists. It is public browser configuration, never a secret or application-version detector. Docker generates it from validated `PUBLIC_*` variables at container start; ordinary static hosting publishes the same JSON beside `index.html`.
 
 <!-- AI modified: the production bundle now enforces the Mock boundary instead of relying on runtime inactivity. -->
 
 `VITE_ENABLE_MOCKS` is intended for local/demo builds only. A production build resolves the browser-Mock entry to a no-op, removes `mockServiceWorker.js`, and fails the bundle gate if either the real handler entry or worker leaks into `dist`. Production authentication and authorization remain backend responsibilities.
-Leaving `VITE_NOTIFICATION_WS_URL` empty keeps the optional realtime transport in memory; configure a trusted socket explicitly for production realtime delivery.
-`VITE_NOTIFICATION_WS_ALLOWED_ORIGINS` is the explicit secure-origin allow-list for bearer-authenticated notification sockets; same-origin sockets do not need an entry.
-`VITE_NAVIGATION_ALLOWED_ORIGINS` is a comma-separated build-time allow-list for backend-controlled external and iframe destinations. Entries are canonicalized to exact HTTPS origins; scheme, hostname, subdomain, and non-default port must match. Same-origin HTTP(S) paths are accepted for local development, while URL credentials are always rejected.
+`VITE_ENABLE_PWA` is an independent production capability and defaults to false; Mock and PWA cannot be bundled together. `VITE_RUNTIME_CONFIG_LEGACY=true` temporarily embeds the former `VITE_*` deployment values for one-Minor fallback when the JSON cannot be fetched, but invalid JSON or an unsupported schema still fails closed.

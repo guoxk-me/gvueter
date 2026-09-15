@@ -7,7 +7,8 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/**'],
+      // AI modified: dedicated Playwright PWA specs must not be collected as Vitest unit suites.
+      exclude: [...configDefaults.exclude, 'e2e/**', 'e2e-pwa/**'],
       setupFiles: ['./vitest.setup.ts'],
       globals: true,
       root: fileURLToPath(new URL('./', import.meta.url)),

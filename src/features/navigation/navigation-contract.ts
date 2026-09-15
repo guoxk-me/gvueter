@@ -8,7 +8,11 @@ import type {
 import type { AppAbility, AppAction, AppSubject } from '@/lib/ability'
 import IframePage from './IframePage.vue'
 import { getNavigationRoutePath, isNavigationRouteName } from './navigation-route-policy'
-import { evaluateNavigationUrl, navigationAllowedOrigins } from './navigation-url-policy'
+import {
+  evaluateNavigationUrl,
+  iframeNavigationAllowedOrigins,
+  navigationAllowedOrigins,
+} from './navigation-url-policy'
 import { BACKEND_MENU_KINDS, MAX_NAVIGATION_DEPTH, MAX_NAVIGATION_NODES } from './types'
 
 const navigationComponents = {
@@ -97,10 +101,13 @@ function getPermissionIdentifier(permissionIdentifier: string | undefined): stri
     : undefined
 }
 
-function getSafeHttpUrl(url: string | undefined): string | undefined {
+function getSafeHttpUrl(
+  url: string | undefined,
+  allowedOrigins: ReadonlySet<string>,
+): string | undefined {
   const navigationDecision = evaluateNavigationUrl(url, {
     baseOrigin: typeof window === 'undefined' ? undefined : window.location.origin,
-    allowedOrigins: navigationAllowedOrigins,
+    allowedOrigins,
   })
 
   // AI modified: runtime navigation now uses the same parsed-origin policy as save validation.
@@ -241,7 +248,7 @@ function resolveNavigationBranch(
 
     let href: string | undefined
     if (backendNode.kind === 'external') {
-      href = getSafeHttpUrl(backendNode.externalUrl)
+      href = getSafeHttpUrl(backendNode.externalUrl, navigationAllowedOrigins)
       if (!href)
         continue
     }
@@ -251,7 +258,9 @@ function resolveNavigationBranch(
       const component = getNavigationComponent(backendNode.componentKey)
       const routeName = backendNode.routeName?.trim()
       const iframeUrl
-        = backendNode.kind === 'iframe' ? getSafeHttpUrl(backendNode.iframeUrl) : undefined
+        = backendNode.kind === 'iframe'
+          ? getSafeHttpUrl(backendNode.iframeUrl, iframeNavigationAllowedOrigins)
+          : undefined
       const isLeaf = childBranch.menus.length === 0
 
       if (isLeaf) {

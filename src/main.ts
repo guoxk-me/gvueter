@@ -1,3 +1,4 @@
+import type { RuntimeConfig } from './config/runtime-config-schema'
 import { abilitiesPlugin } from '@casl/vue'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { createPinia } from 'pinia'
@@ -6,6 +7,8 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { startAppLocaleSync } from './composables/useLocaleToggle'
 import { hydrateThemeColorEarly, useThemeColor } from './composables/useThemeColor'
+import { loadRuntimeConfig, provideRuntimeConfig, RuntimeConfigError } from './config/runtime-config'
+import { configureNavigationAllowedOrigins } from './features/navigation/navigation-url-policy'
 import { reconcileServiceWorkerMode } from './features/pwa/pwa-worker-boundary'
 import { i18n } from './i18n'
 import { appAbility } from './lib/ability'
@@ -13,7 +16,9 @@ import {
   installApplicationPreloadRecovery,
   reportApplicationFailure,
   showBootstrapRecovery,
+  showRuntimeConfigRecovery,
 } from './lib/application-recovery'
+import { configureHttp } from './lib/http'
 import { installGlobalErrorHandling } from './lib/observability'
 import { registerSessionStateBoundary } from './lib/session-state-boundary'
 import router from './router'
@@ -30,7 +35,15 @@ const uninstallPreloadRecovery = installApplicationPreloadRecovery()
 if (import.meta.hot)
   import.meta.hot.dispose(uninstallPreloadRecovery)
 
-async function bootstrap() {
+let hasBootstrapped = false
+
+export async function bootstrapApplication(runtimeConfig: RuntimeConfig): Promise<void> {
+  if (hasBootstrapped)
+    return
+
+  configureHttp(runtimeConfig.api.baseUrl)
+  configureNavigationAllowedOrigins(runtimeConfig.navigation)
+
   // 早期应用主题色，避免首屏色彩闪烁
   hydrateThemeColorEarly()
 
@@ -47,14 +60,9 @@ async function bootstrap() {
     },
   })
 
-  const mockSetting = import.meta.env.VITE_ENABLE_MOCKS
-  // AI modified: an explicit flag wins, while an omitted flag keeps local development convenient.
-  const shouldEnableMocks
-    = mockSetting === 'true' || (mockSetting === undefined && import.meta.env.DEV)
-
   // AI modified: remove a previously active root-scoped worker before switching between Mock and PWA modes.
   const shouldReloadForWorkerBoundary = await reconcileServiceWorkerMode(
-    shouldEnableMocks ? 'mock' : import.meta.env.PROD ? 'pwa' : 'none',
+    __GVUETER_MOCKS_ENABLED__ ? 'mock' : __GVUETER_PWA_ENABLED__ ? 'pwa' : 'none',
   )
   if (shouldReloadForWorkerBoundary) {
     window.location.reload()
@@ -62,7 +70,7 @@ async function bootstrap() {
   }
 
   // AI modified: demo/CI preview builds can opt into the same MSW contract as local development.
-  if (shouldEnableMocks) {
+  if (__GVUETER_MOCKS_ENABLED__) {
     const { startBrowserMocking } = await import('@/mocks/browser')
     await startBrowserMocking()
   }
@@ -75,6 +83,7 @@ async function bootstrap() {
 
   app.use(pinia)
   app.use(i18n)
+  provideRuntimeConfig(app, runtimeConfig)
 
   // AI modified: register principal-scoped cache cleanup before routing restores a session.
   registerSessionStateBoundary({ pinia, queryClient })
@@ -89,10 +98,41 @@ async function bootstrap() {
   app.use(VueQueryPlugin, { queryClient })
 
   app.mount('#app')
+  hasBootstrapped = true
 }
 
-void bootstrap().catch((failure: unknown) => {
-  // AI modified: startup failures render a plugin-independent recovery surface instead of an empty root.
-  reportApplicationFailure('bootstrap', failure)
-  showBootstrapRecovery()
-})
+async function startApplication(): Promise<void> {
+  if (hasBootstrapped)
+    return
+
+  let runtimeConfig: RuntimeConfig
+  try {
+    runtimeConfig = await loadRuntimeConfig({ legacyConfig: __GVUETER_LEGACY_RUNTIME_CONFIG__ })
+  }
+  catch (failure: unknown) {
+    const configFailure = failure instanceof RuntimeConfigError
+      ? failure
+      : new RuntimeConfigError('CONFIG_FETCH_FAILED')
+    showRuntimeConfigRecovery(
+      {
+        code: configFailure.code,
+        configPath: `${import.meta.env.BASE_URL}runtime-config.json`,
+        traceId: configFailure.traceId,
+      },
+      startApplication,
+    )
+    throw configFailure
+  }
+
+  try {
+    await bootstrapApplication(runtimeConfig)
+  }
+  catch (failure: unknown) {
+    // AI modified: post-configuration startup failures retain the existing generic recovery boundary.
+    reportApplicationFailure('bootstrap', failure)
+    showBootstrapRecovery()
+    throw failure
+  }
+}
+
+void startApplication().catch(() => undefined)

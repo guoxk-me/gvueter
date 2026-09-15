@@ -126,6 +126,15 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium firefox webkit
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium firefox webkit
+      - name: Build and verify the Base-scoped PWA lifecycle
+        run: |
+          pnpm run build
+          pnpm run test:e2e:pwa
+        env:
+          CI: 'true'
+          VITE_BASE_PATH: /admin/
+          VITE_ENABLE_MOCKS: 'false'
+          VITE_ENABLE_PWA: 'true'
       # AI modified: trusted branch and manual runs retain the complete three-engine release evidence.
       - run: pnpm run build
         env:
@@ -146,36 +155,79 @@ jobs:
           retention-days: 30
 
   container:
-    # AI modified: validate the deployable image only after static, unit, and browser release gates pass.
+    # AI modified: trusted runs validate both published architectures after static and browser gates pass.
     needs: [verify, e2e]
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+            smoke: true
+          - architecture: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            smoke: false
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build the production container
-        run: docker build --build-arg VITE_ENABLE_MOCKS=false --tag gvueter-ci:${{ github.sha }} .
+        run: |
+          docker build \
+            --platform '${{ matrix.platform }}' \
+            --build-arg VCS_REF='${{ github.sha }}' \
+            --build-arg VITE_ENABLE_MOCKS=false \
+            --build-arg VITE_ENABLE_PWA=false \
+            --tag 'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}' .
       - name: Generate production image SPDX SBOM
         uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
         with:
-          artifact-name: gvueter-container-sbom.spdx.json
+          artifact-name: gvueter-container-${{ matrix.architecture }}-sbom.spdx.json
           format: spdx-json
-          image: gvueter-ci:${{ github.sha }}
-          output-file: container-sbom.spdx.json
+          image: gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}
+          output-file: container-${{ matrix.architecture }}-sbom.spdx.json
           upload-artifact: true
           upload-artifact-retention: 30
+      - name: Inspect the immutable image contract
+        run: |
+          test "$(docker inspect --format '{{.Config.User}}' 'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}')" = nginx
+          test "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}')" = '${{ github.sha }}'
+          if docker run --rm \
+            --env PUBLIC_API_BASE_URL=http://insecure.example.com \
+            'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}'; then
+            echo 'Unsafe public configuration unexpectedly started.' >&2
+            exit 1
+          fi
       - name: Smoke-test the unprivileged runtime
+        if: matrix.smoke
         run: |
           docker network create gvueter-ci-network
           docker run --detach --name gvueter-ci-backend \
             --network gvueter-ci-network \
             --network-alias backend \
+            --read-only \
+            --tmpfs /tmp:mode=1777 \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
             node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436 \
             node -e 'require("node:http").createServer((request, response) => { response.setHeader("Content-Type", "application/json"); response.end(JSON.stringify({ url: request.url, authorization: request.headers.authorization ?? null, requestId: request.headers["x-request-id"] ?? null, forwardedFor: request.headers["x-forwarded-for"] ?? null, forwardedProto: request.headers["x-forwarded-proto"] ?? null })) }).listen(8080, "0.0.0.0")'
           docker run --detach --name gvueter-ci \
             --network gvueter-ci-network \
             --publish 127.0.0.1:8080:8080 \
-            gvueter-ci:${{ github.sha }}
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --env API_UPSTREAM=http://backend:8080 \
+            --env PUBLIC_API_BASE_URL=/api \
+            --env PUBLIC_NOTIFICATION_URL=wss://notify.example.com/events \
+            --env PUBLIC_NOTIFICATION_ALLOWED_ORIGINS=wss://notify.example.com \
+            --env PUBLIC_EXTERNAL_NAVIGATION_ORIGINS=https://docs.example.com \
+            --env PUBLIC_IFRAME_ORIGINS=https://embed.example.com \
+            'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}'
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8080/healthz >/dev/null; then
               break
@@ -186,17 +238,23 @@ jobs:
             fi
             sleep 1
           done
-          docker inspect --format '{{.Config.User}}' gvueter-ci | grep --line-regexp nginx
-          curl --fail --silent http://127.0.0.1:8080/healthz | grep --line-regexp ok
+          docker inspect --format 'readonly={{.HostConfig.ReadonlyRootfs}} caps={{json .HostConfig.CapDrop}} security={{json .HostConfig.SecurityOpt}}' gvueter-ci \
+            | grep --fixed-strings 'readonly=true caps=["ALL"] security=["no-new-privileges"]'
+          curl --fail --silent http://127.0.0.1:8080/healthz | grep --fixed-strings '"status":"ok"'
           curl --fail --silent http://127.0.0.1:8080/readyz --output readiness-response.json
-          # AI modified: readiness must reach gnester-lite's dependency probe, matching the shipped Nginx route.
-          grep --fixed-strings '"url":"/health/ready"' readiness-response.json
+          curl --fail --silent --dump-header runtime-config-headers.txt \
+            --output runtime-config.json http://127.0.0.1:8080/runtime-config.json
+          grep --ignore-case '^content-type: application/json' runtime-config-headers.txt
+          grep --ignore-case '^cache-control: no-store' runtime-config-headers.txt
+          grep --fixed-strings '"baseUrl":"/api"' runtime-config.json
+          grep --fixed-strings '"url":"wss://notify.example.com/events"' runtime-config.json
           curl --fail --silent \
             --header 'Authorization: Bearer smoke-token' \
             --header 'X-Request-ID: smoke-request' \
             'http://127.0.0.1:8080/api/probe?mode=ci' \
             --output proxy-response.json
-          grep --fixed-strings '"url":"/probe?mode=ci"' proxy-response.json
+          # AI modified: the same-origin gateway preserves the public /api path and query upstream.
+          grep --fixed-strings '"url":"/api/probe?mode=ci"' proxy-response.json
           grep --fixed-strings '"authorization":"Bearer smoke-token"' proxy-response.json
           grep --fixed-strings '"requestId":"smoke-request"' proxy-response.json
           grep --extended-regexp '"forwardedFor":"[^"]+"' proxy-response.json
@@ -208,6 +266,14 @@ jobs:
           grep --ignore-case '^x-frame-options: DENY' container-headers.txt
           grep --ignore-case '^referrer-policy: strict-origin-when-cross-origin' container-headers.txt
           grep --ignore-case '^permissions-policy: camera=(), microphone=(), geolocation=()' container-headers.txt
+          grep --ignore-case '^x-request-id:' container-headers.txt
+          curl --fail --silent --dump-header invalid-request-id-headers.txt --output /dev/null \
+            --header 'X-Request-ID: invalid id with spaces' http://127.0.0.1:8080/users
+          if grep --ignore-case --fixed-strings 'x-request-id: invalid id with spaces' invalid-request-id-headers.txt; then
+            exit 1
+          fi
+          curl --silent --output /dev/null --write-out '%{http_code}' \
+            http://127.0.0.1:8080/assets/does-not-exist.js | grep --line-regexp 404
           # AI modified: reset codes receive the SPA plus inherited security headers without entering access logs.
           curl --fail --silent --dump-header reset-headers.txt --output /dev/null \
             http://127.0.0.1:8080/reset-password/ci-reset-secret
@@ -219,14 +285,21 @@ jobs:
           if docker logs gvueter-ci 2>&1 | grep --fixed-strings 'ci-reset-secret'; then
             exit 1
           fi
+          if docker logs gvueter-ci 2>&1 | grep --fixed-strings 'mode=ci'; then
+            echo 'Query string leaked into access logs.' >&2
+            exit 1
+          fi
+          stop_started=$SECONDS
+          docker stop --timeout 10 gvueter-ci
+          test "$((SECONDS - stop_started))" -le 10
       - name: Scan actionable container vulnerabilities
         # AI modified: a SHA-pinned local image scan blocks fixed high/critical OS or package findings.
         uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           fail-build: true
-          image: gvueter-ci:${{ github.sha }}
+          image: gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}
           only-fixed: true
-          output-file: container-scan.json
+          output-file: container-${{ matrix.architecture }}-scan.json
           output-format: json
           severity-cutoff: high
       - name: Upload container scan evidence
@@ -234,17 +307,20 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           if-no-files-found: warn
-          name: container-security-evidence
+          name: container-${{ matrix.architecture }}-security-evidence
           path: |
-            container-sbom.spdx.json
+            container-${{ matrix.architecture }}-sbom.spdx.json
             container-headers.txt
+            invalid-request-id-headers.txt
             reset-headers.txt
-            container-scan.json
+            runtime-config-headers.txt
+            runtime-config.json
+            container-${{ matrix.architecture }}-scan.json
             proxy-response.json
             readiness-response.json
           retention-days: 30
       - name: Stop the smoke container
-        if: always()
+        if: always() && matrix.smoke
         run: |
           docker rm --force gvueter-ci gvueter-ci-backend || true
           docker network rm gvueter-ci-network || true

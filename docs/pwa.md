@@ -1,45 +1,35 @@
 # Progressive Web App
 
-<!-- AI modified: this policy documents the production PWA boundary and prevents offline support from becoming an authentication cache. -->
+<!-- AI modified: PWA is a build capability, independent from public deployment configuration. -->
 
-Gvueter emits an installable PWA only for production builds where `VITE_ENABLE_MOCKS` is not
-`true`. Mock builds use MSW's root-scoped worker and deliberately emit neither
-`manifest.webmanifest` nor `pwa-sw.js`.
+Gvueter is PWA-off by default. Set `VITE_ENABLE_PWA=true` only for a production build that should be installable. `VITE_ENABLE_MOCKS=true` and PWA cannot coexist; the build fails before emitting an ambiguous worker graph.
 
 ## User experience
 
-- Supported browsers can offer an in-app install action after `beforeinstallprompt`.
-- A waiting service worker presents an explicit update action. Updating reloads the page, so the
-  prompt reminds administrators to save unfinished edits first.
-- Once the static application shell is available offline, a toast explains that business data still
-  requires the server.
-- The existing global network banner remains the source of truth for current connectivity.
+- Supported browsers can expose the in-app install action after `beforeinstallprompt`.
+- A waiting worker presents an explicit update action and warns users to save unfinished edits before reload.
+- Offline readiness means the static shell is available; authenticated business data still requires the server.
+- Browsers without Service Worker support run the normal web application without an install entry.
 
-## Cache boundary
+## Worker and cache boundary
 
-The service worker precaches only versioned frontend assets, fonts, icons, HTML, and the SPA shell.
-It does not provide an API response cache or an offline mutation queue.
+The worker is emitted as `pwa-sw.js` under the configured `VITE_BASE_PATH`. Its scope, manifest `scope`/`start_url`, routes and assets share that same Base.
 
-- `/api`, authentication, OIDC, OAuth, SSO, login, password reset, and MSW worker requests are
-  network-only or excluded from navigation fallback.
-- `mockServiceWorker.js` is excluded from precache.
-- PWA caches use the `gvueter-pwa` namespace. Switching to Mock/development mode unregisters the PWA
-  worker and removes only those owned caches.
-- Switching to production unregisters a stale MSW worker before PWA registration. If the conflicting
-  worker controls the current document, the application reloads once after unregistering it.
+- Only versioned frontend assets, fonts, icons, HTML and the SPA shell are precached.
+- API, authentication, OAuth/OIDC/SSO, login, reset-password and Mock worker requests are network-only or excluded from navigation fallback.
+- Owned caches use `gvueter-pwa` or `gvueter-pwa-*`; cleanup never removes another application's caches.
+- PWA-off and Mock modes remove an owned prior PWA worker and caches within a five-second budget. A current-tab session guard permits at most one migration reload.
+- PWA-on removes a conflicting same-scope MSW worker before mounting, then registers asynchronously after the Vue shell is usable.
 
-## Build verification
-
-Run the production and Mock artifact gates from the repository root:
+## Verification
 
 ```sh
-VITE_ENABLE_MOCKS=false pnpm run build
-VITE_ENABLE_MOCKS=true pnpm run build
+VITE_ENABLE_MOCKS=false VITE_ENABLE_PWA=false pnpm run build
+VITE_BASE_PATH=/admin/ VITE_ENABLE_MOCKS=false VITE_ENABLE_PWA=true pnpm run build
+CI=true pnpm run test:e2e:pwa
+VITE_ENABLE_MOCKS=true VITE_ENABLE_PWA=false pnpm run build
 ```
 
-The build runs `scripts/check-pwa-artifact.mjs`. Production must contain a standalone web manifest,
-192/512/maskable icons, a service worker, the Gvueter cache namespace, and explicit network-only
-routes. Mock output must not contain PWA registration artifacts.
+The artifact gate proves PWA-off and Mock builds contain no worker/manifest, while PWA-on contains the Base-scoped manifest, generated install icons, owned cache namespace and network-only rules. Chromium validates registration and cache contents. The release matrix still verifies ordinary flows in Chromium, Firefox and WebKit; Safari/Firefox install UX remains an explicit deployment-browser sample.
 
-Deploy behind HTTPS. The edge should serve `pwa-sw.js` without immutable caching and may cache hashed
-assets immutably; see [Deployment](./deployment.md) for the broader header policy.
+Deploy PWA builds behind HTTPS. Serve `pwa-sw.js`, `manifest.webmanifest` and HTML with revalidation/no-cache behavior while fingerprinted assets may be immutable. A rollback must retain old hashed assets long enough for installed clients and must never deploy a Mock-enabled artifact.

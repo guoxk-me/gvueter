@@ -472,11 +472,21 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - 用户已授权将本次主题测试时序修复与验收文档本地提交，本轮不推送；上述未提交记录为授权前状态，Phase 1 仍待新版同 Commit 托管验收。
 
-- 已启动 Phase 2「运行配置、PWA 与容器」方案访谈，先核查事实、分轮收敛并等待最终确认。Phase 1 仍待托管验收；主题修复已本地提交为 `1218a38`、未推送，本轮不授权远端变更。运行配置仍为构建期固化、生产 PWA 默认启用，均为 Inspected 待处理项。
+- 已启动 Phase 2「运行配置、PWA 与容器」方案访谈，先核查事实、分轮收敛并等待最终确认。Phase 1 仍待托管验收；主题修复已随 `88f7538` 推送，本地 readiness 修复 `0e5312f` 尚未推送，本轮不授权远端变更。运行配置仍为构建期固化、生产 PWA 默认启用，均为 Inspected 待处理项。
+- Q1847–Q1852 已按推荐方案确认：Phase 2 完整确认后可本地实施，但阶段状态与 Phase 1 分开且不自动提交、推送或部署；公开运行配置使用同源 `/runtime-config.json`，Docker 启动生成，普通静态托管提供同一契约。API、WebSocket 与来源白名单允许运行时调整，Mock/PWA 打包能力保持构建期决定。生产配置失败时阻断正常启动并允许安全重试，`VITE_*` 仅在显式兼容模式保留一个 Minor。Docker 与静态托管同等支持；参考容器使用同源 `/api` 和可配置后端 Readiness，`gnester-lite` 仅作示例。
+- Q1853–Q1866 已全部采用推荐方案：Runtime Config 使用版本化闭合分组 Schema，启动前单次加载、会话内只读并使用 `no-store`；标准构建严格依赖该配置，显式 Legacy 构建仅保留一个 Minor 的 `VITE_*` 回退。错误进入安全恢复界面。PWA 严格布尔开关默认关闭，与 Mock 冲突时构建失败；关闭模式仍有界清理项目 Worker/Cache。Docker 从校验后的公开环境变量向 `/tmp` tmpfs 生成 JSON，开发到浏览器共享规则。Nginx 负责受控 Request ID、前端 Liveness、可配置后端 Readiness、文本 gzip 与分层缓存。容器按非 root、只读根、显式 tmpfs、无 Capabilities、`no-new-privileges` 验收；可信 CI 构建双架构，原生架构完整 Smoke，另一架构做结构与配置检查，Phase 5 才发布清单。
+- Q1867–Q1884 已全部采用推荐方案：配置版本必须精确支持；API 默认同源，跨域仅允许 HTTPS 并同步通过来源、CSP/CORS；通知可显式关闭但非法即失败；外部跳转与 iframe 白名单分离。恢复诊断和配置响应采用最小暴露及大小/MIME/同源约束。旧 PWA 清理限时 5 秒，使用当前 Tab 刷新守卫；PWA 仍为显式安装/更新且只缓存静态 Shell。根路径与子路径共享 Base 契约。容器公开变量使用 `PUBLIC_*`，非法时退出；网关约束/生成 Request ID，Readiness Path 只能是站内绝对路径。可信 CI 构建双架构；提供不捆绑后端的 Compose 示例；产物门禁覆盖四种合法模式和非法组合，Runtime Config 三引擎自动化、PWA Chromium 自动化并人工抽样 Safari/Firefox。
+- Q1885–Q1900 已全部采用推荐方案：V1 顶层固定版本号与 API、通知、导航分组，字段必须显式表达，配置路径及前端各能力共用 Base。Legacy 仅对缺失/不可读配置整体回退，非法配置失败；重试成功后只启动一次。容器从校验后的公开输入用固定版 `jq` 生成 JSON 与 CSP，并以共享 Fixture 对齐规则；API 上游及来源列表严格校验。Compose 默认接外部 API，独立 Smoke Profile 使用固定 Digest 测试服务。V1 Schema 保持稳定，配置限制 32 KiB；旧 PWA 只清理确属本项目的 Worker/Cache，PWA-on 在冲突检查后于 Shell 挂载后异步注册。CI 失败证据脱敏，迁移文档记录旧变量、PWA 默认关闭、部署/回滚及一个 Minor 的 Legacy 截止期。
+- Q1901–Q1916 已全部采用推荐方案：Runtime Config 作为启动期类型化只读服务，通过窄接口供 HTTP、通知和导航消费，不进入 Pinia，业务代码不直接读构建变量。开发、Mock、测试与部署共享 Schema，Mock/PWA 冲突提前失败。静态托管具备校验清单与 Header Smoke，容器自动生成 CSP；恢复界面内嵌最小中英文，配置请求 5 秒超时并手动重试。公开变量使用固定 `PUBLIC_*`，Base 保持构建期并统一约束 Router、资产与 PWA。只读容器仅写 tmpfs，固定版 `jq` 纳入供应链并与 Node 共用 Fixture。部署级 CSP 补充不扩大应用白名单；日志不含 Query 或敏感信息。Nginx 作为 PID 1 并在 10 秒内优雅退出；Compose 使用容器网络地址，不依赖 `host.docker.internal`。
+- Q1917–Q1932 已全部采用推荐方案：Phase 2 按 Runtime Config、PWA、容器/Nginx、CI/文档纵向实施。配置复用 Zod 3，以独立加载器、稳定错误码、显式依赖注入和固定 Fixture 保证启动只执行一次。配置成功后处理 Worker、挂载 Vue，并在 PWA-on 时异步注册；无 Service Worker 时正常运行。Nginx 提供安全 Header、精确 SPA Fallback、原样 API 代理和最小健康响应。镜像以 Commit SHA、OCI Labels、Digest、SBOM/Provenance 追溯，Critical/High 漏洞例外必须有责任人、期限和补救。交付平台中立部署/迁移/排障文档，并以 Base、模式、配置、浏览器、PWA、双架构和容器生命周期矩阵验收。Phase 2 方案已确认，进入本地实现，不自动提交、推送或部署。
 
 <!-- AI modified: keep the readiness regression fix distinct from the remaining Phase 2 design intake. -->
 
 - Implemented / Executed：已本地复现容器 CI 在 `nginx`、`ok` 后失败；`/readyz` 成功代理后端 `/health/ready`，失败来自仍匹配 `/healthz` 的旧断言。CI 已对齐既定 `/health/ready` 契约；Dockerfile 生产镜像构建、完整容器冒烟、冻结安装与 `release:check` 均退出码为 0，676 项单元测试、三浏览器 `149/149` 无重试及无 Mock 生产产物恢复通过。用户已授权将本次修复与验收记录本地提交，本轮不推送，修正后的托管 CI 尚未验证；Phase 2 其他方案仍待确认。
+
+<!-- AI modified: supersede the earlier Phase 2 intake status with verified local implementation evidence. -->
+
+- Implemented / Executed（2026-09-15）：第六轮 Q1917–Q1932 全部采用 A，Phase 2 已在本地实现：公开 `/runtime-config.json` 安全加载与恢复、构建期 Mock/PWA 开关及 Legacy 回退、默认 PWA-off 的迁移清理、Base-scoped Workbox 静态预缓存、参考 Docker/Nginx/Compose、CI 矩阵和部署/回滚/排障文档。冻结安装和完整 `release:check` 退出码为 0：689 项单元测试、覆盖率门禁、Chromium PWA 自动注册/预缓存及三浏览器 `155/155` E2E 无重试通过；最终 `dist` 恢复生产 PWA-off。Docker 本地安全 Smoke 通过配置生成、API Path/Query、健康、只读/非 root、日志脱敏和退出验证。Windows、双架构及 Hosted CI 仍待同一提交的托管验收；本轮不提交、推送或部署。
 
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。

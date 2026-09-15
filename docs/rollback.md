@@ -9,9 +9,9 @@ Rollback the frontend when a new release causes a security boundary regression, 
 1. Stop promotion and record the affected release SHA, image digest, start time, symptoms, and correlation IDs.
 2. Verify the previous image digest is the last known healthy artifact and uses a backend-compatible API contract.
 3. Redeploy that exact digest; do not rebuild an old Git ref because base images and registries can change.
-4. Keep the same approved runtime CSP values unless the incident is caused by an origin-policy change. Never broaden CSP as an emergency workaround.
+4. Restore the previous validated Runtime Config and matching CSP/CORS policy with the image. Never broaden an origin allow-list or CSP as an emergency workaround.
 5. Purge or revalidate cached `index.html`; retain fingerprinted assets long enough for clients still holding either HTML version.
-6. Wait for `/healthz` and `/readyz`, then repeat the post-deployment smoke in `docs/runbook.md`.
+6. Verify Base-scoped `runtime-config.json`, wait for `/healthz` and `/readyz`, then repeat the post-deployment smoke in `docs/runbook.md`.
 7. Confirm error rates, authentication, tenant navigation, API mutations, and notification transport return to the previous baseline.
 8. Close the incident only after documenting verification, impact, and the forward-fix owner.
 
@@ -19,7 +19,7 @@ Rollback the frontend when a new release causes a security boundary regression, 
 
 The container serves static assets and performs no database migration. A rollback can still be unsafe if the backend contract changed incompatibly after the previous frontend was released. Confirm backward compatibility or roll the coordinated backend release according to its own runbook.
 
-Persisted browser state may outlive a deployment. If a release changes storage contracts, use versioned migration/cleanup logic in the forward fix; do not instruct users to expose or manually edit tokens. Service workers and CDN caches must never serve a Mock-enabled `dist`.
+Persisted browser state may outlive a deployment. If a release changes storage contracts, use versioned migration/cleanup logic in the forward fix; do not instruct users to expose or manually edit tokens. Service workers and CDN caches must never serve a Mock-enabled `dist`. A PWA rollback must retain the previous and new hashed assets during convergence; PWA-off cleanup is scoped to Gvueter workers/caches and guarded against reload loops.
 
 ## Forward fix
 

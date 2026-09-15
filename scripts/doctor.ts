@@ -120,13 +120,21 @@ export function inspectDoctorFiles(projectRoot: string): DoctorFinding[] {
           report(label, 'undeclared environment variable')
         if (variableName.startsWith('VITE_') && /SECRET|TOKEN|PASSWORD|PRIVATE|CREDENTIAL|(?:^|_)KEY(?:_|$)/i.test(variableName))
           report(label, 'dangerous browser-visible secret naming')
-        if (variableName === 'VITE_ENABLE_MOCKS' && !['true', 'false'].includes(configuration))
+        // AI modified: diagnostics enforce the same build-capability contract as Vite.
+        if (
+          ['VITE_ENABLE_MOCKS', 'VITE_ENABLE_PWA', 'VITE_RUNTIME_CONFIG_LEGACY'].includes(variableName)
+          && !['true', 'false'].includes(configuration)
+        ) {
           report(label, 'invalid boolean')
+        }
+        if (variableName === 'VITE_BASE_PATH' && !/^\/(?:[\w-]+\/)*$/.test(configuration)) {
+          report(label, 'invalid application Base path')
+        }
         if (variableName === 'VITE_API_BASE_URL' && !(configuration.startsWith('/') && !configuration.startsWith('//') && !/[\\\s?#]/.test(configuration)) && !isSafeUrl(configuration, ['http:', 'https:'], false))
           report(label, 'invalid API URL')
         if (variableName === 'VITE_NOTIFICATION_WS_URL' && configuration && !isSafeUrl(configuration, ['wss:'], false))
           report(label, 'invalid secure WebSocket URL')
-        if (['VITE_NOTIFICATION_WS_ALLOWED_ORIGINS', 'VITE_NAVIGATION_ALLOWED_ORIGINS'].includes(variableName)) {
+        if (['VITE_NOTIFICATION_WS_ALLOWED_ORIGINS', 'VITE_NAVIGATION_ALLOWED_ORIGINS', 'VITE_IFRAME_ALLOWED_ORIGINS'].includes(variableName)) {
           const protocols = variableName === 'VITE_NOTIFICATION_WS_ALLOWED_ORIGINS' ? ['wss:'] : ['https:']
           if (configuration && configuration.split(',').some(origin => !isSafeUrl(origin.trim(), protocols, true)))
             report(label, 'invalid secure origin allow-list')
@@ -142,6 +150,9 @@ export function inspectDoctorFiles(projectRoot: string): DoctorFinding[] {
   const productionMocks = productionConfiguration.VITE_ENABLE_MOCKS
   if (productionMocks?.configuration === 'true')
     report(`${productionMocks.fileName} VITE_ENABLE_MOCKS`, 'production Mock enabled')
+  const productionPwa = productionConfiguration.VITE_ENABLE_PWA
+  if (productionMocks?.configuration === 'true' && productionPwa?.configuration === 'true')
+    report(`${productionPwa.fileName} VITE_ENABLE_PWA`, 'PWA and Mock cannot be enabled together')
   if (findings.length === 0)
     findings.push({ label: 'Repository configuration', level: 'pass', message: 'lockfile, runtime baseline, and public environment contracts agree' })
   return findings

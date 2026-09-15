@@ -1,111 +1,88 @@
 # Deployment
 
-## Build contract
+## Build capabilities
 
-<!-- AI modified: deployment guidance now states the shipped container's real same-origin API boundary. -->
+<!-- AI modified: one artifact can move between environments because public endpoints are no longer compiled into JavaScript. -->
 
-<!-- AI modified: deployment uses the same single Node 24 line as local development and CI. -->
-
-The frontend is a history-mode SPA and requires Node.js `>=24.18.0 <25` to build. The shipped container and CI use Node.js 24.18.0. Its supported default is the same-origin `/api` base proxied by the included Nginx configuration:
+The history-mode SPA requires Node.js `>=24.18.0 <25` to build. Only capabilities that change emitted files are build-time settings:
 
 ```sh
-VITE_API_BASE_URL=/api/v1 \
+VITE_BASE_PATH=/ \
 VITE_ENABLE_MOCKS=false \
-VITE_NOTIFICATION_WS_URL=wss://admin.example.com/notifications \
-VITE_NOTIFICATION_WS_ALLOWED_ORIGINS=wss://admin.example.com \
-VITE_NAVIGATION_ALLOWED_ORIGINS=https://docs.example.com \
+VITE_ENABLE_PWA=false \
 pnpm run build
 ```
 
-<!-- AI modified: paired deployment must preserve gnester-lite's versioned production API prefix. -->
+- `VITE_BASE_PATH` is an absolute URL-safe path ending in `/`; Router, assets, Runtime Config and PWA share it.
+- `VITE_ENABLE_MOCKS=true` is only for demos/tests and must not be deployed as production.
+- `VITE_ENABLE_PWA=true` emits installable assets and cannot coexist with Mock.
+- `VITE_RUNTIME_CONFIG_LEGACY=true` is a one-Minor migration build. It falls back to embedded legacy `VITE_*` values only when Runtime Config is missing/unreadable, never when received JSON is invalid or unsupported.
 
-When this frontend is paired with `gnester-lite`, build it with `VITE_API_BASE_URL=/api/v1`. The included Nginx proxy removes only the `/api` gateway prefix, so the backend receives `/v1/...`, matching `gnester-lite`'s default URI-versioning contract. Keep the plain `/api` value only for backends whose application routes are unversioned.
+## Runtime Config
 
-<!-- AI modified: production exclusion is an executable artifact contract, not just operator guidance. -->
+Standard builds fetch `${VITE_BASE_PATH}runtime-config.json` with `no-store` before Vue mounts. The response must be JSON, no larger than 32 KiB, use exactly `schemaVersion: 1`, contain no unknown fields and follow [`public/runtime-config.json`](../public/runtime-config.json).
 
-`VITE_ENABLE_MOCKS=true` is reserved for demos and end-to-end tests. Never enable MSW as a substitute for a production backend. With the flag false or omitted during a build, Vite replaces the browser-Mock module with a typed no-op and removes `mockServiceWorker.js`; the bundle gate fails if the real handler entry or worker remains in `dist`.
+It configures only public browser values:
 
-## Container
+- `api.baseUrl`: same-origin absolute path or credential-free HTTPS URL;
+- `notifications.url`: credential-free WSS URL or `null`;
+- `notifications.allowedOrigins`: exact WSS origins;
+- `navigation.externalOrigins` and `navigation.iframeOrigins`: separate exact HTTPS origins.
 
-The included multi-stage `Dockerfile` creates static assets and serves them through Nginx:
+It does not detect application updates and must never contain secrets, tokens, passwords or private service addresses. A missing, timed-out, oversized, wrong-MIME, malformed or unsupported config blocks application startup and shows a safe retry screen. Static hosts publish the file beside the Base-scoped `index.html` and set `Cache-Control: no-store` plus the normal security headers.
+
+## Reference container
+
+The multi-stage Docker image uses pinned Node and unprivileged Nginx digests. Build once, then provide public configuration at startup:
 
 ```sh
 docker build \
-  --build-arg VITE_API_BASE_URL=/api/v1 \
+  --build-arg VCS_REF="$(git rev-parse HEAD)" \
+  --build-arg VITE_BASE_PATH=/ \
   --build-arg VITE_ENABLE_MOCKS=false \
-  --build-arg VITE_NOTIFICATION_WS_URL=wss://admin.example.com/notifications \
-  --build-arg VITE_NOTIFICATION_WS_ALLOWED_ORIGINS=wss://admin.example.com \
-  --build-arg VITE_NAVIGATION_ALLOWED_ORIGINS=https://docs.example.com \
-  -t gvueter-admin:0.1.0 .
+  --build-arg VITE_ENABLE_PWA=false \
+  -t gvueter-admin:local .
 
-docker run --rm \
-  -p 8080:8080 \
-  -e "API_UPSTREAM=backend:8080" \
-  -e "CSP_CONNECT_SRC='self' wss://admin.example.com" \
-  -e "CSP_FRAME_SRC='self' https://docs.example.com" \
-  gvueter-admin:0.1.0
+docker run --rm -p 8080:8080 \
+  --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  -e API_UPSTREAM=http://backend:8080 \
+  -e BACKEND_READY_PATH=/health/ready \
+  -e PUBLIC_API_BASE_URL=/api \
+  -e PUBLIC_NOTIFICATION_URL=wss://admin.example.com/notifications \
+  -e PUBLIC_NOTIFICATION_ALLOWED_ORIGINS=wss://admin.example.com \
+  -e PUBLIC_EXTERNAL_NAVIGATION_ORIGINS=https://docs.example.com \
+  -e PUBLIC_IFRAME_ORIGINS=https://embed.example.com \
+  gvueter-admin:local
 ```
 
-The build and runtime base images are pinned by multi-architecture digest. The runtime uses the unprivileged Nginx image, listens on `8080`, and explicitly runs as `nginx`. `API_UPSTREAM` is a trusted runtime `host:port` value and defaults to `backend:8080`; the service must be resolvable and reachable on the container network. Nginx resolves it only when `/api/` or `/readyz` is requested, so an unavailable backend does not prevent the static frontend or `/healthz` from starting. Replace the upstream for the deployment platform while retaining the same-origin `/api` boundary.
+The entrypoint validates every value, generates Runtime Config into tmpfs with pinned `jq`, derives CSP sources and exits with code 64 on invalid input. `API_UPSTREAM` is an internal credential-free HTTP(S) origin without a path. The reference gateway preserves the complete browser `/api/...` path upstream; a gnester-lite adapter must therefore expose the agreed same path. `BACKEND_READY_PATH` is a separate same-origin absolute probe path.
 
-The stock container does not claim turnkey support for a custom cross-origin API. Such a deployment must rebuild with the intended absolute `VITE_API_BASE_URL`, add the HTTPS API origin to CSP `connect-src`, configure the API's CORS policy for the exact frontend origin, methods and request headers, and replace the same-origin `/readyz` dependency probe with a health check appropriate for that external service. Review TLS/SNI and credential handling in the replacement proxy or platform ingress before enabling traffic. The shipped SSO entry deliberately requires the same-origin `/api` gateway so transaction cookies and fixed callback origins cannot drift; a cross-origin API deployment must provide an equivalent same-origin authentication gateway.
+[`compose.yaml`](../compose.yaml) is an optional reference and never bundles a business backend. Set `API_UPSTREAM` to a container-network address. The `smoke` profile exists only for deterministic validation.
 
-`/healthz` is an Nginx/static-asset liveness check. `/readyz` proxies gnester-lite's `/health/ready` endpoint and is the dependency-aware readiness check for an orchestrator. Do not use readiness failure to restart a healthy frontend indefinitely; investigate the backend or service network first.
+The runtime executes as `nginx`, listens on 8080, uses a read-only root filesystem, writes only to explicit `/tmp`, drops all Linux capabilities and enables `no-new-privileges`. Nginx is PID 1 and handles SIGTERM directly.
 
-## Reverse proxy requirements
+## Nginx and static-host contract
 
-- Route unknown non-asset URLs to `/index.html` for Vue Router history mode.
-- Cache fingerprinted `/assets/` files as immutable; do not cache `index.html` long term.
-- Preserve `Authorization` and request identifiers when proxying `/api/`.
-- Honor backend `Cache-Control: no-store` on `/api/uploads/policy` and `/api/system-config`; do not add an intermediary cache for either configuration projection.
-- Forward `/api/auth/sso/start` and the identity-provider callback without deriving their externally registered scheme/host from untrusted headers; use only trusted proxy metadata and an exact callback allow-list.
-- Restrict iframe origins in both the backend menu policy and Content Security Policy.
-- Serve only HTTPS outside a private development environment.
-- Route liveness to `/healthz` and traffic readiness to `/readyz`.
+- `GET /healthz` proves static-process liveness and returns minimal JSON.
+- `GET /readyz` probes the configured backend dependency; do not restart a healthy frontend solely for an upstream outage.
+- `/api/` preserves Authorization, safe/generated Request ID, forwarding metadata, path and query.
+- Access logs use the path without query. Reset-password and SSO callback routes are not logged; SSO is `no-store` and both use `no-referrer`.
+- `runtime-config.json`, HTML, manifest and worker revalidate or use no-store/no-cache; fingerprinted `/assets/` are immutable.
+- Missing assets return 404. SPA fallback applies only inside the configured Base.
+- Every response receives CSP, Permissions Policy, Referrer Policy, content-type protection, frame denial and Request ID.
 
-<!-- AI modified: deployment caching and the browser recovery boundary form one stale-release contract. -->
+For a cross-origin API, publish an HTTPS `api.baseUrl`, configure exact backend CORS, and authorize the same origin in deployment CSP. Public Runtime Config cannot broaden CSP on an already-hosted static artifact; the hosting layer must emit matching headers.
 
-The included Nginx configuration serves `index.html` with `Cache-Control: no-cache` and fingerprinted assets as immutable. Keep both rules together: after a rolling release removes an old lazy chunk, Vite's `vite:preloadError` enters the manual application-recovery screen, and a user-approved reload retrieves the current HTML and asset graph. Do not replace this with automatic reload; an offline client, blocked request, or incomplete deployment could otherwise loop and discard unsaved administrative work.
-
-## Runtime boundaries
-
-Vite variables are compiled into the client bundle and are never secrets. Credentials, signing keys, refresh-token rotation and tenant authorization belong to the backend or deployment secret store.
-
-The provided CSP permits inline styles because theme CSS variables and some reka-ui positioning are applied through style attributes. It does not permit inline scripts. Runtime `CSP_CONNECT_SRC` and `CSP_FRAME_SRC` default to `'self'`; values use CSP source-expression syntax, separated by spaces. Nginx suppresses access logging and referrers for reset-password and SSO callback paths; the SSO callback is also `no-store`.
-Keep `VITE_NOTIFICATION_WS_ALLOWED_ORIGINS`, `VITE_NAVIGATION_ALLOWED_ORIGINS`, and the deployed `connect-src`/`frame-src` sources aligned. A WebSocket origin belongs in both the notification allow-list and `CSP_CONNECT_SRC`; an iframe origin belongs in both the navigation allow-list and `CSP_FRAME_SRC`. Adding an origin to one layer never authorizes the other.
-
-<!-- AI modified: the runtime boundary distinguishes the global administrative ceiling from deploy-time and endpoint ceilings. -->
-
-The stock Nginx `client_max_body_size 5m` is the shipped platform ceiling and matches the current content-file business ceiling. Raising `maxFileSizeMb` in system configuration cannot enlarge either that proxy limit or an endpoint's own type/size policy; the effective upload rule is always their intersection. A deployment that introduces a genuinely larger upload API must deliberately raise the trusted ingress and backend limits together, retain bounded streaming/storage behavior, and verify the resulting denial-of-service exposure. Lower global limits and removed extensions still narrow supported business uploads immediately.
-
-Local-storage filesystem roots and S3 credentials remain backend/deployment concerns. Ordinary upload workflows receive only the no-store `/uploads/policy` projection and continue to call same-origin application upload APIs. The Settings projection may return the access-key ID and a secret mask for administration, but no browser path may receive the raw secret, a usable AK/SK pair, or persist either in frontend storage. Production backends should restrict configurable object-storage endpoints to approved destinations and store secrets in a protected secret facility rather than frontend environment variables or logs.
-
-<!-- AI modified: deployment policy now matches the shared menu URL validator exactly. -->
-
-Allow-list entries are canonicalized to exact HTTPS origins. `https://docs.example.com/help/` permits targets on `https://docs.example.com` with any path, query, or hash, but does not permit `http://docs.example.com`, `https://api.docs.example.com`, or `https://docs.example.com:8443`. Credentials in configured or target URLs are rejected. Redirect destinations must be revalidated by the backend and allowed by the deployed CSP.
-
-## Release checks
+## Release and provenance
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm run check
-pnpm run check:contracts
-pnpm run check:security
-pnpm run test:inventory
-pnpm audit --prod --audit-level high
-pnpm run test:coverage
-VITE_ENABLE_MOCKS=false pnpm run build
-VITE_ENABLE_MOCKS=true pnpm run build
-CI=true VITE_ENABLE_MOCKS=true pnpm run test:e2e
-VITE_ENABLE_MOCKS=false pnpm run build
+pnpm run release:check
 ```
 
-<!-- AI modified: browser verification uses a disposable Mock preview while the final artifact is rebuilt without MSW. -->
+The release gate covers PWA-off, Base-scoped PWA-on, Mock-only, Legacy and Mock+PWA rejection, then restores a production PWA-off `dist`. Trusted CI adds three-browser Runtime Config recovery, Chromium PWA lifecycle, amd64/arm64 image builds, OCI revision labels, SPDX SBOMs, fixed High/Critical vulnerability scanning, hardened-container smoke and graceful shutdown evidence. Images remain local CI evidence in Phase 2; registry publishing and a multi-architecture manifest belong to the release phase.
 
-The GitHub Actions workflow pins every action commit, Node.js 24.18.0 and pnpm 12.4.1, publishes an SPDX SBOM from the production container image, audits production dependencies, and runs behavioral E2E in Chromium, Firefox, and WebKit with MSW explicitly enabled. Chromium alone owns pixel baselines. A Mock-enabled `dist` is test-only and must be replaced by the final non-Mock build before deployment.
-CI jobs use isolated workspaces: the container gate waits for verification and E2E, then performs its own production-only image build from the checked-out source instead of consuming the Mock E2E `dist`.
-<!-- AI modified: official Vite and Vitest versions are catalog-owned and verified through the release matrix. -->
-Upgrade Vite, Vitest, the V8 provider, TypeScript, or ESLint only as a reviewed toolchain change followed by the complete release checks.
-The deterministic data, locale, timezone, viewport and screenshot policy is documented in [Testing and visual acceptance](./testing.md).
-Operational verification and rollback procedures are documented in the [runbook](./runbook.md) and [rollback guide](./rollback.md).
-The service-worker cache boundary, HTTPS requirement, and production/Mock isolation are documented in [Progressive Web App](./pwa.md).
+See [Testing](./testing.md), [PWA](./pwa.md), [Operations runbook](./runbook.md) and [Rollback](./rollback.md).

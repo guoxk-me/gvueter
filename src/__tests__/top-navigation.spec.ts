@@ -9,7 +9,9 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
 import AdminTopNavigation from '@/components/layout/AdminTopNavigation.vue'
 import GlobalSearch from '@/components/layout/GlobalSearch.vue'
+import { RUNTIME_CONFIG_INJECTION_KEY } from '@/config/runtime-config'
 import { i18n, setLocale } from '@/i18n'
+import { TEST_RUNTIME_CONFIG } from './runtime-config-test-helper'
 
 class TestResizeObserver {
   static instances: TestResizeObserver[] = []
@@ -323,6 +325,7 @@ describe('header degradation contract', () => {
         navigationNodes,
       },
       global: {
+        provide: { [RUNTIME_CONFIG_INJECTION_KEY as symbol]: TEST_RUNTIME_CONFIG },
         plugins: [createPinia(), router, i18n, [VueQueryPlugin, { queryClient }]],
         stubs: {
           AdminTopNavigation: TopNavigationStub,

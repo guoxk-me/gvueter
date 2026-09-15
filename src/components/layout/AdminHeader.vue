@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useRuntimeConfig } from '@/config/runtime-config'
 import { createRuntimeNotificationTransport } from '@/features/notifications'
 import {
   useNotificationRealtime,
@@ -53,7 +54,10 @@ const searchExpansionReserve = shallowRef(0)
 
 useNotificationUnreadCount()
 // AI modified: every authenticated principal owns a transport with an immutable session credential.
-useNotificationRealtime(sessionToken => createRuntimeNotificationTransport(() => sessionToken))
+const runtimeConfig = useRuntimeConfig()
+useNotificationRealtime(sessionToken =>
+  createRuntimeNotificationTransport(() => sessionToken, runtimeConfig.notifications),
+)
 
 const userInitials = computed(() => {
   const words = (auth.user?.name ?? '').trim().split(/\s+/).filter(Boolean)

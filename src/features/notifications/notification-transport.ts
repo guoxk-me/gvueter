@@ -250,14 +250,18 @@ export function createWebSocketNotificationTransport(
 
 export function createRuntimeNotificationTransport(
   tokenProvider: () => string | null,
+  runtimeConfig: {
+    readonly url: string | null
+    readonly allowedOrigins: readonly string[]
+  },
 ): NotificationTransport {
-  const websocketUrl = import.meta.env.VITE_NOTIFICATION_WS_URL?.trim()
+  const websocketUrl = runtimeConfig.url?.trim()
   // AI modified: local/MSW environments stay deterministic unless a WebSocket URL is explicitly configured.
   if (!websocketUrl)
     return createInMemoryNotificationTransport()
 
   const allowedOrigins = getNotificationWebSocketAllowedOrigins(
-    (import.meta.env.VITE_NOTIFICATION_WS_ALLOWED_ORIGINS ?? '').split(','),
+    runtimeConfig.allowedOrigins,
   )
   // AI modified: a misconfigured socket fails closed before any bearer credential can be sent.
   return isTrustedNotificationWebSocketUrl(websocketUrl, { allowedOrigins })

@@ -21,18 +21,31 @@ async function exists(filePath) {
   )
 }
 
-const isMockBuild = process.env.VITE_ENABLE_MOCKS === 'true'
+const mockSetting = process.env.VITE_ENABLE_MOCKS
+const pwaSetting = process.env.VITE_ENABLE_PWA
+if (mockSetting !== undefined && !['false', 'true'].includes(mockSetting))
+  throw new Error('VITE_ENABLE_MOCKS must be exactly "true" or "false".')
+if (pwaSetting !== undefined && !['false', 'true'].includes(pwaSetting))
+  throw new Error('VITE_ENABLE_PWA must be exactly "true" or "false".')
+
+const isMockBuild = mockSetting === 'true'
+const isPwaBuild = pwaSetting === 'true'
+if (isMockBuild && isPwaBuild)
+  throw new Error('Mock and PWA artifacts cannot be enabled together.')
+
 const hasServiceWorker = await exists(serviceWorkerPath)
 const hasWebManifest = await exists(webManifestPath)
 
-if (isMockBuild) {
+if (!isPwaBuild) {
   const hasGeneratedIcon = (await Promise.all(generatedIconPaths.map(exists))).some(Boolean)
   if (hasServiceWorker || hasWebManifest || hasGeneratedIcon) {
     throw new Error(
-      'Mock artifacts must not emit PWA workers, manifests, or generated install icons.',
+      'PWA-off artifacts must not emit workers, manifests, or generated install icons.',
     )
   }
-  process.stdout.write('PWA artifact gate passed: Mock worker mode is isolated.\n')
+  process.stdout.write(
+    `PWA artifact gate passed: ${isMockBuild ? 'Mock' : 'standard'} build is PWA-off.\n`,
+  )
   process.exit(0)
 }
 
@@ -45,8 +58,8 @@ const iconSizes = new Set(manifest.icons?.map(icon => icon.sizes))
 const hasMaskableIcon = manifest.icons?.some(icon => icon.purpose?.includes('maskable'))
 const requiredManifestValues = {
   display: 'standalone',
-  scope: '/',
-  start_url: '/',
+  scope: process.env.VITE_BASE_PATH ?? '/',
+  start_url: process.env.VITE_BASE_PATH ?? '/',
 }
 const violations = []
 
@@ -63,13 +76,18 @@ if (!hasMaskableIcon)
   violations.push('manifest must include a maskable icon')
 
 for (const icon of manifest.icons ?? []) {
-  const iconPath = resolve(outputDirectory, icon.src.replace(/^\//, ''))
+  const basePath = process.env.VITE_BASE_PATH ?? '/'
+  const relativeIconPath = icon.src.startsWith(basePath)
+    ? icon.src.slice(basePath.length)
+    : icon.src.replace(/^\//, '')
+  const iconPath = resolve(outputDirectory, relativeIconPath)
   if (!(await exists(iconPath)))
     violations.push(`manifest icon is missing: ${icon.src}`)
 }
 
 const serviceWorkerSource = await readFile(serviceWorkerPath, 'utf8')
-if (!serviceWorkerSource.includes('NetworkOnly')) {
+const workerEntrySource = await readFile(resolve(projectRoot, 'src/features/pwa/pwa-sw.ts'), 'utf8')
+if (!workerEntrySource.includes('new NetworkOnly()')) {
   violations.push('service worker must contain explicit network-only routes')
 }
 if (!serviceWorkerSource.includes('mockServiceWorker')) {

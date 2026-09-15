@@ -33,7 +33,10 @@ import {
   MANAGED_MENU_SUBJECTS,
   PERMISSION_IDENTIFIER_PATTERN,
 } from '@/features/menus/types'
-import { navigationAllowedOrigins } from '@/features/navigation/navigation-url-policy'
+import {
+  iframeNavigationAllowedOrigins,
+  navigationAllowedOrigins,
+} from '@/features/navigation/navigation-url-policy'
 
 const props = defineProps<{
   menu?: ManagedMenuRecord
@@ -176,7 +179,9 @@ const formSchema = computed(() =>
           },
           {
             baseOrigin: typeof window === 'undefined' ? undefined : window.location.origin,
-            allowedOrigins: navigationAllowedOrigins,
+            allowedOrigins: values.kind === 'iframe'
+              ? iframeNavigationAllowedOrigins
+              : navigationAllowedOrigins,
           },
         )
         for (const [field, issue] of Object.entries(targetDecision.fieldErrors)) {

@@ -8,10 +8,12 @@ import JSONViewer from '@/components/admin/JSONViewer.vue'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
 import AdminWatermark from '@/components/layout/AdminWatermark.vue'
 import ConfigurableAdminLayout from '@/components/layout/ConfigurableAdminLayout.vue'
+import { RUNTIME_CONFIG_INJECTION_KEY } from '@/config/runtime-config'
 import CaptchaField from '@/features/account/components/CaptchaField.vue'
 import SystemParameterFormDialog from '@/features/system-parameters/components/SystemParameterFormDialog.vue'
 import { i18n, setLocale } from '@/i18n'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage.vue'
+import { TEST_RUNTIME_CONFIG } from './runtime-config-test-helper'
 
 enableAutoUnmount(afterEach)
 
@@ -70,6 +72,7 @@ describe('automatic translation boundaries', () => {
     const header = mount(AdminHeader, {
       props: { isMobileNavigationOpen: false },
       global: {
+        provide: { [RUNTIME_CONFIG_INJECTION_KEY as symbol]: TEST_RUNTIME_CONFIG },
         plugins: [pinia, router, i18n, [VueQueryPlugin, { queryClient }]],
         stubs: {
           AdminTopNavigation: true,

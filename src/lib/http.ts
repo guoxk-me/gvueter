@@ -4,7 +4,6 @@ import { API_ENVELOPE_SCHEMA } from '@/lib/api-contracts'
 import { getSessionAccessToken } from '@/lib/auth-session'
 import { notifyForbidden, notifySessionInvalidated } from '@/lib/request-policy'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 const TIMEOUT = 15_000
 const SUCCESS_CODES = new Set<number | string>([0, 200, '0', '200', 'OK', 'SUCCESS'])
 const REQUEST_ID_HEADER = 'X-Request-ID'
@@ -200,9 +199,14 @@ export function getSafeFileName(fileName: string): string | undefined {
 }
 
 export const http = axios.create({
-  baseURL: BASE_URL,
+  baseURL: '/api',
   timeout: TIMEOUT,
 })
+
+export function configureHttp(apiBaseUrl: string): void {
+  // AI modified: deployment-specific API routing is injected before Vue mounts.
+  http.defaults.baseURL = apiBaseUrl
+}
 
 function isUnauthenticatedRequestPath(requestPath: string | undefined): boolean {
   if (!requestPath)

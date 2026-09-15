@@ -8,7 +8,7 @@ This runbook covers the static Gvueter frontend, its Nginx runtime, and the brow
 
 1. Record the release SHA and immutable container digest.
 2. Execute every gate in `docs/testing.md`, including the final non-Mock build.
-3. Confirm `VITE_API_BASE_URL`, notification WebSocket URL/origins, navigation origins, `CSP_CONNECT_SRC`, and `CSP_FRAME_SRC` describe the same approved origins.
+3. Validate the Base-scoped `runtime-config.json`; confirm its API, notification and separate navigation/iframe origins agree with the deployed CSP and backend CORS policy.
 4. Confirm the backend accepts the frontend contract version and that no schema, authentication, or authorization migration is pending.
 5. Retain the previously healthy image digest for rollback.
 
@@ -16,8 +16,9 @@ This runbook covers the static Gvueter frontend, its Nginx runtime, and the brow
 
 Deploy progressively when the platform supports it. The container listens on `8080` as an unprivileged user.
 
-- `GET /healthz`: Nginx and static delivery liveness; expected status `200` and body `ok`.
-- `GET /readyz`: backend dependency readiness; expected status `200` from gnester-lite's `/health/ready` endpoint.
+- `GET /healthz`: Nginx and static delivery liveness; expected status `200` and body `{"status":"ok"}`.
+- `GET /readyz`: configured backend dependency readiness; expected status `200`.
+- `GET <Base>/runtime-config.json`: expected validated JSON, normal security headers and `Cache-Control: no-store`.
 - `GET /`: expected status `200`, HTML content type, security headers, and `Cache-Control: no-cache`.
 - `GET /assets/<fingerprinted-file>`: expected immutable one-year cache policy plus the same security headers.
 
@@ -39,6 +40,7 @@ Using a non-privileged test account and an approved administrator account:
 | ----------------------------------- | ------------------------------------------------------------------------------------------ | ----------------- |
 | `/healthz` fails                    | pod/container state, port `8080`, Nginx logs, filesystem mount                             | frontend/platform |
 | `/healthz` passes, `/readyz` fails  | backend health, DNS/service discovery, network policy, proxy target                        | backend/platform  |
+| Runtime Config recovery screen      | JSON reachability/MIME/schema/version/size, Base path, no-store edge behavior               | platform/frontend |
 | Blank page or chunk error           | release asset completeness, `index.html` cache, asset hash availability, CSP console error | frontend/CDN      |
 | Sign-in loop or widespread 401      | identity/backend health, cookie/session policy, API base URL, clock skew                   | identity/backend  |
 | SSO unavailable or callback failure | SSO enabled/config revision, IdP health, exact redirect URI, state/nonce/PKCE, ticket TTL  | identity/backend  |

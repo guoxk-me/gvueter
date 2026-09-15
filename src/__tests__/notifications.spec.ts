@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
+import { RUNTIME_CONFIG_INJECTION_KEY } from '@/config/runtime-config'
 import {
   createInMemoryNotificationTransport,
   createWebSocketNotificationTransport,
@@ -33,6 +34,7 @@ import MessageCenterPage from '@/pages/admin/MessageCenterPage.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import { getTestPrincipal } from './auth-test-helpers'
+import { TEST_RUNTIME_CONFIG } from './runtime-config-test-helper'
 
 const realtimeEvent: NotificationRealtimeEvent = {
   eventId: 'event-live-001',
@@ -357,6 +359,7 @@ describe('message center page', () => {
     const wrapper = mount(AdminHeader, {
       props: { isMobileNavigationOpen: false },
       global: {
+        provide: { [RUNTIME_CONFIG_INJECTION_KEY as symbol]: TEST_RUNTIME_CONFIG },
         plugins: [pinia, i18n, router, [VueQueryPlugin, { queryClient }]],
         stubs: {
           GlobalSearch: true,

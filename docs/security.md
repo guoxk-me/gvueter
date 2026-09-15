@@ -69,7 +69,7 @@ The backend must emit tamper-resistant login and operation events for authentica
 
 - Backend menu component and icon keys resolve through fixed frontend registries; values never become import paths.
 - Internal routes require path, route name, and a registered component together (or none of them for a grouping node). External links carry only a target URL. Iframes require path, route name, the fixed `iframe` component key, and a target URL. The editor and Mock API reject conflicting fields with a field-locatable `422` response.
-- Cross-origin external/iframe URLs require an exact HTTPS origin from `VITE_NAVIGATION_ALLOWED_ORIGINS`; subdomains and non-default ports are separate origins. Configuration paths and trailing slashes are reduced to the origin, while a target URL may retain its query and hash. Same-origin HTTP(S) paths are accepted and URL credentials are rejected.
+- Cross-origin external and iframe URLs use separate exact HTTPS origin lists from `runtime-config.json`; subdomains and non-default ports are separate origins. A target URL may retain its path, query and hash. Same-origin HTTP(S) paths are accepted and URL credentials are rejected.
 - External links use real anchors with a new-window cue and `noopener noreferrer`.
 - The shipped production CSP permits only same-origin frames. Any cross-origin iframe deployment requires an explicit backend origin allow-list and matching CSP; frontend URL checks alone are insufficient.
 - Iframes run in a sandbox without `allow-same-origin`. The embedded document must still be treated as untrusted content.

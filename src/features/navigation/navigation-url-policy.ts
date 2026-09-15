@@ -24,6 +24,9 @@ export interface NavigationUrlPolicy {
   allowedOrigins: ReadonlySet<string>
 }
 
+const configuredExternalOrigins = new Set<string>()
+const configuredIframeOrigins = new Set<string>()
+
 function isHttpProtocol(protocol: string): boolean {
   return protocol === 'https:' || protocol === 'http:'
 }
@@ -46,10 +49,22 @@ export function getNavigationAllowedOrigins(originEntries: readonly string[]): R
   return allowedOrigins
 }
 
-// AI modified: cross-origin navigation trust comes only from deployment configuration.
-export const navigationAllowedOrigins = getNavigationAllowedOrigins(
-  (import.meta.env.VITE_NAVIGATION_ALLOWED_ORIGINS ?? '').split(','),
-)
+// Compatibility export for external links; callers cannot mutate the underlying deployment policy.
+export const navigationAllowedOrigins: ReadonlySet<string> = configuredExternalOrigins
+export const iframeNavigationAllowedOrigins: ReadonlySet<string> = configuredIframeOrigins
+
+export function configureNavigationAllowedOrigins(options: {
+  externalOrigins: readonly string[]
+  iframeOrigins: readonly string[]
+}): void {
+  configuredExternalOrigins.clear()
+  configuredIframeOrigins.clear()
+
+  for (const origin of getNavigationAllowedOrigins(options.externalOrigins))
+    configuredExternalOrigins.add(origin)
+  for (const origin of getNavigationAllowedOrigins(options.iframeOrigins))
+    configuredIframeOrigins.add(origin)
+}
 
 /**
  * Applies the same URL decision at form, API mock, and runtime boundaries.

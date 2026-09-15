@@ -14,7 +14,10 @@ import { http, HttpResponse } from 'msw'
 import { MANAGED_MENU_INPUT_SCHEMA } from '@/features/menus/menu-api-contracts'
 import { canManagedMenuHaveChildren } from '@/features/menus/menu-hierarchy'
 import { getManagedMenuTargetDecision } from '@/features/menus/menu-target-contract'
-import { navigationAllowedOrigins } from '@/features/navigation/navigation-url-policy'
+import {
+  iframeNavigationAllowedOrigins,
+  navigationAllowedOrigins,
+} from '@/features/navigation/navigation-url-policy'
 import { readMockJsonBody } from '@/mocks/request-validation'
 import { authorizeMockPermission } from './auth'
 
@@ -370,7 +373,9 @@ function getMenuTargetDecision(
   // AI modified: Mock persistence consumes the same target and URL policy as the editor.
   return getManagedMenuTargetDecision(input, {
     baseOrigin: new URL(requestUrl).origin,
-    allowedOrigins: navigationAllowedOrigins,
+    allowedOrigins: input.kind === 'iframe'
+      ? iframeNavigationAllowedOrigins
+      : navigationAllowedOrigins,
   })
 }
 

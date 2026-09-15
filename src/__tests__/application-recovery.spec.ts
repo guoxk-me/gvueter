@@ -10,6 +10,7 @@ import {
   reportApplicationFailure,
   setApplicationFailure,
   showBootstrapRecovery,
+  showRuntimeConfigRecovery,
 } from '@/lib/application-recovery'
 import { registerFrontendErrorReporter } from '@/lib/observability'
 
@@ -139,5 +140,28 @@ describe('application recovery state', () => {
     expect(target.querySelector('h1')?.textContent).toBe('应用启动失败')
     target.querySelector('button')?.click()
     expect(reloadApplication).toHaveBeenCalledOnce()
+  })
+
+  it('shows safe runtime diagnostics and retries without reloading the document', async () => {
+    const target = document.implementation.createHTMLDocument('runtime config failure')
+    const mountTarget = target.createElement('div')
+    const retry = vi.fn(async () => undefined)
+    target.documentElement.lang = 'en-US'
+    mountTarget.id = 'app'
+    target.body.append(mountTarget)
+
+    showRuntimeConfigRecovery({
+      code: 'CONFIG_SCHEMA_INVALID',
+      configPath: '/admin/runtime-config.json',
+      traceId: 'safe-trace-id',
+    }, retry, target)
+
+    expect(target.querySelector('[data-application-recovery="runtime-config"]')).not.toBeNull()
+    expect(target.body.textContent).toContain('CONFIG_SCHEMA_INVALID')
+    expect(target.body.textContent).toContain('/admin/runtime-config.json')
+    expect(target.body.textContent).not.toContain('token=secret')
+    target.querySelector('button')?.click()
+    await flushPromises()
+    expect(retry).toHaveBeenCalledOnce()
   })
 })

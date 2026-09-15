@@ -8,7 +8,7 @@ The published OpenAPI servers distinguish `/api/v1` for the paired gnester-lite 
 
 <!-- AI modified: the frontend/backend pairing now has one explicit versioned identity contract. -->
 
-The browser-facing path remains same-origin. A gvueter production build paired with gnester-lite's default URI versioning uses `VITE_API_BASE_URL=/api/v1`; the shipped Nginx rewrite turns that into upstream `/v1/...`. Local MSW continues to use `/api` so its deterministic fixtures do not pretend to be the production Nest application.
+The browser-facing path remains same-origin. A Gvueter deployment paired with gnester-lite can publish `/api/v1` in `runtime-config.json`; the reference proxy preserves that complete path upstream, so the backend gateway must expose the same `/api/v1/...` contract. Local MSW continues to use `/api` so its deterministic fixtures do not pretend to be the production Nest application.
 
 Password login, SSO exchange, and `GET /auth/me` return identity and authorization atomically. Login/exchange add token fields around this shared principal payload:
 

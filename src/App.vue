@@ -8,7 +8,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 const { t } = useI18n()
-const shouldEnablePwa = import.meta.env.PROD && import.meta.env.VITE_ENABLE_MOCKS !== 'true'
+const shouldEnablePwa = __GVUETER_PWA_ENABLED__
 // AI modified: PWA install/update UX is non-critical and loads after the application shell.
 const PwaManager = defineAsyncComponent(() => import('@/features/pwa/components/PwaManager.vue'))
 

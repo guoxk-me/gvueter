@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "api": {
+    "baseUrl": "/api"
+  },
+  "notifications": {
+    "url": null,
+    "allowedOrigins": []
+  },
+  "navigation": {
+    "externalOrigins": [
+      "https://docs.example.com",
+      "https://support.example.com"
+    ],
+    "iframeOrigins": []
+  }
+}
