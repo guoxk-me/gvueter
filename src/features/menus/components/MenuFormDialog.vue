@@ -36,7 +36,7 @@ import {
 import {
   iframeNavigationAllowedOrigins,
   navigationAllowedOrigins,
-} from '@/features/navigation/navigation-url-policy'
+} from '@/features/navigation'
 
 const props = defineProps<{
   menu?: ManagedMenuRecord

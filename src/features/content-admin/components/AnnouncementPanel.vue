@@ -23,7 +23,7 @@ import {
   getAnnouncementTextPreview,
   getPriorityTone,
 } from '@/features/content-admin/content-admin-rules'
-import { useDictionaryOptions } from '@/features/dictionaries/composables/useDictionaryOptions'
+import { useDictionaryOptions } from '@/features/dictionaries'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel } from '@/lib/display-format'
 import { ApiError } from '@/lib/http'
 import AnnouncementDialog from './AnnouncementDialog.vue'

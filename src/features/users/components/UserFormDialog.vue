@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import PasswordStrength from '@/features/account/components/PasswordStrength.vue'
+// AI modified: user editing shares the password view through the account feature boundary.
+import { PasswordStrength } from '@/features/account'
 import { USER_ROLES, USER_STATUSES } from '@/features/users/types'
 
 const props = defineProps<{

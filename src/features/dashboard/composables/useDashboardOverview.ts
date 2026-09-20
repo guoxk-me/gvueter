@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { storeToRefs } from 'pinia'
 import { computed, watch } from 'vue'
 import { DASHBOARD_OVERVIEW_SCHEMA } from '@/features/dashboard/dashboard-api-contracts'
-import { useNotificationReadMutations } from '@/features/notifications/composables/useMessageCenter'
+import { useNotificationReadMutations } from '@/features/notifications'
 import { get } from '@/lib/http'
 import { useNotificationStore } from '@/stores/notification'
 

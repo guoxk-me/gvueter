@@ -1,8 +1,8 @@
 import type { ForcedSubject, MongoQuery } from '@casl/ability'
 import type { DataScopeGrant } from './types'
-import type { DepartmentRecord } from '@/features/departments/types'
-import type { AdminUser } from '@/features/users/types'
-import { getDepartmentDescendantIds } from '@/features/departments/department-tree'
+import type { DepartmentRecord } from '@/features/departments'
+import type { AdminUser } from '@/features/users'
+import { getDepartmentDescendantIds } from '@/features/departments'
 
 export type ScopedUserRecord = AdminUser & ForcedSubject<'User'>
 

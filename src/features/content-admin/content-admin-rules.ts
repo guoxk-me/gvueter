@@ -1,6 +1,6 @@
 import type { ContentFileRecord } from './types/files'
 import type { StatusTone } from '@/components/admin'
-import type { DictionaryOption } from '@/features/dictionaries/types'
+import type { DictionaryOption } from '@/features/dictionaries'
 
 export function getAnnouncementTextPreview(content: string): string {
   // AI modified: list previews remove markup and never render stored rich text as executable HTML.

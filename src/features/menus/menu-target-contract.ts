@@ -1,15 +1,15 @@
-import type { BackendMenuKind } from '@/features/navigation'
 import type {
+  BackendMenuKind,
   NavigationUrlPolicy,
   NavigationUrlRejectionReason,
-} from '@/features/navigation/navigation-url-policy'
+} from '@/features/navigation'
 import { MANAGED_MENU_COMPONENT_KEYS } from '@/features/menus/types'
 import {
+  BACKEND_MENU_KINDS,
+  evaluateNavigationUrl,
   getNavigationRoutePath,
   isNavigationRouteName,
-} from '@/features/navigation/navigation-route-policy'
-import { evaluateNavigationUrl } from '@/features/navigation/navigation-url-policy'
-import { BACKEND_MENU_KINDS } from '@/features/navigation/types'
+} from '@/features/navigation'
 
 const managedMenuKinds = new Set<string>(BACKEND_MENU_KINDS)
 const managedMenuComponentKeys = new Set<string>(MANAGED_MENU_COMPONENT_KEYS)

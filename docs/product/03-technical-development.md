@@ -544,6 +544,42 @@ README 维持约 10 分钟快速启动与常用命令，深入内容链接到 `d
 
 Knip 依赖问题立即阻断；未使用文件和导出建立存量基线后阻断新增问题，存量按模块清理。Renovate 分 Runtime、Vue 核心、构建、测试、GitHub Actions、Docker 更新，Major 单独 PR。许可证使用 Allow/Deny/Review 策略，未知和强 Copyleft 人工审查，Deny 项阻断。
 
+<!-- AI modified: distinguish Phase 3 design intake from the confirmed engineering rules above. -->
+
+Phase 3「契约、依赖与源码边界」的访谈决策已经完成并进入本地实现；本节后续的 Confirmed 条目保留决策过程，最新实施与验证状态以末尾 Implemented 条目为准。
+
+<!-- AI modified: keep the first-round choices actionable without claiming the tools are installed. -->
+
+Confirmed（Q1933–Q1939）：Phase 3 逐项交付 OpenAPI 类型生成、Knip、Feature 边界和治理门禁。生成器选 `openapi-typescript`，保留现有 Axios 与不可信边界 Zod；Knip 依赖问题立即阻断、文件/导出有责任人存量基线阻断新增。Feature 只迁移真实跨域消费点；Locale 缺失 Key/占位符错误阻断、闲置 Key 先报告；许可证 Deny 阻断、Unknown/Review 人工审查。Renovate 先提交仓库配置，远端 App 启用需另行授权，禁止自动合并。下游落点待访谈，尚未实施。
+
+<!-- AI modified: record the narrowed generated-type, gate, and governance decisions from the second round. -->
+
+Confirmed（Q1940–Q1946）：生成整份 OpenAPI 类型至已有 `src/types/openapi-generated.ts`，提交生成物并禁止手改；先绑定认证、用户、角色、菜单等核心 DTO，其他逐域迁移。Knip 动态入口只允许核实后的窄例外；Feature 真实跨域深层导入先迁移，之后深层导入、方向和循环依赖硬门禁。Locale 占位变量名/类型一致即可，不要求跨语言词序或复数规则完全相同。许可证清单覆盖生产和开发、直接和传递依赖；Deny 阻断、Unknown/Review 审查。分项本地验绿后进入 `verify` 并取托管证据，尚未实施。
+
+<!-- AI modified: preserve the third-round choices and the contract remediation approval boundary. -->
+
+Confirmed（Q1947–Q1951）：OpenAPI/Zod/Mock 不一致须先据现有 API 行为和使用场景核对，再修正失准契约并回归；公共 API 改动另行确认。Knip 保留自动导入，用可核实入口覆盖异步页面和注册表，误报只允许窄例外，不把静态报告当运行时证明。Feature 入口只暴露真实跨域所需成员；Locale 动态模板 Key/路由 Key 应计入未用 Key 分析，只报告确认未使用者。生产产物按 Manifest 与实际 JS 的精确标记排除 Mock、MSW、DevTools 和测试入口，并保留源码门禁。领域响应 Schema 的具体补齐方案待下轮，尚未实施。
+
+<!-- AI modified: capture the core response, Knip, and domain-model decisions from the fourth round. -->
+
+Confirmed（Q1952–Q1957）：用户、角色、菜单的核心列表/详情/相关写操作先补明确领域响应 Schema，拒绝用通用 `Success` 充当生成 DTO。实际被模板使用的菜单枚举在事实核对后写回通用 OpenAPI 并加回归。Knip 全面模式进入 `verify`、生产模式另作诊断；存量机器可读基线含责任人、Issue、原因和到期时间。生成类型限定传输 DTO，页面派生模型继续用本地类型。静态导入循环硬阻断，动态路由/插件边单独诊断。Zod 和具体响应信封仍待下一轮确认，尚未实施。
+
+<!-- AI modified: avoid expanding the public API while documenting existing single-record responses. -->
+
+Inspected（Q1952 范围校正）：用户、角色、菜单目前没有独立 GET Detail 端点；精确领域 Schema 覆盖既有列表、创建/编辑返回的单条记录与删除 `data:null`，不因生成 DTO 新增页面或后端路径。
+
+<!-- AI modified: clarify fifth-round Phase 3 acceptance without overstating generated DTO adoption. -->
+
+Confirmed（Q1958–Q1962）：领域成功响应保留共用 `{code,message,data}` 信封和现有错误信封，只让成功 `data` 使用精确领域 Schema。菜单输入与返回记录是分开的传输 DTO，保留 Zod 去除多余字段与 `componentKey` 内部转换；目标白名单另由菜单目标契约校验。Knip 新问题及到期存量阻断，未到期存量报告并按模块清理；Mock/测试默认通过 Feature 公开入口，真实 Fixture 才用窄例外。整份 OpenAPI 类型生成并检查漂移，但本阶段只绑定核心消费点，非核心未绑定点形成明确后续清单；尚未实施。
+
+<!-- AI modified: make the sixth-round API boundary and acceptance criteria explicit. -->
+
+Confirmed（Q1963–Q1966）：OpenAPI DTO 与实际净化后的请求、领域响应边界校验后的数据比对；表单原始值和页面派生模型可使用不同类型。错误信封继续共用，核心错误样例验证现有 `fieldErrors`、`requestId`、`retryAfterSeconds`，不新增错误码。核心 Mock 要检查请求和响应，包括菜单净化提交和非法 `componentKey` 的字段错误；不自动生成所有 Mock。未绑定的非核心操作按端点、责任人、Issue、目标阶段列后续清单；新增核心未绑定用法阻断，不将整份类型生成误报成 79 个消费点全部绑定。状态 Planned，尚未实施。
+
+<!-- AI modified: synchronize the Phase 3 implementation state and its remaining external evidence. -->
+
+Executed（本地）：整份 OpenAPI DTO 已由 `openapi-typescript` 生成，认证、用户、角色和菜单共 21 个现有操作绑定生成传输类型，58 个非核心操作进入机器可校验的责任清单；Zod 仍在不可信边界执行。Knip、Feature 公共入口与方向、Locale Key/占位符、全依赖许可证、生产源码和产物边界均已进入 `verify`。Renovate 每周分组配置已落地，但远端 App 未启用。完整 `release:check` 已通过 72 个 Vitest 文件、692 项测试、PWA/Mock/生产产物门禁和 155 项 Chromium/Firefox/WebKit E2E，未出现 Flaky，最终恢复无 Mock 生产 `dist`。托管 CI 证据尚未取得，未提交、推送或部署。
+
 `docs:check` 只校验脚本引用、环境变量清单、内部链接与生成片段。Changelog 面向使用者记录功能、配置、公共契约、迁移、安全和重大依赖变化。发布与校验脚本使用跨平台 Node/TypeScript，不依赖 Bash、`sed` 或 `rm`。CI 失败证据分别按 PR 14 天、主分支 30 天保留，Release 关键证据长期附着于 Release。
 
 不可变前端产物使用公开运行时配置跨环境晋级，只允许 API 地址、公开功能开关等非敏感值。优先级为运行时公开配置、构建期安全默认值、项目默认值；非法值明确阻止受影响能力。所有浏览器可读取的 `VITE_*` 和运行时文件都禁止包含数据库凭证、私钥、对象存储密钥、监控上传 Token 或后端 Secret。
@@ -657,6 +693,10 @@ Implemented / Executed（2026-09-15）：同源版本化配置及安全恢复、
 <!-- AI modified: update the container security baseline after hosted scanning exposed old APK revisions in the pinned base image. -->
 
 Inspected / Executed（运行层安全，本地）：首次 Phase 2 托管 CI 的应用、Windows 和 E2E 门禁通过，双架构容器扫描因固定 Nginx/Alpine 基础镜像含可修复 High/Critical 旧 APK 包而失败。参考 Dockerfile 在同一 Alpine 分支内先升级已安装系统包，再安装固定版本 `jq`；不关闭 Grype、放宽 `--only-fixed`/High 门禁或把构建层依赖带入运行层。本地同版扫描旧/新镜像由 123 个可修复 High/Critical 匹配降为 0，受限容器健康与运行配置响应通过；冻结安装与完整 `release:check` 通过，包含 689 项单测和三浏览器 E2E `155/155`。双架构托管验收仍待新提交。
+
+<!-- AI modified: supersede the earlier pending hosted state with the verified new run. -->
+
+Executed（运行层安全托管）：`9dfc322` 的 [CI Run 34953222570](https://github.com/guoxk-me/gvueter/actions/runs/34953222570) 最终成功，包含双架构容器扫描、Linux/Windows 与 E2E。此前“待新提交”为修复尚未推送时的记录；Phase 3 可独立推进，不把该 CI 通过等同于 V1 最终发布验收。
 
 <!-- AI modified: track the authorized handoff without conflating it with successful hosted scanning. -->
 

@@ -1,4 +1,4 @@
-import type { UserRole } from '@/features/users/types'
+import type { UserRole } from '@/features/users'
 
 export const MONITORING_LOG_KINDS = ['login', 'operation', 'api', 'exception'] as const
 export const MONITORING_LOG_SEVERITIES = ['info', 'warning', 'error'] as const

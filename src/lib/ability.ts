@@ -1,11 +1,10 @@
 import type { MongoAbility } from '@casl/ability'
-import type { ScopedUserRecord } from '@/features/roles/data-scope'
-import type { PermissionAction, PermissionSubject } from '@/features/roles/types'
+import type { PermissionAction, PermissionSubject, ScopedUserRecord } from '@/features/roles'
 import type { User } from '@/stores/auth'
 import type { AuthorizationSnapshot } from '@/types/auth'
 import { AbilityBuilder, createMongoAbility } from '@casl/ability'
 import { shallowRef } from 'vue'
-import { getDataScopeConditions } from '@/features/roles/data-scope'
+import { getDataScopeConditions } from '@/features/roles'
 
 // ---------------------------------------------------------------------------
 // Subjects — the "objects" that can be acted upon

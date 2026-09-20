@@ -7,6 +7,9 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
+      // AI modified: bounded threads prevent full-suite jsdom workers from exhausting process resources.
+      pool: 'threads',
+      maxWorkers: 4,
       // AI modified: dedicated Playwright PWA specs must not be collected as Vitest unit suites.
       exclude: [...configDefaults.exclude, 'e2e/**', 'e2e-pwa/**'],
       setupFiles: ['./vitest.setup.ts'],

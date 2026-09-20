@@ -1,14 +1,20 @@
-import type { AdminUser } from '@/features/users/types'
+import type { AdminUser } from '@/features/users'
 import type {
   AuthenticatedPrincipal,
   AuthorizationSnapshot,
   AuthProvider,
   AuthTokenSet,
   CaptchaChallenge,
+  ChangePasswordInput,
+  ForgotPasswordInput,
+  LoginInput,
   LoginOptions,
   LoginResponse,
+  ResetPasswordInput,
   SsoConfiguration,
+  SsoExchangeInput,
   SsoExchangeResponse,
+  SsoStartInput,
   SsoStartResponse,
   UpdateProfileInput,
 } from '@/types/auth'
@@ -21,8 +27,8 @@ import {
   SSO_CONFIGURATION_SCHEMA,
   SSO_EXCHANGE_RESPONSE_SCHEMA,
   SSO_START_RESPONSE_SCHEMA,
-} from '@/features/account/auth-api-contracts'
-import { ADMIN_USER_SCHEMA } from '@/features/users/user-api-contracts'
+} from '@/features/account'
+import { ADMIN_USER_SCHEMA } from '@/features/users'
 import { updateAbility } from '@/lib/ability'
 import { EMPTY_RESPONSE_SCHEMA } from '@/lib/api-contracts'
 import { ACCESS_TOKEN_SESSION_STORAGE_KEY } from '@/lib/auth-session'
@@ -353,9 +359,10 @@ export const useAuthStore = defineStore('auth', () => {
   ): Promise<boolean> {
     // AI modified: only the newest login attempt may establish browser session state.
     const loginRevision = ++sessionRevision
+    const loginInput: LoginInput = { email, password, ...options }
     const data = await post<LoginResponse>(
       '/auth/login',
-      { email, password, ...options },
+      loginInput,
       { responseSchema: LOGIN_RESPONSE_SCHEMA },
     )
     // AI modified: the submitted tenant is only a backend hint; the response owns session tenancy.
@@ -375,9 +382,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function startSsoLogin(returnTo: string): Promise<SsoStartResponse> {
+    const startInput: SsoStartInput = { returnTo }
     return post<SsoStartResponse>(
       '/auth/sso/start',
-      { returnTo },
+      startInput,
       { responseSchema: SSO_START_RESPONSE_SCHEMA },
     )
   }
@@ -394,9 +402,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const exchangeRevision = ++sessionRevision
+    const exchangeInput: SsoExchangeInput = { ticket }
     const task = post<SsoExchangeResponse>(
       '/auth/sso/exchange',
-      { ticket },
+      exchangeInput,
       { responseSchema: SSO_EXCHANGE_RESPONSE_SCHEMA },
     ).then((data) => {
       const didAuthenticate = establishAuthenticatedSession(data, 'sso', exchangeRevision)
@@ -414,21 +423,24 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function forgotPassword(email: string): Promise<void> {
-    await post<null>('/auth/forgot-password', { email }, { responseSchema: EMPTY_RESPONSE_SCHEMA })
+    const input: ForgotPasswordInput = { email }
+    await post<null>('/auth/forgot-password', input, { responseSchema: EMPTY_RESPONSE_SCHEMA })
   }
 
   async function resetPassword(token: string, newPassword: string): Promise<void> {
+    const input: ResetPasswordInput = { token, newPassword }
     await post<null>(
       '/auth/reset-password',
-      { token, newPassword },
+      input,
       { responseSchema: EMPTY_RESPONSE_SCHEMA },
     )
   }
 
   async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const input: ChangePasswordInput = { currentPassword, newPassword }
     await post<null>(
       '/auth/change-password',
-      { currentPassword, newPassword },
+      input,
       { responseSchema: EMPTY_RESPONSE_SCHEMA },
     )
   }

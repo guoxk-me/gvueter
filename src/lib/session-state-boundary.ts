@@ -3,7 +3,7 @@ import type { Pinia } from 'pinia'
 import {
   FORM_WORKBENCH_DRAFT_KEY,
   getFormWorkbenchDraftKey,
-} from '@/features/form-workbench/composables/useFormWorkbenchDraft'
+} from '@/features/form-workbench'
 import { getBrowserStorage, safeStorageDiscard } from '@/lib/browser-storage'
 import { registerSessionBoundaryHandler } from '@/lib/session-boundary'
 import { useNotificationStore } from '@/stores/notification'

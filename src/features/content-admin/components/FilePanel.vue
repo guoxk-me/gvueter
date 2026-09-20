@@ -26,8 +26,7 @@ import {
   CONTENT_FILE_UPLOAD_RULES,
   getContentFileMimeTypes,
 } from '@/features/content-admin/content-file-policy'
-import { useUploadPolicy } from '@/features/uploads/composables/useUploadPolicy'
-import { applyUploadPolicy } from '@/features/uploads/upload-policy'
+import { applyUploadPolicy, useUploadPolicy } from '@/features/uploads'
 import { ADMIN_DISPLAY_TIME_ZONE, getDateTimeLabel, getFileSizeLabel } from '@/lib/display-format'
 import { ApiError, download } from '@/lib/http'
 

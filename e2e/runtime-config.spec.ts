@@ -16,7 +16,8 @@ test('blocks application bootstrap when Runtime Config is invalid', async ({ pag
     })
   })
 
-  await page.goto('/login')
+  // AI modified: the recovery surface owns readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
 
   const recovery = page.locator('[data-application-recovery="runtime-config"]')
   await expect(recovery).toBeVisible()
@@ -36,7 +37,7 @@ test('boots exactly once after a corrected Runtime Config retry', async ({ page 
     })
   })
 
-  await page.goto('/login')
+  await page.goto('/login', { waitUntil: 'commit' })
   await expect(page.locator('[data-application-recovery="runtime-config"]')).toBeVisible()
 
   // AI modified: a manual retry reuses the guarded bootstrap instead of reloading the document.

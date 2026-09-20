@@ -1,4 +1,4 @@
-import type { UserRole } from '@/features/users/types'
+import type { UserRole } from '@/features/users'
 
 export interface DashboardSummary {
   totalUsers: number

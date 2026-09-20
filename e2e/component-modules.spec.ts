@@ -85,7 +85,8 @@ async function signInAsAdmin(
     { activeLocale: locale, activeTheme: theme },
   )
 
-  await page.goto('/login')
+  // AI modified: visible login controls own readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   const captchaChallenge = page
     .locator('[aria-label]')
     .filter({ hasText: /\d+\s*\+\s*\d+\s*=\s*\?/ })

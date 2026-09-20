@@ -1,4 +1,4 @@
-import type { DictionaryOption } from '@/features/dictionaries/types'
+import type { DictionaryOption } from '@/features/dictionaries'
 
 export type StatusTone = 'destructive' | 'neutral' | 'primary' | 'secondary' | 'success' | 'warning'
 

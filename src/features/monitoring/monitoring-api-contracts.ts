@@ -8,7 +8,7 @@ import type {
   ServiceHealth,
 } from './types'
 import { z } from 'zod'
-import { USER_ROLES } from '@/features/users/types'
+import { USER_ROLES } from '@/features/users'
 import {
   CACHE_HEALTH_STATUSES,
   MONITORING_LOG_KINDS,

@@ -44,6 +44,14 @@ gnester-lite currently supplies infrastructure and development demos but no prod
 
 The contract gate compares the complete 79-operation Mock inventory with OpenAPI in both directions. All JSON mutation request bodies resolve to closed domain DTOs (`additionalProperties: false`), all 29 Mock JSON readers require an executable schema, and all 75 production request call sites require an executable response schema. Binary uploads and downloads are checked separately for exact media types and download headers.
 
+<!-- AI modified: generated transport types and the owned migration backlog now share one drift gate. -->
+
+## Generated DTO workflow
+
+`pnpm run api:generate` regenerates `src/types/openapi-generated.ts` from `docs/openapi.yaml`; the generated file is committed and must not be edited by hand. `pnpm run api:check` performs an in-memory regeneration and also validates `docs/product/api-binding-plan.json`, so every OpenAPI operation is either bound to generated transport types or assigned to an owner, Issue and target phase. The current core binds 21 authentication, user, role and managed-menu operations; 58 non-core operations remain explicit follow-up work rather than being presented as completed migration.
+
+Generated DTOs describe wire input and boundary-validated response data. Raw form values, display projections and table state remain local types. Zod still strips or rejects untrusted fields at runtime, including menu submission cleanup; TypeScript generation does not replace runtime validation.
+
 ## SSO handoff
 
 SSO is a separate backend-owned authentication channel; `/auth/login` remains password-only. The login page reads the safe `GET /auth/sso/config` projection, then `POST /auth/sso/start` creates a transaction and returns an authorization URL generated from trusted provider configuration. The browser validates its basic URL boundary before a full-page navigation. Production owns OAuth/OIDC discovery, exact redirect URI matching, state, nonce, PKCE, provider callback, account mapping, tenant membership, and client secrets.

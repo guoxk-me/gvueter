@@ -1,5 +1,4 @@
-import type { DataScopeGrant, RolePermission } from '@/features/roles/types'
-import type { AdminUser } from '@/features/users/types'
+import type { components } from '@/types/openapi-generated'
 
 export const AUTH_PROVIDERS = ['password', 'sso'] as const
 
@@ -10,79 +9,21 @@ export interface AuthBoundary {
   tenantId?: string
 }
 
-export interface AuthTokenSet {
-  /** Access token kept as `token` for compatibility with the existing store contract. */
-  token: string
-  expiresAt?: number
-}
-
-export interface AuthorizationGrant extends RolePermission {
-  /** Stable backend permission key used by API enforcement and audit records. */
-  permissionIdentifier: string
-}
-
-export interface AuthorizationSnapshot {
-  contractVersion: 1
-  policyVersion: string
-  grants: AuthorizationGrant[]
-  dataScope: DataScopeGrant
-}
-
-export interface AuthenticatedPrincipal {
-  /** Backend-selected tenant; null denotes an explicitly unscoped single-tenant session. */
-  tenantId: string | null
-  user: AdminUser
-  authorization: AuthorizationSnapshot
-}
-
-export interface LoginOptions {
-  captchaId?: string
-  captchaCode?: string
-  provider?: 'password'
-  tenantId?: string
-}
-
-export interface LoginInput extends LoginOptions {
-  email: string
-  password: string
-}
-
-export interface LoginResponse extends AuthTokenSet, AuthenticatedPrincipal {}
-
-export interface SsoConfiguration {
-  isEnabled: boolean
-  providerName: string
-}
-
-export interface SsoStartInput {
-  returnTo: string
-}
-
-export interface SsoStartResponse {
-  authorizationUrl: string
-  expiresAt: number
-}
-
-export interface SsoExchangeInput {
-  ticket: string
-}
-
-export interface SsoExchangeResponse extends LoginResponse {
-  redirectPath: string
-}
-
-export interface CaptchaChallenge {
-  captchaId: string
-  challenge: string
-  expiresAt: number
-}
-
-export interface ChangePasswordInput {
-  currentPassword: string
-  newPassword: string
-}
-
-export interface UpdateProfileInput {
-  name: string
-  email: string
-}
+// AI modified: authentication transport DTOs follow the generated OpenAPI source of truth.
+export type AuthTokenSet = Pick<components['schemas']['LoginResponse'], 'expiresAt' | 'token'>
+export type AuthorizationGrant = components['schemas']['AuthorizationGrant']
+export type AuthorizationSnapshot = components['schemas']['AuthorizationSnapshot']
+export type AuthenticatedPrincipal = components['schemas']['AuthenticatedPrincipal']
+export type LoginInput = components['schemas']['LoginInput']
+export type LoginOptions = Omit<LoginInput, 'email' | 'password'>
+export type LoginResponse = components['schemas']['LoginResponse']
+export type ForgotPasswordInput = components['schemas']['ForgotPasswordInput']
+export type ResetPasswordInput = components['schemas']['ResetPasswordInput']
+export type SsoConfiguration = components['schemas']['SsoConfiguration']
+export type SsoStartInput = components['schemas']['SsoStartInput']
+export type SsoStartResponse = components['schemas']['SsoStartResponse']
+export type SsoExchangeInput = components['schemas']['SsoExchangeInput']
+export type SsoExchangeResponse = components['schemas']['SsoExchangeResponse']
+export type CaptchaChallenge = components['schemas']['CaptchaChallenge']
+export type ChangePasswordInput = components['schemas']['ChangePasswordInput']
+export type UpdateProfileInput = components['schemas']['UpdateProfileInput']

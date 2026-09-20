@@ -1,6 +1,6 @@
 # 11 工程优化实施清单
 
-> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，Phase 2 托管容器扫描发现固定运行层基础镜像的过期 Alpine 包；本地修复已通过同版 Grype 扫描，仍待新提交的托管验收。Phase 3–6 与远端仓库设置仍为计划。
+> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，运行层安全修复的新版托管 CI 矩阵已通过。Phase 3 已完成本地实现与完整 Release Gate，托管证据待补；Phase 4–6 与远端仓库设置仍为计划。
 
 ## 1. 目标与边界
 
@@ -120,7 +120,7 @@ Confirmed（主题修复提交授权）：用户已授权将本次测试时序�
 
 ### Phase 2 — 运行配置、PWA 与容器
 
-Status：Planned
+Status：Implemented（本地分项门禁通过；完整 Release Gate 待执行）
 
 <!-- AI modified: distinguish Phase 2 design intake from implementation and pending Phase 1 hosted acceptance. -->
 
@@ -156,6 +156,10 @@ Inspected / Executed（运行层安全修复，本地）：[CI Run 34944420897](
 
 Confirmed（运行层安全交付）：用户已授权将本次修复和同步文档提交并推送至 `origin/main-admin`。上述“未提交或推送”为上一轮本地验证时的状态；本次交付不包含合并主干、发布镜像或放宽 CI 扫描门禁。提交后的双架构托管扫描须另行验收。
 
+<!-- AI modified: record the immutable SHA and completed hosted matrix after the scheduler annotation resolved. -->
+
+Executed（运行层安全托管复核）：修复已提交并推送为 `9dfc322b8ec520943a6760083795c77851274af4`；[CI Run 34953222570](https://github.com/guoxk-me/gvueter/actions/runs/34953222570) 最终为 success。Linux `verify`、Windows `windows-clean-check`、三浏览器 E2E、容器 `linux/amd64` 和 `linux/arm64` 均成功；Chromium Smoke 因完整 E2E 路径而跳过。amd64 首次运行器获取失败的注释属于调度尝试，不是最终容器扫描结果；该任务在同一 Run 后续成功。此证据只收口本次托管门禁，不代表 Phase 5 发布或 Phase 6 人工验收已完成。
+
 - 引入只含公开值的类型化运行时配置，并保留一个 Minor 的 `VITE_*` 回退迁移期。
 - 在构建前校验 Development/Test/Production Profile、Mock、API、CSP 和允许来源。
 - PWA 默认关闭；验证无 Worker/Mock 产物，并提供旧 Worker 注销和缓存清理迁移。
@@ -167,6 +171,48 @@ Acceptance：同一不可变产物可通过公开运行配置跨环境晋级；�
 ### Phase 3 — 契约、依赖与源码边界
 
 Status：Planned
+
+<!-- AI modified: record the Phase 3 interview kickoff without treating the plan as implemented. -->
+
+Confirmed（访谈启动）：用户已要求按 `grill-me` 流程进入 Phase 3。先核查现有契约、依赖和源码门禁，分轮确认实施边界与验收条件；当前仍为 Planned，不因进入访谈而自动修改实现、提交或推送。Phase 2 的托管容器验收单独记录。
+
+<!-- AI modified: preserve first-round Phase 3 decisions before dependent implementation choices are asked. -->
+
+Confirmed（Q1933–Q1939，第一轮）：按 OpenAPI 类型生成、Knip、Feature 边界、治理门禁分项交付与验证，不一次性大改。OpenAPI 使用 `openapi-typescript` 只生成类型，继续沿用项目 Axios 与边界 Zod。Knip 对未使用/遗漏依赖立即阻断，未使用文件和导出记录有责任人的存量基线并阻断新增。跨 Feature 只迁移真实消费点，创建窄公开入口。中英文缺失 Key 与占位符不一致阻断，未使用 Key 先报告。许可证 Deny 阻断，Unknown/Review 进入有责任人的审查清单。Renovate 本阶段先交付仓库配置与每周分组，不自动合并；远端 App 启用另行授权。具体 DTO 覆盖、基线格式和门禁切换仍待下轮确认；状态仍为 Planned。
+
+<!-- AI modified: preserve second-round implementation boundaries while keeping Phase 3 unimplemented. -->
+
+Confirmed（Q1940–Q1946，第二轮）：整份 OpenAPI 类型提交至现有 `src/types/openapi-generated.ts`，文件标明自动生成、禁止手改；先逐域绑定认证、用户、角色、菜单等核心 DTO，其他消费点逐步迁移。Knip 只为核实的动态入口/误报设置有依据的窄例外，不整体忽略组件目录。现有真实跨 Feature 深层消费先迁移，再对深层导入、禁止方向与循环依赖启用硬门禁。Locale 比对占位变量名和类型，不强求跨语言句式、复数形式或顺序相同。许可证覆盖生产/开发、直接/传递依赖并分类；Deny 阻断，Unknown/Review 留审查记录。每个分项在清理或建立基线并本地验绿后进入 `verify`，随后取得对应托管 CI 证据。具体 DTO/Zod 类型一致性、例外记录与门禁实现细节继续访谈；状态仍为 Planned。
+
+<!-- AI modified: keep third-round contract and static-analysis decisions separate from the unresolved response-schema branch. -->
+
+Confirmed（Q1947–Q1951，第三轮）：生成类型发现 OpenAPI、Zod、Mock 分歧时，先核对现有 API 行为和使用场景，修正失准的一侧并加回归；涉及公共 API 变化须单独确认，不以生成类型强迫运行时迁移。Knip 保留现有自动导入，声明可核实的异步页面、注册表及生成引用入口，误报只作窄例外；Knip 的静态可达性报告不替代 Type Check、测试或依赖安全审计。Feature 入口只公开真实跨域消费者所需的类型、服务、Composable 或组件。Locale 未用 Key 报告识别模板 Key 与路由元数据，只有能证实未使用的 Key 才报告。生产门禁扩展现有 Manifest 和实际 `dist` JS 检查，以精确模块标记排除 MSW、Mock、DevTools 与测试代码，同时保留源码边界门禁。核心领域响应 Schema 与 Zod/生成 DTO 对齐策略待下一轮；状态仍为 Planned。
+
+<!-- AI modified: record fourth-round scope choices while preserving the remaining Zod conformance frontier. -->
+
+Confirmed（Q1952–Q1957，第四轮）：核心用户、角色、菜单列表、详情和相关写操作先补明确领域响应 Schema，再绑定生成 DTO；不把通用 `Success` 数据假充领域类型。菜单 `audit-logs`、`Monitoring`、`AuditLog` 等枚举先核对模板实际行为，成立时纳入通用契约并加回归。Knip 的 `verify` 门禁采用全面模式覆盖应用与开发工具，生产模式单独诊断；存量基线采用机器可读的问题项，记录责任人、Issue、原因和到期时间。生成 DTO 只代表传输边界，页面派生展示模型可保留本地类型。静态导入循环硬阻断；动态路由/插件边单独诊断，不直接作为初始化循环处理。响应信封、Zod 输入/输出与生成 DTO 的一致性待下一轮；状态仍为 Planned。
+
+<!-- AI modified: clarify that the existing core API has list and mutation-record responses, not separate detail GET routes. -->
+
+Inspected（Q1952 范围校正）：现有用户、角色、菜单 API 无独立 GET Detail 路径；“详情/单条记录”在本阶段指创建或编辑返回的单条记录，不凭空新增端点。现有删除成功 `data:null`，应以明确 Null 响应而非领域记录类型表达。
+
+<!-- AI modified: preserve fifth-round envelope, menu DTO, baseline gate, and migration acceptance choices. -->
+
+Confirmed（Q1958–Q1962，第五轮）：复用 `{code,message,data}` 成功/错误信封与现有错误语义，只将成功 `data` 改为明确领域 Schema；不拆掉共用信封或把 `JsonValue` 假充精确响应。菜单请求输入与返回记录分别生成 DTO，保留 Zod `.strip()` 和 `componentKey` 的内部转换；目标组件白名单由现有目标契约另行校验。Knip 新问题与过期基线阻断 `verify`，未过期项列报并按模块清理，不自动删代码。Mock/测试跨 Feature 默认通过公开入口消费，只有真实 Fixture 内部访问才允许有依据的窄例外。整份 OpenAPI 类型均生成、提交并检查漂移；核心消费点本阶段绑定，非核心未绑定点列明确后续清单，不声称全部 79 个操作都已完成绑定。Zod 输入/输出与领域 Schema 的具体一致性检查继续访谈；状态仍为 Planned。
+
+<!-- AI modified: record sixth-round wire-contract and regression decisions without claiming implementation. -->
+
+Confirmed（Q1963–Q1966，第六轮）：生成 OpenAPI 请求 DTO 对齐实际提交的净化请求，响应 DTO 对齐边界校验后的领域响应；原始表单和派生页面模型不强制等同传输类型。共用错误信封保留，核心错误样例检查既有 `fieldErrors`、`requestId`、`retryAfterSeconds`，不新增错误码。核心 Mock 同时验证请求与响应，覆盖菜单净化后的提交数据以及非法 `componentKey` 的字段错误，不自动生成全部 Mock。非核心未绑定操作逐项记录端点、责任人、Issue、目标阶段；本阶段不强制全部 79 个操作绑定，但新增核心未绑定用法须阻断。状态仍为 Planned，实施、提交和远端操作均未授权。
+
+Inspected（Q1963 类型边界）：现有菜单输入 Zod Schema 显式将输入类型标注为 `unknown`，`.strip()` 会去掉编辑记录中的额外字段；`componentKey` 的字符串长度检查和类型转换不等于目标白名单检查，后者由菜单目标契约负责。契约比对必须落在净化后的实际请求和严格校验的响应上，不能拿原始编辑对象或 TS 类型断言替代运行时验收。
+
+<!-- AI modified: separate Phase 3 local implementation and Release Gate evidence from hosted evidence. -->
+
+Implemented（本地分项证据）：`openapi-typescript` 已生成并提交完整 DTO，`api:check` 同时校验生成漂移及 79 个操作的绑定计划；认证、用户、角色和菜单共 21 个操作已绑定，另 58 个操作按责任域、Issue 占位与目标阶段登记。Knip 全面门禁采用 350 项精确存量基线，仅文件/导出/类型可限时保留，依赖、解析和循环问题立即阻断。真实跨 Feature 消费已迁至窄公共入口，源码门禁拦截跨 Feature 深层导入、共享层绕过入口及 Feature → Router/Layout/Page 倒置（导航注册表为唯一页面组合例外）。
+
+Locale 门禁已对 1,612 个中英文叶子 Key 校验集合及占位变量名称/类型，67 个静态未用候选仅报告、需人工排除动态注册后才能删除。许可证门禁覆盖 1,074 条直接/传递、生产/开发记录，允许项通过，8 项 Unknown/弱 Copyleft 进入有责任人和到期日的 Review；强 Copyleft 命中 Deny 即阻断。Renovate 仓库配置已按 Runtime、Vue、Build、Test、GitHub Actions 和 Docker 每周分组，Major 不分组且全部禁止自动合并；远端 App 尚未启用。生产源码和 Manifest/JS 产物门禁已扩展到 Mock、MSW、Vitest、Vue Test Utils 与 Vite Vue DevTools 客户端精确标记。
+
+Executed（本地 Release Gate）：`release:check` 退出码为 0；72 个 Vitest 文件、692 项测试和覆盖率阈值通过，生产审计为零已知漏洞，PWA、Legacy、Mock 与最终生产构建的产物门禁均通过。Playwright 共 155 项，Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 全部直接通过，无失败、跳过或 Flaky，最终 `dist` 已恢复为无 Mock、PWA-off 的生产产物。浏览器用例以 document commit 加真实 UI/API 状态作为异步启动就绪证据，不再使用 `networkidle` 或仅 URL 到达替代应用可用性。托管 CI 与 Renovate App 启用仍待后续授权。
 
 - 增加 `api:generate` 与 `api:check`，提交 OpenAPI 生成 DTO，Zod 保留在不可信边界。
 - 引入 Knip：依赖问题立即阻断；文件与导出建立存量基线并阻断新增问题。

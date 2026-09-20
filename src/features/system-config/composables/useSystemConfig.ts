@@ -2,7 +2,7 @@ import type { SystemConfig, SystemConfigInput } from '@/features/system-config/t
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed } from 'vue'
 import { SYSTEM_CONFIG_SCHEMA } from '@/features/system-config/system-config-api-contracts'
-import { uploadPolicyQueryKey } from '@/features/uploads/composables/useUploadPolicy'
+import { uploadPolicyQueryKey } from '@/features/uploads'
 import { get, put } from '@/lib/http'
 
 const systemConfigQueryKey = ['system-config'] as const

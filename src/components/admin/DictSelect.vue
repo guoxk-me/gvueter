@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AcceptableValue } from 'reka-ui'
 import type { DictionarySelectionChange } from './business-components'
-import type { DictionaryOption } from '@/features/dictionaries/types'
+import type { DictionaryOption } from '@/features/dictionaries'
 import { computed, toRef, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useDictionaryOptions } from '@/features/dictionaries/composables/useDictionaryOptions'
+import { useDictionaryOptions } from '@/features/dictionaries'
 import StatusTag from './StatusTag.vue'
 
 const props = withDefaults(

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "boundOperations": [
+    "GET /auth/captcha",
+    "POST /auth/login",
+    "GET /auth/sso/config",
+    "POST /auth/sso/start",
+    "POST /auth/sso/exchange",
+    "POST /auth/logout",
+    "GET /auth/me",
+    "POST /auth/forgot-password",
+    "POST /auth/reset-password",
+    "POST /auth/change-password",
+    "PUT /auth/profile",
+    "GET /roles",
+    "PUT /roles/{id}",
+    "GET /users",
+    "POST /users",
+    "PUT /users/{id}",
+    "DELETE /users/{id}",
+    "GET /system-menus",
+    "POST /system-menus",
+    "PUT /system-menus/{id}",
+    "DELETE /system-menus/{id}"
+  ],
+  "backlogGroups": [
+    {
+      "owner": "navigation",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": ["GET /navigation"]
+    },
+    {
+      "owner": "dashboard",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": ["GET /dashboard/overview"]
+    },
+    {
+      "owner": "system-config",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": ["GET /system-config", "PUT /system-config"]
+    },
+    {
+      "owner": "uploads",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": ["GET /uploads/policy"]
+    },
+    {
+      "owner": "form-workbench",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /form-workbench/title-availability",
+        "POST /form-workbench/submissions"
+      ]
+    },
+    {
+      "owner": "users",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": ["POST /users/import"]
+    },
+    {
+      "owner": "positions",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /positions",
+        "POST /positions",
+        "PUT /positions/{id}",
+        "DELETE /positions/{id}"
+      ]
+    },
+    {
+      "owner": "departments",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /departments",
+        "POST /departments",
+        "PUT /departments/{id}",
+        "DELETE /departments/{id}"
+      ]
+    },
+    {
+      "owner": "system-parameters",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /system-parameters",
+        "POST /system-parameters",
+        "PUT /system-parameters/{id}",
+        "DELETE /system-parameters/{id}"
+      ]
+    },
+    {
+      "owner": "dictionaries",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /dictionaries/types",
+        "POST /dictionaries/types",
+        "PUT /dictionaries/types/{id}",
+        "DELETE /dictionaries/types/{id}",
+        "GET /dictionaries/types/{id}/entries",
+        "POST /dictionaries/types/{id}/entries",
+        "PUT /dictionaries/entries/{id}",
+        "DELETE /dictionaries/entries/{id}",
+        "GET /dictionaries/options/{id}"
+      ]
+    },
+    {
+      "owner": "content-admin",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /announcements",
+        "POST /announcements",
+        "PUT /announcements/{id}",
+        "DELETE /announcements/{id}",
+        "PUT /announcements/{id}/status",
+        "GET /content-files",
+        "POST /content-files",
+        "DELETE /content-files/{id}",
+        "GET /content-files/{id}/download",
+        "GET /content-files/{id}/preview",
+        "GET /operation-logs",
+        "GET /operation-logs/{id}"
+      ]
+    },
+    {
+      "owner": "notifications",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /notifications",
+        "GET /notifications/unread-count",
+        "PUT /notifications/{id}/read",
+        "POST /notifications/read-all"
+      ]
+    },
+    {
+      "owner": "monitoring",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 3 domain follow-up",
+      "operations": [
+        "GET /monitoring/overview",
+        "POST /monitoring/sessions/{id}/terminate",
+        "POST /monitoring/jobs/{id}/run",
+        "POST /monitoring/caches/{id}/clear"
+      ]
+    },
+    {
+      "owner": "component-gallery",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 4 test and performance",
+      "operations": [
+        "GET /component-gallery/form/service-owners",
+        "POST /component-gallery/form/submissions",
+        "POST /component-gallery/uploads/{id}/chunks/{chunkIndex}",
+        "POST /component-gallery/uploads/{id}/complete",
+        "DELETE /component-gallery/uploads/{id}",
+        "GET /component-gallery/files/{id}"
+      ]
+    },
+    {
+      "owner": "platform-contracts",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "targetPhase": "Phase 4 test and performance",
+      "operations": [
+        "GET /contract-scenarios/delay",
+        "GET /contract-scenarios/timeout",
+        "GET /contract-scenarios/failures/{scenario}"
+      ]
+    }
+  ]
+}

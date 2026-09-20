@@ -1,4 +1,4 @@
-import type { DictionaryOption } from '@/features/dictionaries/types'
+import type { DictionaryOption } from '@/features/dictionaries'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 

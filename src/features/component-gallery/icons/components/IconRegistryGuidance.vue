@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getAdminIconComponent } from '@/components/admin/icon-selector'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MANAGED_MENU_ICON_KEYS } from '@/features/menus/types'
+import { MANAGED_MENU_ICON_KEYS } from '@/features/menus'
 import CustomAdminIcon from './CustomAdminIcon.vue'
 
 const { t } = useI18n()

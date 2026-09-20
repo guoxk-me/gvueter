@@ -1,5 +1,6 @@
-import type { BackendMenuKind, NavigationAbilityRequirement } from '@/features/navigation'
+import type { BackendMenuKind } from '@/features/navigation'
 import type { AppAction, AppSubject } from '@/lib/ability'
+import type { components } from '@/types/openapi-generated'
 
 export const MANAGED_MENU_KINDS = [
   'menu',
@@ -67,42 +68,10 @@ export const MANAGED_MENU_SUBJECTS = [
 export type ManagedMenuComponentKey = (typeof MANAGED_MENU_COMPONENT_KEYS)[number]
 export type ManagedMenuIconKey = (typeof MANAGED_MENU_ICON_KEYS)[number]
 
-export interface ManagedMenuRecord {
-  id: string
-  parentId: string | null
-  titleKey: string
-  kind: BackendMenuKind
-  path: string
-  targetUrl?: string
-  routeName: string
-  componentKey: ManagedMenuComponentKey | ''
-  icon?: ManagedMenuIconKey
-  requiredAbility?: NavigationAbilityRequirement
-  permissionIdentifier: string
-  hidden: boolean
-  keepAlive?: boolean
-  order: number
-}
-
-export interface ManagedMenuInput {
-  parentId: string | null
-  titleKey: string
-  kind: BackendMenuKind
-  path: string
-  targetUrl: string
-  routeName: string
-  componentKey: ManagedMenuComponentKey | ''
-  icon: ManagedMenuIconKey
-  requiredAbility?: NavigationAbilityRequirement
-  permissionIdentifier: string
-  hidden: boolean
-  keepAlive: boolean
-  order: number
-}
-
-export interface ManagedMenuListResponse {
-  items: ManagedMenuRecord[]
-}
+// AI modified: menu requests and returned records stay separate OpenAPI transport contracts.
+export type ManagedMenuRecord = components['schemas']['ManagedMenuRecord']
+export type ManagedMenuInput = components['schemas']['ManagedMenuInput']
+export type ManagedMenuListResponse = components['schemas']['ManagedMenuListResponse']
 
 export const PERMISSION_IDENTIFIER_PATTERN = /^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){2,}$/
 

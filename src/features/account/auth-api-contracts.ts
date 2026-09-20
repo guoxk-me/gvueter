@@ -13,9 +13,9 @@ import type {
   UpdateProfileInput,
 } from '@/types/auth'
 import { z } from 'zod'
-import { DATA_SCOPE_GRANT_SCHEMA } from '@/features/roles/role-api-contracts'
-import { PERMISSION_ACTIONS, PERMISSION_SUBJECTS } from '@/features/roles/types'
-import { ADMIN_USER_SCHEMA } from '@/features/users/user-api-contracts'
+// AI modified: authorization contracts consume the reviewed role and user public entries.
+import { DATA_SCOPE_GRANT_SCHEMA, PERMISSION_ACTIONS, PERMISSION_SUBJECTS } from '@/features/roles'
+import { ADMIN_USER_SCHEMA } from '@/features/users'
 import { AUTH_PROVIDERS } from '@/types/auth'
 
 const PERMISSION_IDENTIFIER_SCHEMA = z

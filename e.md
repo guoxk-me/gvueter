@@ -496,6 +496,46 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 - Confirmed（运行层安全交付）：用户授权本次修复与文档提交并推送至 `origin/main-admin`；上一条“未提交或推送”是授权前的本地验证状态。托管双架构 Grype 扫描仍待新提交的 CI 证据，不合并主干或发布制品。
 
+<!-- AI modified: keep the Phase 3 interview state distinct from implementation evidence. -->
+
+- Confirmed（Phase 3 访谈启动）：用户要求按 `grill-me` 分轮规划「契约、依赖与源码边界」。现有 OpenAPI 生成 DTO、Knip 存量基线、Feature 公共入口、Renovate、Locale/许可证等方向先作事实核查和决策访谈；状态仍为 Planned，尚未授权直接实施、提交或推送。Phase 2 托管验收另行跟踪。
+
+<!-- AI modified: attach the completed Phase 2 hosted evidence before advancing the Phase 3 design tree. -->
+
+- Executed（运行层安全托管复核）：修复提交 `9dfc322b8ec520943a6760083795c77851274af4` 的 [Run 34953222570](https://github.com/guoxk-me/gvueter/actions/runs/34953222570) 最终 success；Linux `verify`、Windows、E2E、amd64/arm64 容器任务均通过。amd64 运行器获取注释仅对应先前调度尝试，同一 Run 后续完成该任务。Chromium Smoke 因完整 E2E 路径跳过；不据此声明 Phase 5 发布或 Phase 6 人工验收。
+
+<!-- AI modified: capture Phase 3 first-round decisions separately from planned implementation. -->
+
+- Confirmed（Q1933–Q1939）：Phase 3 按 OpenAPI 类型生成 → Knip → Feature 边界 → 治理门禁逐项交付。`openapi-typescript` 只生成类型，保留 Axios/Zod；Knip 依赖问题立即阻断，文件/导出以有责任人存量基线阻断新增。只迁移真实跨 Feature 消费点；Locale 缺失 Key/占位符错误阻断、闲置 Key 报告；许可证 Deny 阻断、Unknown/Review 审查。Renovate 仅先交付仓库配置，远端启用另行授权、不自动合并。状态仍 Planned，下游细节继续访谈。
+
+<!-- AI modified: capture Phase 3 second-round choices without confusing decisions with execution. -->
+
+- Confirmed（Q1940–Q1946）：整份 OpenAPI 类型提交到 `src/types/openapi-generated.ts` 并禁止手改，核心认证/用户/角色/菜单 DTO 先逐域绑定。Knip 真实动态入口和误报仅准有依据的窄例外；跨 Feature 深层消费先迁移后启用深层导入、方向和循环门禁。Locale 占位变量名/类型对等，不要求词序或跨语言复数规则完全一致。许可证扫描生产/开发及直接/传递依赖，Deny 阻断、Unknown/Review 审查。各分项本地验绿后加入 `verify` 并取得托管 CI 证据。状态 Planned，下一层细节待确认。
+
+<!-- AI modified: capture third-round contract reconciliation and static-analysis exception policy. -->
+
+- Confirmed（Q1947–Q1951）：OpenAPI、Zod、Mock 分歧先核对实际既有 API 行为，再修正失准的一侧并加回归；公共 API 改动需另行确认。Knip 保留项目自动导入，显式识别异步页面/注册表等真实入口，窄例外不代替测试或安全审计。Feature 仅公开实际跨域所需类型、服务、Composable、组件；动态 Locale Key 计入未用 Key 判断，只报告已证实者。生产门禁以 Manifest 和实际 `dist` JS 的精确模块标记排除 MSW、Mock、DevTools、测试入口，并保留源码门禁。核心领域响应 Schema 与生成 DTO 的对齐细节继续访谈，状态 Planned。
+
+<!-- AI modified: preserve fourth-round response, baseline, and cycle-policy decisions. -->
+
+- Confirmed（Q1952–Q1957）：用户/角色/菜单核心列表、详情和相关写操作先补精确领域响应 Schema，通用 `Success` 不可充当领域 DTO。菜单枚举 `audit-logs`、`Monitoring`、`AuditLog` 经模板行为核对后进入通用契约并回归。Knip 全面模式进 `verify`，生产模式只作诊断；机器可读存量基线记录责任人、Issue、原因、到期时间。生成 DTO 仅属传输边界，派生页面模型保留本地类型。静态循环硬阻断，动态路由/插件边单独诊断。Zod/响应信封细节继续访谈，状态 Planned。
+
+<!-- AI modified: correct the Phase 3 response scope to existing operations only. -->
+
+- Inspected（Q1952 范围校正）：用户、角色、菜单无现存独立 GET Detail 路径；本阶段“单条记录”是创建/编辑的响应，删除为 `data:null`，精确 Schema 不新增后端接口。
+
+<!-- AI modified: capture fifth-round contract and baseline cutover decisions. -->
+
+- Confirmed（Q1958–Q1962）：成功/错误沿用共用 `{code,message,data}` 信封，成功 `data` 使用领域 Schema；菜单输入和记录分别生成 DTO，保留 Zod `.strip()`/转换后的内部类型。Knip 新问题与过期基线阻断，未到期项继续列报并按模块清理；Mock/测试默认通过 Feature 公开入口，真实 Fixture 才作有依据的窄例外。整份 OpenAPI 类型检查漂移，核心消费点本阶段绑定，非核心未绑定点列后续清单，不宣称 79 个操作全绑定。状态 Planned。
+
+<!-- AI modified: keep the sixth-round contract checks and backlog boundary across agent handoffs. -->
+
+- Confirmed（Q1963–Q1966）：生成请求 DTO 对齐净化后的实际请求、响应 DTO 对齐边界校验后的领域数据，原始表单与页面模型不强制共型。现有共用错误信封的 `fieldErrors`、`requestId`、`retryAfterSeconds` 纳入核心错误样例，不新增错误码。核心 Mock 的请求/响应样例覆盖菜单净化提交与非法 `componentKey` 字段错误，不生成全套 Mock。非核心未绑定点逐项记端点、责任人、Issue、目标阶段；新增核心未绑定用法阻断，79 个操作不要求本阶段全绑定。状态 Planned，尚未实施或进行远端操作。
+
+<!-- AI modified: persist the local Phase 3 implementation outcome across future handoffs. -->
+
+- Executed（Phase 3 本地）：OpenAPI 生成漂移与 79 操作绑定计划已成为门禁，21 个认证/用户/角色/菜单操作绑定生成 DTO，58 个非核心操作有责任域、Issue 占位和目标阶段。Knip 以 350 项限时精确基线阻断新增问题；Feature 公共入口、层方向、Locale Key/占位符、全依赖许可证以及生产 Mock/Test/DevTools 源码和产物边界均已加入 `verify`。许可证当前 8 项进入限时 Review；Renovate 配置已落地但远端 App 未启用。本地 `release:check` 已通过：72 个 Vitest 文件、692 项测试、零已知生产漏洞，以及 Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 共 155 项 E2E 均无 Flaky；最终 `dist` 为无 Mock 生产构建。托管证据仍待后续提交，本轮不提交、不推送。
+
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。
 - Axios 统一处理请求头、超时、错误信封、请求 ID、上传下载和认证失效。

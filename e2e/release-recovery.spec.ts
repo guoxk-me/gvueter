@@ -6,7 +6,8 @@ async function openEnglishLogin(page: Page): Promise<void> {
     localStorage.setItem('locale', 'en-US')
     localStorage.setItem('appearance', JSON.stringify({ locale: 'en-US' }))
   })
-  await page.goto('/login')
+  // AI modified: the heading owns readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
 }
 

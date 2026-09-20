@@ -1,5 +1,5 @@
 import type { ContentFileMimeType } from '@/features/content-admin/types/files'
-import type { UploadBusinessRules } from '@/features/uploads/types'
+import type { UploadBusinessRules } from '@/features/uploads'
 import { CONTENT_FILE_MIME_TYPES } from '@/features/content-admin/types/files'
 
 export const CONTENT_FILE_MAX_SIZE_BYTES = 5 * 1024 * 1024

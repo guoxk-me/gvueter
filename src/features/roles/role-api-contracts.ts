@@ -6,8 +6,8 @@ import type {
   UpdateRolePolicyInput,
 } from './types'
 import { z } from 'zod'
-import { DEPARTMENT_RECORD_SCHEMA } from '@/features/departments/department-api-contracts'
-import { USER_ROLES } from '@/features/users/types'
+import { DEPARTMENT_RECORD_SCHEMA } from '@/features/departments'
+import { USER_ROLES } from '@/features/users'
 import { DATA_SCOPES, PERMISSION_ACTIONS, PERMISSION_SUBJECTS } from './types'
 
 export const ROLE_PERMISSION_SCHEMA: z.ZodType<RolePermission> = z

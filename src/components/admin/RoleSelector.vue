@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { SearchableSelectOption } from './searchable-select'
-import type { UserRole } from '@/features/users/types'
+import type { UserRole } from '@/features/users'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { USER_ROLES } from '@/features/users/types'
+import { USER_ROLES } from '@/features/users'
 import SearchableSelect from './SearchableSelect.vue'
 
 const props = withDefaults(

@@ -73,7 +73,8 @@ test('has no automated accessibility violations on representative public and adm
     localStorage.setItem('appearance', JSON.stringify({ locale: 'en-US', themeMode: 'light' }))
   })
 
-  await page.goto('/login')
+  // AI modified: the heading owns readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
   await expectNoAccessibilityViolations(page)
 
@@ -98,7 +99,7 @@ test('has no automated accessibility violations on representative public and adm
 
 test('keeps runtime color edge cases readable in light and dark themes', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('locale', 'en-US'))
-  await page.goto('/login')
+  await page.goto('/login', { waitUntil: 'commit' })
   await signIn(page)
 
   for (const settings of [

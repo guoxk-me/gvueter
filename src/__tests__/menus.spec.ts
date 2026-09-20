@@ -8,6 +8,7 @@ import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import MenuFormDialog from '@/features/menus/components/MenuFormDialog.vue'
+import { MANAGED_MENU_INPUT_SCHEMA } from '@/features/menus/menu-api-contracts'
 import {
   canManagedMenuHaveChildren,
   getManagedMenuAncestors,
@@ -132,6 +133,16 @@ describe('menu and permission identifier management', () => {
     await del(`/system-menus/${createdMenu.id}`)
     const response = await get<ManagedMenuListResponse>('/system-menus')
     expect(response.items.some(menu => menu.id === createdMenu.id)).toBe(false)
+  })
+
+  it('keeps server-owned record fields out of the managed-menu wire request', () => {
+    // AI modified: edit records are not wire DTOs; extra server fields must be removed before submission.
+    const request = MANAGED_MENU_INPUT_SCHEMA.parse({
+      ...newMenu,
+      id: 'server-owned',
+      createdAt: '2026-01-01T00:00:00Z',
+    })
+    expect(request).toEqual(newMenu)
   })
 
   it('projects managed changes into the live navigation endpoint', async () => {

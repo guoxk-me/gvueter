@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AdminIconKey } from '@/components/admin'
-import type { DepartmentRecord } from '@/features/departments/types'
-import type { UserRole } from '@/features/users/types'
+import type { DepartmentRecord } from '@/features/departments'
+import type { UserRole } from '@/features/users'
 import { onBeforeUnmount, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {

@@ -6,7 +6,7 @@ import type {
   RolePermission,
   UpdateRolePolicyInput,
 } from './types'
-import type { UserRole } from '@/features/users/types'
+import type { UserRole } from '@/features/users'
 import type { AuthorizationGrant, AuthorizationSnapshot } from '@/types/auth'
 import { PERMISSION_ACTIONS, PERMISSION_SUBJECTS } from './types'
 

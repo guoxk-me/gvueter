@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TreeNode } from './tree-view'
-import type { DepartmentRecord, DepartmentTreeNode } from '@/features/departments/types'
+import type { DepartmentRecord, DepartmentTreeNode } from '@/features/departments'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getDepartmentTree } from '@/features/departments/department-tree'
+import { getDepartmentTree } from '@/features/departments'
 import TreeView from './TreeView.vue'
 
 const props = withDefaults(

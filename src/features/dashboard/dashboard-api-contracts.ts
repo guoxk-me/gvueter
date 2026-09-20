@@ -11,7 +11,7 @@ import type {
   RoleDistributionEntry,
 } from './types'
 import { z } from 'zod'
-import { USER_ROLES } from '@/features/users/types'
+import { USER_ROLES } from '@/features/users'
 import { DASHBOARD_TASK_PRIORITIES, DASHBOARD_TASK_STATUSES } from './types'
 
 const DASHBOARD_SUMMARY_SCHEMA: z.ZodType<DashboardSummary> = z

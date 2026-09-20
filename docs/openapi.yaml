@@ -17,7 +17,7 @@ paths:
       summary: Create a login CAPTCHA challenge
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          $ref: '#/components/responses/CaptchaSuccess'
         default:
           $ref: '#/components/responses/Error'
   /auth/login:
@@ -66,7 +66,12 @@ paths:
         default:
           $ref: '#/components/responses/Error'
   /auth/logout:
-    $ref: '#/components/pathItems/ActionCreate'
+    post:
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptySuccess'
+        default:
+          $ref: '#/components/responses/Error'
   /auth/me:
     get:
       summary: Read the current identity and authorization snapshot atomically
@@ -83,7 +88,7 @@ paths:
         $ref: '#/components/requestBodies/ForgotPasswordInput'
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          $ref: '#/components/responses/EmptySuccess'
         default:
           $ref: '#/components/responses/Error'
   /auth/reset-password:
@@ -94,7 +99,7 @@ paths:
         $ref: '#/components/requestBodies/ResetPasswordInput'
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          $ref: '#/components/responses/EmptySuccess'
         default:
           $ref: '#/components/responses/Error'
   /auth/change-password:
@@ -134,7 +139,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
   /roles:
-    $ref: '#/components/pathItems/Read'
+    $ref: '#/components/pathItems/RoleCollection'
   /roles/{id}:
     $ref: '#/components/pathItems/RolePolicyResource'
   /users:
@@ -600,6 +605,81 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiEnvelope'
+    # AI modified: core CRUD operations expose their actual data shapes instead of generic JsonValue.
+    UserListSuccess:
+      description: Paginated user collection in the shared success envelope
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserListEnvelope'
+    UserRecordSuccess:
+      description: Created or updated user record in the shared success envelope
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRecordEnvelope'
+    RoleListSuccess:
+      description: Role policies and data-scope departments in the shared success envelope
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RoleListEnvelope'
+    RoleRecordSuccess:
+      description: Updated role policy in the shared success envelope
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RoleRecordEnvelope'
+    ManagedMenuListSuccess:
+      description: Managed menu collection in the shared success envelope
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ManagedMenuListEnvelope'
+    ManagedMenuRecordSuccess:
+      description: Created or updated managed menu record in the shared success envelope
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ManagedMenuRecordEnvelope'
+    EmptySuccess:
+      description: Successful deletion with explicit null data
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmptyEnvelope'
+    CaptchaSuccess:
+      description: Short-lived login challenge in the shared success envelope
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CaptchaEnvelope'
     LoginSuccess:
       description: Password-authenticated application session and authorization snapshot
       headers:
@@ -870,6 +950,22 @@ components:
         updatedAt:
           type: string
           format: date-time
+    CaptchaChallenge:
+      type: object
+      additionalProperties: false
+      required: [captchaId, challenge, expiresAt]
+      properties:
+        captchaId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        challenge:
+          type: string
+          minLength: 1
+          maxLength: 200
+        expiresAt:
+          type: integer
+          minimum: 1
     LoginInput:
       type: object
       additionalProperties: false
@@ -1612,6 +1708,31 @@ components:
         subject:
           type: string
           enum: [Dashboard, User, Content, Analytics, Settings, RolePolicy, Monitoring, AuditLog]
+    # AI modified: core response data mirrors records already returned and validated by the Mock API.
+    DepartmentRecord:
+      type: object
+      additionalProperties: false
+      required: [id, name, parentId, order, status]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 200
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        parentId:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 200
+        order:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+        status:
+          type: string
+          enum: [active, disabled]
     DataScopeGrant:
       type: object
       additionalProperties: false
@@ -1640,6 +1761,36 @@ components:
             $ref: '#/components/schemas/RolePermission'
         dataScope:
           $ref: '#/components/schemas/DataScopeGrant'
+    RoleDefinition:
+      type: object
+      additionalProperties: false
+      required: [key, permissions, dataScope]
+      properties:
+        key:
+          type: string
+          enum: [admin, editor, viewer]
+        permissions:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/RolePermission'
+        dataScope:
+          $ref: '#/components/schemas/DataScopeGrant'
+    RoleListResponse:
+      type: object
+      additionalProperties: false
+      required: [items, scopeDepartments]
+      properties:
+        items:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/RoleDefinition'
+        scopeDepartments:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/DepartmentRecord'
     UserInput:
       type: object
       additionalProperties: false
@@ -1663,6 +1814,28 @@ components:
           type: string
           minLength: 8
           maxLength: 1024
+    AdminUser:
+      $ref: '#/components/schemas/AuthenticatedUser'
+    UserListResponse:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/AdminUser'
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 200
     PositionInput:
       type: object
       additionalProperties: false
@@ -1717,7 +1890,7 @@ components:
           enum: [manage, read, create, update, delete]
         subject:
           type: string
-          enum: [all, Dashboard, User, Content, Analytics, Settings, RolePolicy]
+          enum: [all, Dashboard, User, Content, Analytics, Settings, RolePolicy, Monitoring, AuditLog]
     ManagedMenuInput:
       type: object
       additionalProperties: false
@@ -1763,6 +1936,7 @@ components:
             - components
             - form-workbench
             - content-admin
+            - audit-logs
             - users
             - roles
             - departments
@@ -1809,6 +1983,63 @@ components:
           type: integer
           minimum: 0
           maximum: 1000000
+    ManagedMenuRecord:
+      type: object
+      additionalProperties: false
+      required: [id, parentId, titleKey, kind, path, routeName, componentKey, permissionIdentifier, hidden, order]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 200
+        parentId:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 200
+        titleKey:
+          type: string
+          minLength: 1
+          maxLength: 200
+        kind:
+          type: string
+          enum: [menu, external, iframe]
+        path:
+          type: string
+          maxLength: 1000
+        targetUrl:
+          type: string
+          maxLength: 4000
+        routeName:
+          type: string
+          maxLength: 200
+        componentKey:
+          type: string
+          enum: ['', dashboard, components, form-workbench, content-admin, audit-logs, users, roles, departments, positions, menus, dictionaries, system-config, system-parameters, monitoring, profile, change-password, iframe]
+        icon:
+          type: string
+          enum: [dashboard, message-center, components, form-workbench, content-admin, users, roles, departments, positions, menus, dictionaries, system-config, monitoring, profile, password, external, iframe]
+        requiredAbility:
+          $ref: '#/components/schemas/NavigationAbilityRequirement'
+        permissionIdentifier:
+          type: string
+          maxLength: 300
+        hidden:
+          type: boolean
+        keepAlive:
+          type: boolean
+        order:
+          type: integer
+          minimum: 0
+    ManagedMenuListResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/ManagedMenuRecord'
     SystemParameterInput:
       type: object
       additionalProperties: false
@@ -1919,6 +2150,135 @@ components:
           maxLength: 10000
         data:
           $ref: '#/components/schemas/JsonValue'
+    # AI modified: typed core envelopes retain the existing code/message contract while narrowing data.
+    UserListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/UserListResponse'
+    UserRecordEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/AdminUser'
+    RoleListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/RoleListResponse'
+    RoleRecordEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/RoleDefinition'
+    ManagedMenuListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/ManagedMenuListResponse'
+    ManagedMenuRecordEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/ManagedMenuRecord'
+    EmptyEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          type: 'null'
+    CaptchaEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, message, data]
+      properties:
+        code:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+              maxLength: 200
+        message:
+          type: string
+          maxLength: 10000
+        data:
+          $ref: '#/components/schemas/CaptchaChallenge'
     SchemaDrivenSubmissionEnvelope:
       type: object
       additionalProperties: false
@@ -2264,7 +2624,7 @@ components:
           $ref: '#/components/requestBodies/ChangePasswordInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/EmptySuccess'
           default:
             $ref: '#/components/responses/Error'
     ProfileUpdate:
@@ -2273,7 +2633,7 @@ components:
           $ref: '#/components/requestBodies/UpdateProfileInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/UserRecordSuccess'
           default:
             $ref: '#/components/responses/Error'
     SystemConfigResource:
@@ -2311,14 +2671,21 @@ components:
           $ref: '#/components/requestBodies/UpdateRolePolicyInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/RoleRecordSuccess'
+          default:
+            $ref: '#/components/responses/Error'
+    RoleCollection:
+      get:
+        responses:
+          '200':
+            $ref: '#/components/responses/RoleListSuccess'
           default:
             $ref: '#/components/responses/Error'
     UserCollection:
       get:
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/UserListSuccess'
           default:
             $ref: '#/components/responses/Error'
       post:
@@ -2326,7 +2693,7 @@ components:
           $ref: '#/components/requestBodies/UserInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/UserRecordSuccess'
           default:
             $ref: '#/components/responses/Error'
     UserResource:
@@ -2337,13 +2704,13 @@ components:
           $ref: '#/components/requestBodies/UserInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/UserRecordSuccess'
           default:
             $ref: '#/components/responses/Error'
       delete:
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/EmptySuccess'
           default:
             $ref: '#/components/responses/Error'
     PositionCollection:
@@ -2414,7 +2781,7 @@ components:
       get:
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/ManagedMenuListSuccess'
           default:
             $ref: '#/components/responses/Error'
       post:
@@ -2422,7 +2789,7 @@ components:
           $ref: '#/components/requestBodies/ManagedMenuInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/ManagedMenuRecordSuccess'
           default:
             $ref: '#/components/responses/Error'
     ManagedMenuResource:
@@ -2433,13 +2800,13 @@ components:
           $ref: '#/components/requestBodies/ManagedMenuInput'
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/ManagedMenuRecordSuccess'
           default:
             $ref: '#/components/responses/Error'
       delete:
         responses:
           '200':
-            $ref: '#/components/responses/Success'
+            $ref: '#/components/responses/EmptySuccess'
           default:
             $ref: '#/components/responses/Error'
     SystemParameterCollection:

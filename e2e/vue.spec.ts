@@ -16,7 +16,8 @@ async function signIn(page: Page, credentials: SignInCredentials) {
     >
     localStorage.setItem('appearance', JSON.stringify({ ...appearance, locale: 'en-US' }))
   })
-  await page.goto('/login')
+  // AI modified: visible login controls own readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   const captchaChallenge = page
     .locator('[aria-label]')
     .filter({ hasText: /\d+\s*\+\s*\d+\s*=\s*\?/ })
@@ -191,6 +192,8 @@ test('keeps user pagination UI, request parameters, rows, buttons, and URL synch
 
   await page.goto('/dashboard')
   await expect(page).toHaveURL('/dashboard')
+  // AI modified: finish asynchronous app bootstrap before replacing this history entry again.
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible()
   await page.goBack()
   await expect(page).toHaveURL('/users?page=2')
   await expect(page.getByText('Page 2 of 2')).toBeVisible()
@@ -346,7 +349,15 @@ test('redirects an expired or invalid backend session to login', async ({ page }
   await signInAsAdmin(page)
   await page.evaluate(() => sessionStorage.setItem('auth_token', 'invalid-token'))
 
+  // AI modified: synchronize on the owned 401 boundary before asserting its router consequence.
+  const unauthorizedSession = page.waitForResponse((response) => {
+    const responseUrl = new URL(response.url())
+    return response.request().method() === 'GET'
+      && responseUrl.pathname === '/api/auth/me'
+      && response.status() === 401
+  })
   await page.reload({ waitUntil: 'commit' })
+  await unauthorizedSession
 
   // AI modified: the browser verifies the protected API 401 path, not only the route guard UX.
   await expect(page).toHaveURL(/\/login\?redirect=/)
@@ -356,6 +367,8 @@ test('redirects an expired or invalid backend session to login', async ({ page }
 test('switches every supported layout contract from the persisted settings panel', async ({
   page,
 }) => {
+  // AI modified: this structural matrix is independent from the dedicated motion acceptance test.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await signInAsAdmin(page)
   await page.getByRole('button', { name: 'Appearance' }).click()
 

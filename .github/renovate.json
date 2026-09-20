@@ -1,0 +1,92 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Asia/Shanghai",
+  "schedule": ["before 6am on Monday"],
+  "dependencyDashboard": true,
+  "automerge": false,
+  "rangeStrategy": "pin",
+  "separateMajorMinor": true,
+  "separateMultipleMajor": true,
+  "packageRules": [
+    {
+      "description": "Group production runtime dependency maintenance.",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "runtime dependencies"
+    },
+    {
+      "description": "Keep the Vue application core visible as one compatibility group.",
+      "matchPackageNames": [
+        "@tanstack/vue-query",
+        "@tanstack/vue-table",
+        "@tanstack/vue-virtual",
+        "@vee-validate/zod",
+        "@vueuse/core",
+        "pinia",
+        "vee-validate",
+        "vue",
+        "vue-i18n",
+        "vue-router"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "vue core"
+    },
+    {
+      "description": "Group build and static-analysis tooling.",
+      "matchPackageNames": [
+        "/^@antfu/",
+        "/^@tailwindcss/",
+        "/^@typescript-eslint/",
+        "/^@vitejs/",
+        "eslint",
+        "knip",
+        "openapi-typescript",
+        "tailwindcss",
+        "typescript",
+        "vite",
+        "vue-tsc"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "build tooling"
+    },
+    {
+      "description": "Group test runners and browser verification tooling.",
+      "matchPackageNames": [
+        "/^@axe-core/",
+        "/^@playwright/",
+        "/^@vitest/",
+        "/^@vue/test-utils$/",
+        "jsdom",
+        "msw",
+        "vitest"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "test tooling"
+    },
+    {
+      "description": "Group pinned GitHub Action revisions.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "Group container reference maintenance.",
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "container images"
+    },
+    {
+      "description": "Major updates stay ungrouped and always require review.",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": false,
+      "automerge": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "schedule": ["at any time"],
+    "labels": ["security"],
+    "automerge": false
+  }
+}

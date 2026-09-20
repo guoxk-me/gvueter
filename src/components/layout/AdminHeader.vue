@@ -18,11 +18,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useRuntimeConfig } from '@/config/runtime-config'
-import { createRuntimeNotificationTransport } from '@/features/notifications'
 import {
+  createRuntimeNotificationTransport,
   useNotificationRealtime,
   useNotificationUnreadCount,
-} from '@/features/notifications/composables/useNotificationRealtime'
+} from '@/features/notifications'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import AdminTopNavigation from './AdminTopNavigation.vue'

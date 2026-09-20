@@ -84,11 +84,15 @@ catalog:
   husky: ^9.1.7
   jiti: ^2.7.0
   jsdom: ^30.0.1
+  # AI modified: source and dependency inventory now has a reviewable exact-issue baseline.
+  knip: 6.35.1
   lint-staged: ^17.5.1
   motion-v: ^2.4.2
   msw: ^2.15.0
   npm-run-all2: ^9.0.3
   nprogress: ^0.2.0
+  # AI modified: generated transport DTOs use the stable runtime-free OpenAPI generator.
+  openapi-typescript: 7.13.0
   pinia: ^4.0.3
   pinia-plugin-persistedstate: ^4.7.1
   qrcode: ^1.5.4

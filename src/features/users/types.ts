@@ -1,3 +1,5 @@
+import type { components } from '@/types/openapi-generated'
+
 export const USER_ROLES = ['admin', 'editor', 'viewer'] as const
 export const USER_STATUSES = ['active', 'suspended'] as const
 
@@ -10,25 +12,9 @@ export interface UserListFilters extends Record<string, string> {
   status: UserStatus | 'all'
 }
 
-export interface AdminUser {
-  id: number
-  name: string
-  email: string
-  avatar?: string
-  role: UserRole
-  status: UserStatus
-  /** Backend-issued department fields used by CASL data-scope conditions. */
-  departmentId?: string
-  departmentPath?: string
-  createdAt: string
-}
-
-export interface UserListResponse {
-  items: AdminUser[]
-  total: number
-  page: number
-  pageSize: number
-}
+// AI modified: user transport records now follow the committed OpenAPI contract; UI-only filters remain local.
+export type AdminUser = components['schemas']['AdminUser']
+export type UserListResponse = components['schemas']['UserListResponse']
 
 export type UserSortField = 'createdAt' | 'email' | 'name' | 'role' | 'status'
 
@@ -42,13 +28,7 @@ export interface UserListQuery {
   sortDirection?: 'asc' | 'desc'
 }
 
-export interface UserInput {
-  name: string
-  email: string
-  role: UserRole
-  status: UserStatus
-  temporaryPassword?: string
-}
+export type UserInput = components['schemas']['UserInput']
 
 export type UserImportIssueCode
   = | 'DUPLICATE_EMAIL'

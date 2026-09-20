@@ -1,5 +1,4 @@
-import type { DepartmentRecord } from '@/features/departments/types'
-import type { UserRole } from '@/features/users/types'
+import type { components } from '@/types/openapi-generated'
 
 export const PERMISSION_ACTIONS = ['read', 'create', 'update', 'delete'] as const
 export const PERMISSION_SUBJECTS = [
@@ -19,28 +18,9 @@ export type PermissionSubject = (typeof PERMISSION_SUBJECTS)[number]
 export const DATA_SCOPES = ['self', 'department', 'departmentTree', 'custom', 'all'] as const
 export type DataScope = (typeof DATA_SCOPES)[number]
 
-export interface DataScopeGrant {
-  scope: DataScope
-  departmentIds?: string[]
-}
-
-export interface RolePermission {
-  action: PermissionAction
-  subject: PermissionSubject
-}
-
-export interface RoleDefinition {
-  key: UserRole
-  permissions: RolePermission[]
-  dataScope: DataScopeGrant
-}
-
-export interface RoleListResponse {
-  items: RoleDefinition[]
-  scopeDepartments: DepartmentRecord[]
-}
-
-export interface UpdateRolePolicyInput {
-  permissions: RolePermission[]
-  dataScope: DataScopeGrant
-}
+// AI modified: role policy wire types come from OpenAPI while permission constants remain local behavior.
+export type DataScopeGrant = components['schemas']['DataScopeGrant']
+export type RolePermission = components['schemas']['RolePermission']
+export type RoleDefinition = components['schemas']['RoleDefinition']
+export type RoleListResponse = components['schemas']['RoleListResponse']
+export type UpdateRolePolicyInput = components['schemas']['UpdateRolePolicyInput']

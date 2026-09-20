@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { AcceptableValue } from 'reka-ui'
 import type { SearchableSelectOption } from '@/components/admin'
-import type { DictionaryOption } from '@/features/dictionaries/types'
-import type { UserRole } from '@/features/users/types'
+import type { DictionaryOption } from '@/features/dictionaries'
+import type { UserRole } from '@/features/users'
 import { computed, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DictSelect, RoleSelector, SearchableSelect, UserSelector } from '@/components/admin'

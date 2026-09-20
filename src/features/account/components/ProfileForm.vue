@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ProfileInput } from '@/features/account/types'
-import type { AdminUser } from '@/features/users/types'
+import type { AdminUser } from '@/features/users'
 import { Loader2 } from '@lucide/vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'

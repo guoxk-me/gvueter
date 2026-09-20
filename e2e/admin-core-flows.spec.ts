@@ -26,7 +26,8 @@ async function signIn(page: Page, credentials: AccountCredentials): Promise<void
     >
     localStorage.setItem('appearance', JSON.stringify({ ...appearance, locale: 'en-US' }))
   })
-  await page.goto('/login')
+  // AI modified: the captcha assertion owns app readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   await completeLoginForm(page, credentials)
 }
 

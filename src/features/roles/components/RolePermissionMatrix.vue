@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DepartmentRecord } from '@/features/departments/types'
+import type { DepartmentRecord } from '@/features/departments'
 import type {
   DataScope,
   DataScopeGrant,

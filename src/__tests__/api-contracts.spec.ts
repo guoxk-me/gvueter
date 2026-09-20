@@ -3,9 +3,11 @@ import { HttpResponse, http as mswHttp } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CONTENT_FILE_LIST_RESPONSE_SCHEMA } from '@/features/content-admin/content-admin-api-contracts'
 import { DASHBOARD_OVERVIEW_SCHEMA } from '@/features/dashboard/dashboard-api-contracts'
+import { MANAGED_MENU_LIST_RESPONSE_SCHEMA } from '@/features/menus/menu-api-contracts'
 import { MONITORING_OVERVIEW_SCHEMA } from '@/features/monitoring/monitoring-api-contracts'
 import { ROLE_LIST_RESPONSE_SCHEMA } from '@/features/roles/role-api-contracts'
 import { SYSTEM_CONFIG_SCHEMA } from '@/features/system-config/system-config-api-contracts'
+import { USER_LIST_RESPONSE_SCHEMA } from '@/features/users/user-api-contracts'
 import {
   API_ENVELOPE_SCHEMA,
   API_ERROR_DETAILS_SCHEMA,
@@ -201,7 +203,9 @@ describe('mock failure matrix', () => {
 describe('feature response contracts', () => {
   it.each([
     ['/api/dashboard/overview', '/dashboard/overview', DASHBOARD_OVERVIEW_SCHEMA],
+    ['/api/users', '/users', USER_LIST_RESPONSE_SCHEMA],
     ['/api/roles', '/roles', ROLE_LIST_RESPONSE_SCHEMA],
+    ['/api/system-menus', '/system-menus', MANAGED_MENU_LIST_RESPONSE_SCHEMA],
     ['/api/system-config', '/system-config', SYSTEM_CONFIG_SCHEMA],
     ['/api/monitoring/overview', '/monitoring/overview', MONITORING_OVERVIEW_SCHEMA],
     ['/api/content-files', '/content-files', CONTENT_FILE_LIST_RESPONSE_SCHEMA],

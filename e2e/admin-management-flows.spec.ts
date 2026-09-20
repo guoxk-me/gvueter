@@ -30,7 +30,8 @@ async function signIn(page: Page): Promise<void> {
     >
     localStorage.setItem('appearance', JSON.stringify({ ...appearance, locale: 'en-US' }))
   })
-  await page.goto('/login')
+  // AI modified: visible login controls own readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
 
   const captchaChallenge = page
     .locator('[aria-label]')

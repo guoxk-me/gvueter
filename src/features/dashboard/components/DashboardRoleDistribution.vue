@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RoleDistributionEntry } from '@/features/dashboard/types'
-import type { UserRole } from '@/features/users/types'
+import type { UserRole } from '@/features/users'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

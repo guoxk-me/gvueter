@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CascaderOption } from '../selection-examples'
-import type { DepartmentRecord } from '@/features/departments/types'
+import type { DepartmentRecord } from '@/features/departments'
 import { computed, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DepartmentTree } from '@/components/admin'

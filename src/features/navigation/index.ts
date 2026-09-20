@@ -1,3 +1,4 @@
+export { BACKEND_MENU_RESPONSE_SCHEMA } from './navigation-api-contracts'
 export * from './navigation-contract'
 export * from './navigation-route-policy'
 export * from './navigation-url-policy'

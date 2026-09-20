@@ -173,7 +173,8 @@ async function signInAsAdmin(page: Page): Promise<void> {
     localStorage.setItem('locale', locale)
     localStorage.setItem('appearance', JSON.stringify({ ...storedAppearance, locale }))
   })
-  await page.goto('/login')
+  // AI modified: visible login controls own readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   const captchaChallenge = page
     .locator('[aria-label]')
     .filter({ hasText: /\d+\s*\+\s*\d+\s*=\s*\?/ })
@@ -226,7 +227,6 @@ async function useShellSettings(
   )
   // AI modified: render assertions own readiness after the refreshed document commits.
   await page.reload({ waitUntil: 'load' })
-  await page.waitForLoadState('networkidle')
   await waitForAdminShell(page)
   await expect(page.locator(`.admin-layout[data-layout="${settings.layout}"]`)).toBeVisible()
   await expect(page.locator('[data-layout-region="context-bar"]')).toBeVisible()
@@ -251,7 +251,6 @@ async function useThemeDensitySettings(
     )
   }, settings)
   await page.reload({ waitUntil: 'load' })
-  await page.waitForLoadState('networkidle')
   // AI modified: theme attributes initialize before Vue remounts, so wait for the shell too.
   await waitForAdminShell(page)
   await expect(page.locator('html')).toHaveAttribute('data-theme', settings.themeMode)
@@ -1197,7 +1196,8 @@ test('honors normal and reduced motion for routes, sheets, and theme view transi
   })
 
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await page.goto('/login')
+  // AI modified: the Theme control owns readiness after the document commits.
+  await page.goto('/login', { waitUntil: 'commit' })
   await expect(page.getByRole('button', { name: 'Theme' })).toBeVisible()
   const supportsViewTransitions = await page.evaluate(
     () => typeof document.startViewTransition === 'function',

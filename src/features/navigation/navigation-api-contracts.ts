@@ -1,7 +1,7 @@
 import type { BackendMenuResponse } from './types'
 import type { AppAction, AppSubject } from '@/lib/ability'
 import { z } from 'zod'
-import { PERMISSION_ACTIONS, PERMISSION_SUBJECTS } from '@/features/roles/types'
+import { PERMISSION_ACTIONS, PERMISSION_SUBJECTS } from '@/features/roles'
 import { BACKEND_MENU_KINDS, MAX_NAVIGATION_DEPTH, MAX_NAVIGATION_NODES } from './types'
 
 const navigationActions = ['manage', ...PERMISSION_ACTIONS] as const satisfies readonly AppAction[]

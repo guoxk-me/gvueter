@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { SearchableSelectOption } from './searchable-select'
-import type { AdminUser, UserListResponse, UserStatus } from '@/features/users/types'
+import type { AdminUser, UserListResponse, UserStatus } from '@/features/users'
 import { useQuery } from '@tanstack/vue-query'
 import { computed, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { USER_LIST_RESPONSE_SCHEMA } from '@/features/users/user-api-contracts'
+import { USER_LIST_RESPONSE_SCHEMA } from '@/features/users'
 import { get } from '@/lib/http'
 import SearchableSelect from './SearchableSelect.vue'
 

@@ -51,6 +51,10 @@ src/
 └── i18n/                   # zh-CN and en-US messages
 ```
 
+<!-- AI modified: document the executable public-entry rule introduced by the Phase 3 boundary gate. -->
+
+Cross-feature imports use `@/features/<feature>` and expose only members with real consumers. A feature cannot reach another feature's internal file, and shared/application layers (`components`, `config`, `lib`, `stores`, `types`) also consume feature contracts through these public entries. Feature modules cannot import Router, Layout or Page layers; `features/navigation/navigation-contract.ts` is the single exception because it is the audited safe-key-to-lazy-page registry. Knip supplies the static cycle gate, while `check:boundaries` enforces deep-import and direction rules.
+
 ## Core contracts
 
 ```ts
