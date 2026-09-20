@@ -578,7 +578,7 @@ Confirmed（Q1963–Q1966）：OpenAPI DTO 与实际净化后的请求、领域�
 
 <!-- AI modified: synchronize the Phase 3 implementation state and its remaining external evidence. -->
 
-Executed（本地）：整份 OpenAPI DTO 已由 `openapi-typescript` 生成，认证、用户、角色和菜单共 21 个现有操作绑定生成传输类型，58 个非核心操作进入机器可校验的责任清单；Zod 仍在不可信边界执行。Knip、Feature 公共入口与方向、Locale Key/占位符、全依赖许可证、生产源码和产物边界均已进入 `verify`。Renovate 每周分组配置已落地，但远端 App 未启用。完整 `release:check` 已通过 72 个 Vitest 文件、692 项测试、PWA/Mock/生产产物门禁和 155 项 Chromium/Firefox/WebKit E2E，未出现 Flaky，最终恢复无 Mock 生产 `dist`。托管 CI 证据尚未取得，未提交、推送或部署。
+Implemented（托管收口中）：整份 OpenAPI DTO 已由 `openapi-typescript` 生成，认证、用户、角色和菜单共 21 个现有操作绑定生成传输类型，58 个非核心操作进入机器可校验的责任清单；Zod 仍在不可信边界执行。Knip、Feature 公共入口与方向、Locale Key/占位符、全依赖许可证、生产源码和产物边界均已进入 `verify`。Renovate 每周分组配置已落地，但远端 App 未启用。完整本地 `release:check` 已通过 72 个 Vitest 文件、692 项测试、PWA/Mock/生产产物门禁和 155 项 Chromium/Firefox/WebKit E2E，未出现 Flaky，最终恢复无 Mock 生产 `dist`。托管 Run [`35494576946`](https://github.com/guoxk-me/gvueter/actions/runs/35494576946) 已通过 Linux/Windows `verify`；三浏览器任务因 WebKit 五页面 Axe 用例首轮超过全局 30 秒、重试成功而被 Flaky 门禁阻断。该用例已改用独立 60 秒上限，全局超时不变，本地 WebKit 连续三轮通过；新版完整托管矩阵仍待验收。
 
 `docs:check` 只校验脚本引用、环境变量清单、内部链接与生成片段。Changelog 面向使用者记录功能、配置、公共契约、迁移、安全和重大依赖变化。发布与校验脚本使用跨平台 Node/TypeScript，不依赖 Bash、`sed` 或 `rm`。CI 失败证据分别按 PR 14 天、主分支 30 天保留，Release 关键证据长期附着于 Release。
 

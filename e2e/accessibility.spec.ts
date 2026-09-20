@@ -67,6 +67,9 @@ async function expectNoAccessibilityViolations(page: Page): Promise<void> {
 test('has no automated accessibility violations on representative public and admin pages', async ({
   page,
 }) => {
+  // AI modified: five real-page axe scans can exceed the global interaction timeout on hosted WebKit.
+  test.setTimeout(60_000)
+
   await page.addInitScript(() => {
     localStorage.setItem('locale', 'en-US')
     // AI modified: the browser fixture uses the current AppSettings persistence contract.
