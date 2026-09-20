@@ -23,11 +23,7 @@ test('registers only the Base-scoped Gvueter worker and precache', async ({ page
   )
   expect(registeredWorker).toBeDefined()
 
-  await expect.poll(async () => registeredWorker!.evaluate(async () => caches.keys()), {
-    timeout: 15_000,
-  }).toContainEqual(expect.stringMatching(/^gvueter-pwa(?:-|$)/))
-
-  const cachedUrls = await registeredWorker!.evaluate(async () => {
+  const readCachedUrls = async (): Promise<string[]> => registeredWorker!.evaluate(async () => {
     const cacheNames = await caches.keys()
     const cacheRequests = await Promise.all(
       cacheNames.filter(name => /^gvueter-pwa(?:-|$)/.test(name)).map(async (name) => {
@@ -39,6 +35,12 @@ test('registers only the Base-scoped Gvueter worker and precache', async ({ page
   })
 
   // AI modified: installability caches the static shell but never API or authentication responses.
+  // AI modified: cache creation can precede completion of the Workbox precache population.
+  await expect.poll(async () => (await readCachedUrls()).some(url =>
+    url.includes('/admin/index.html'),
+  ), { timeout: 15_000 }).toBe(true)
+
+  const cachedUrls = await readCachedUrls()
   expect(cachedUrls.some(url => url.includes('/admin/index.html'))).toBe(true)
   expect(cachedUrls.some(url => /\/(?:api|auth|oauth|oidc|sso)(?:\/|$)/.test(new URL(url).pathname))).toBe(false)
 })
