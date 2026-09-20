@@ -5,9 +5,6 @@ import { computed, onMounted, onUnmounted, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import LanguageToggleButton from '@/components/layout/LanguageToggleButton.vue'
-import ThemeToggleButton from '@/components/layout/ThemeToggleButton.vue'
-import { Separator } from '@/components/ui/separator'
 import {
   getPostAuthenticationPath,
   getSafeSsoAuthorizationUrl,
@@ -164,6 +161,8 @@ async function login(credentials: LoginCredentials): Promise<void> {
     return
   }
 
+  // AI modified: stale form-level feedback is cleared while the current request owns the form.
+  submissionFailure.value = null
   isSubmitting.value = true
   const captchaId = captcha.value.captchaId
 
@@ -188,10 +187,6 @@ async function login(credentials: LoginCredentials): Promise<void> {
       failedAttempts.value += 1
     const { shouldCountAttempt, ...formFailure } = failure
     submissionFailure.value = { id: ++failureSequence, ...formFailure }
-
-    if (!failure.field) {
-      toast.error(t('auth.loginFailed'), { description: failure.message })
-    }
 
     if (shouldCountAttempt && failedAttempts.value >= maxFailedAttempts) {
       // AI modified: transport and server outages never consume the user's credential-attempt budget.
@@ -225,32 +220,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
-    <div class="text-center">
-      <div
-        aria-hidden="true"
-        class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+  <section class="space-y-6" aria-labelledby="login-heading">
+    <div>
+      <p class="mb-2 text-xs font-semibold tracking-[0.14em] text-primary uppercase">
+        {{ t('auth.secureAccess') }}
+      </p>
+      <h1
+        id="login-heading"
+        class="text-[1.75rem] leading-tight font-semibold tracking-[-0.025em] text-foreground"
       >
-        <svg
-          class="size-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-          />
-        </svg>
-      </div>
-      <h1 class="text-2xl font-semibold tracking-tight text-foreground">
         {{ t('auth.welcomeBack') }}
       </h1>
-      <p class="mt-1 text-sm text-muted-foreground">
+      <p class="mt-2 text-sm leading-6 text-muted-foreground">
         {{ t('auth.loginSubtitle') }}
       </p>
     </div>
@@ -274,29 +255,5 @@ onUnmounted(() => {
       @retry="refreshSsoConfiguration"
       @start="startSsoLogin"
     />
-
-    <!-- AI modified: use the shared separator so authentication navigation follows UI primitives. -->
-    <div class="flex flex-col gap-4">
-      <Separator />
-      <div class="flex items-center justify-between">
-        <RouterLink
-          :to="{ name: 'forgot-password' }"
-          class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-        >
-          {{ t('auth.forgotPassword') }}
-        </RouterLink>
-        <RouterLink
-          :to="{ name: 'reset-password' }"
-          class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-        >
-          {{ t('auth.resetPasswordTitle') }}
-        </RouterLink>
-      </div>
-    </div>
-
-    <div class="flex items-center justify-center gap-1">
-      <ThemeToggleButton size="icon" side="top" />
-      <LanguageToggleButton size="icon" side="top" />
-    </div>
-  </div>
+  </section>
 </template>

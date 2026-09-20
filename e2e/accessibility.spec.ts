@@ -67,8 +67,8 @@ async function expectNoAccessibilityViolations(page: Page): Promise<void> {
 test('has no automated accessibility violations on representative public and admin pages', async ({
   page,
 }) => {
-  // AI modified: five real-page axe scans can exceed the global interaction timeout on hosted WebKit.
-  test.setTimeout(60_000)
+  // AI modified: seven real-page axe scans can exceed the global interaction timeout on hosted WebKit.
+  test.setTimeout(75_000)
 
   await page.addInitScript(() => {
     localStorage.setItem('locale', 'en-US')
@@ -79,6 +79,15 @@ test('has no automated accessibility violations on representative public and adm
   // AI modified: the heading owns readiness after the document commits.
   await page.goto('/login', { waitUntil: 'commit' })
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
+  await expectNoAccessibilityViolations(page)
+
+  // AI modified: both account-recovery forms are first-class public authentication surfaces.
+  await page.goto('/forgot-password')
+  await expect(page.getByRole('heading', { name: 'Forgot password' })).toBeVisible()
+  await expectNoAccessibilityViolations(page)
+
+  await page.goto('/reset-password')
+  await expect(page.getByRole('heading', { name: 'Reset password' })).toBeVisible()
   await expectNoAccessibilityViolations(page)
 
   await page.goto('/sso/callback#ticket=invalid-ticket')

@@ -24,9 +24,39 @@ function readThemeBlock(selector: ':root' | '.dark'): string {
 }
 
 function readOklchToken(themeBlock: string, tokenName: string): OklchColor {
-  const token = themeBlock.match(new RegExp(`--${tokenName}:\\s*oklch\\(([^)]+)\\)`))?.[1]
+  const tokenValue = themeBlock.match(new RegExp(`--${tokenName}:\\s*([^;]+);`))?.[1]?.trim()
+  if (!tokenValue)
+    throw new Error(`Missing theme token: ${tokenName}`)
+
+  const variableReference = tokenValue.match(/^var\(--([\w-]+)\)$/)?.[1]
+  if (variableReference)
+    return readOklchToken(themeBlock, variableReference)
+
+  const mixedTokens = tokenValue.match(
+    /^color-mix\(in oklch, var\(--([\w-]+)\) ([\d.]+)%, var\(--([\w-]+)\)\)$/,
+  )
+  if (mixedTokens?.[1] && mixedTokens[2] && mixedTokens[3]) {
+    const firstColor = readOklchToken(themeBlock, mixedTokens[1])
+    const secondColor = readOklchToken(themeBlock, mixedTokens[3])
+    const firstWeight = Number.parseFloat(mixedTokens[2]) / 100
+    const secondWeight = 1 - firstWeight
+    const hueDelta = ((secondColor.hue - firstColor.hue + 540) % 360) - 180
+    // AI modified: static contrast checks resolve the semantic var/color-mix aliases used by Quiet Layers.
+    return {
+      lightness: firstColor.lightness * firstWeight + secondColor.lightness * secondWeight,
+      chroma: firstColor.chroma * firstWeight + secondColor.chroma * secondWeight,
+      hue:
+        firstColor.chroma === 0
+          ? secondColor.hue
+          : secondColor.chroma === 0
+            ? firstColor.hue
+            : (firstColor.hue + hueDelta * secondWeight + 360) % 360,
+    }
+  }
+
+  const token = tokenValue.match(/^oklch\(([^)]+)\)$/)?.[1]
   if (!token)
-    throw new Error(`Missing concrete OKLCH token: ${tokenName}`)
+    throw new Error(`Unsupported theme token: ${tokenName} = ${tokenValue}`)
   const [lightnessPart = '', chromaPart = '', huePart = '0'] = token.trim().split(/\s+/)
   const lightness = Number.parseFloat(lightnessPart) / (lightnessPart.endsWith('%') ? 100 : 1)
   return {

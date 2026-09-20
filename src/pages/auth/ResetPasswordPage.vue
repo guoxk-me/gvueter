@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { Eye, EyeOff, Loader2, ShieldCheck } from '@lucide/vue'
+import { CircleAlert, Link2Off, Loader2, ShieldCheck } from '@lucide/vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { focusFirstInvalidControlAfterValidation } from '@/components/admin/form-focus'
+import PasswordField from '@/components/admin/PasswordField.vue'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Separator } from '@/components/ui/separator'
 import PasswordStrength from '@/features/account/components/PasswordStrength.vue'
 import { PASSWORD_MIN_LENGTH } from '@/features/account/types'
@@ -26,12 +26,11 @@ const authStore = useAuthStore()
 const urlToken = typeof route.params.token === 'string' ? route.params.token : ''
 const hasUrlToken = urlToken.length > 0
 
-const isLoading = ref(false)
-const isSuccess = ref(false)
-const showPassword = ref(false)
-const showConfirm = ref(false)
+const isLoading = shallowRef(false)
+const resetStatus = shallowRef<'form' | 'invalid' | 'success'>('form')
+const hasSubmissionError = shallowRef(false)
 const formElement = useTemplateRef<HTMLFormElement>('formElement')
-const successHeading = useTemplateRef<HTMLElement>('successHeading')
+const statusHeading = useTemplateRef<HTMLElement>('statusHeading')
 
 const formSchema = computed(() => {
   const base = z
@@ -69,20 +68,24 @@ const onSubmit = handleSubmit(
       return
 
     // AI modified: prevent repeated one-time-token consumption while the request is pending.
+    hasSubmissionError.value = false
     isLoading.value = true
     const token = hasUrlToken ? urlToken : ((values as Record<string, string>).token ?? '')
     try {
       await authStore.resetPassword(token, values.newPassword)
-      isSuccess.value = true
+      resetStatus.value = 'success'
       await nextTick()
-      successHeading.value?.focus()
+      statusHeading.value?.focus()
     }
     catch (error) {
       if (error instanceof ApiError && error.code === 'INVALID_RESET_TOKEN') {
-        toast.error(t('auth.invalidToken'))
+        // AI modified: expired one-time links become a persistent recovery state instead of a transient toast.
+        resetStatus.value = 'invalid'
+        await nextTick()
+        statusHeading.value?.focus()
       }
       else {
-        toast.error(t('errors.serverError'))
+        hasSubmissionError.value = true
       }
     }
     finally {
@@ -101,174 +104,176 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <div class="text-center">
-      <div
-        aria-hidden="true"
-        class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+  <section class="space-y-6" aria-labelledby="reset-password-heading">
+    <div>
+      <p class="mb-2 text-xs font-semibold tracking-[0.14em] text-primary uppercase">
+        {{ t('auth.accountRecovery') }}
+      </p>
+      <h1
+        id="reset-password-heading"
+        class="text-[1.75rem] leading-tight font-semibold tracking-[-0.025em] text-foreground"
       >
-        <svg
-          class="size-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-          />
-        </svg>
-      </div>
-      <h1 class="text-2xl font-semibold tracking-tight text-foreground">
         {{ t('auth.resetPasswordTitle') }}
       </h1>
-      <p class="mt-1 text-sm text-muted-foreground">
+      <p class="mt-2 text-sm leading-6 text-muted-foreground">
         {{ t('auth.resetPasswordSubtitle') }}
       </p>
     </div>
 
-    <div class="rounded-xl border border-border bg-card p-8 shadow-sm">
-      <div v-if="isSuccess" class="flex flex-col items-center gap-4 py-2 text-center">
+    <!-- AI modified: reset outcomes reuse the same quiet, borderless authentication geometry. -->
+    <div v-if="resetStatus === 'success'" class="space-y-6" role="status" aria-live="polite">
+      <div class="flex items-start gap-4">
         <div
-          class="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary"
+          class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+          aria-hidden="true"
         >
-          <ShieldCheck class="size-7" aria-hidden="true" />
+          <ShieldCheck class="size-5" />
         </div>
-        <div>
-          <h2 ref="successHeading" tabindex="-1" class="font-semibold text-foreground outline-none">
+        <div class="min-w-0 pt-0.5">
+          <h2
+            ref="statusHeading"
+            tabindex="-1"
+            class="text-base font-semibold text-foreground outline-none"
+          >
             {{ t('auth.resetPasswordSuccessTitle') }}
           </h2>
-          <p class="mt-1 text-sm text-muted-foreground">
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
             {{ t('auth.resetPasswordSuccessDesc') }}
           </p>
         </div>
-        <Button as-child class="w-full">
+      </div>
+      <Button as-child size="lg" class="h-11 w-full sm:h-9">
+        <RouterLink :to="{ name: 'login' }">
+          {{ t('auth.resetPasswordGoToLogin') }}
+        </RouterLink>
+      </Button>
+    </div>
+
+    <div v-else-if="resetStatus === 'invalid'" class="space-y-6" role="alert">
+      <div class="flex items-start gap-4">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive"
+          aria-hidden="true"
+        >
+          <Link2Off class="size-5" />
+        </div>
+        <div class="min-w-0 pt-0.5">
+          <h2
+            ref="statusHeading"
+            tabindex="-1"
+            class="text-base font-semibold text-foreground outline-none"
+          >
+            {{ t('auth.resetTokenInvalidTitle') }}
+          </h2>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            {{ t('auth.invalidToken') }}
+          </p>
+        </div>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <Button as-child size="lg" class="h-11 sm:h-9">
+          <RouterLink :to="{ name: 'forgot-password' }">
+            {{ t('auth.requestNewResetLink') }}
+          </RouterLink>
+        </Button>
+        <Button as-child variant="outline" size="lg" class="h-11 sm:h-9">
           <RouterLink :to="{ name: 'login' }">
-            {{ t('auth.resetPasswordGoToLogin') }}
+            {{ t('auth.forgotPasswordBackToLogin') }}
           </RouterLink>
         </Button>
       </div>
-
-      <form
-        v-else
-        ref="formElement"
-        class="space-y-4"
-        novalidate
-        :aria-label="t('auth.resetPasswordFormLabel')"
-        @submit.prevent="onSubmit"
-      >
-        <FormField v-if="!hasUrlToken" v-slot="{ componentField }" name="token">
-          <FormItem>
-            <FormLabel>{{ t('auth.resetToken') }}</FormLabel>
-            <FormControl>
-              <!-- AI modified: automatic translation cannot rewrite a one-time reset identifier. -->
-              <Input
-                v-bind="componentField"
-                type="text"
-                :placeholder="t('auth.resetTokenPlaceholder')"
-                autocomplete="off"
-                :disabled="isLoading"
-                translate="no"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-
-        <FormField v-slot="{ componentField, value }" name="newPassword">
-          <FormItem>
-            <FormLabel>{{ t('auth.newPassword') }}</FormLabel>
-            <!-- AI modified: FormControl wraps the real grouped input so validation attributes reach it. -->
-            <InputGroup :data-disabled="isLoading || undefined">
-              <FormControl>
-                <InputGroupInput
-                  v-bind="componentField"
-                  :type="showPassword ? 'text' : 'password'"
-                  :placeholder="t('auth.newPasswordPlaceholder')"
-                  autocomplete="new-password"
-                  :disabled="isLoading"
-                />
-              </FormControl>
-              <InputGroupAddon align="inline-end">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
-                  :title="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
-                  :aria-pressed="showPassword"
-                  @click="showPassword = !showPassword"
-                >
-                  <EyeOff v-if="showPassword" data-icon="inline-start" aria-hidden="true" />
-                  <Eye v-else data-icon="inline-start" aria-hidden="true" />
-                </Button>
-              </InputGroupAddon>
-            </InputGroup>
-            <PasswordStrength :password="String(value ?? '')" />
-            <FormMessage />
-          </FormItem>
-        </FormField>
-
-        <FormField v-slot="{ componentField }" name="confirmPassword">
-          <FormItem>
-            <FormLabel>{{ t('auth.confirmPassword') }}</FormLabel>
-            <InputGroup :data-disabled="isLoading || undefined">
-              <FormControl>
-                <InputGroupInput
-                  v-bind="componentField"
-                  :type="showConfirm ? 'text' : 'password'"
-                  :placeholder="t('auth.confirmPasswordPlaceholder')"
-                  autocomplete="new-password"
-                  :disabled="isLoading"
-                />
-              </FormControl>
-              <InputGroupAddon align="inline-end">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  :aria-label="showConfirm ? t('auth.hidePassword') : t('auth.showPassword')"
-                  :title="showConfirm ? t('auth.hidePassword') : t('auth.showPassword')"
-                  :aria-pressed="showConfirm"
-                  @click="showConfirm = !showConfirm"
-                >
-                  <EyeOff v-if="showConfirm" data-icon="inline-start" aria-hidden="true" />
-                  <Eye v-else data-icon="inline-start" aria-hidden="true" />
-                </Button>
-              </InputGroupAddon>
-            </InputGroup>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-
-        <Button type="submit" class="w-full" :disabled="isLoading">
-          <Loader2
-            v-if="isLoading"
-            data-icon="inline-start"
-            class="animate-spin"
-            aria-hidden="true"
-          />
-          <span v-if="isLoading">{{ t('auth.resetPasswording') }}</span>
-          <span v-else>{{ t('auth.resetPasswordButton') }}</span>
-        </Button>
-
-        <!-- AI modified: the shared separator owns the visual division before the return link. -->
-        <div class="flex flex-col gap-3 pt-1">
-          <Separator />
-          <div class="flex justify-center">
-            <RouterLink
-              :to="{ name: 'login' }"
-              class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-            >
-              {{ t('auth.forgotPasswordBackLink') }}
-            </RouterLink>
-          </div>
-        </div>
-      </form>
     </div>
-  </div>
+
+    <form
+      v-else
+      ref="formElement"
+      class="space-y-4"
+      novalidate
+      :aria-label="t('auth.resetPasswordFormLabel')"
+      :aria-busy="isLoading"
+      @submit.prevent="onSubmit"
+    >
+      <FormField v-if="!hasUrlToken" v-slot="{ componentField }" name="token">
+        <FormItem>
+          <FormLabel>{{ t('auth.resetToken') }}</FormLabel>
+          <FormControl>
+            <!-- AI modified: automatic translation cannot rewrite a one-time reset identifier. -->
+            <Input
+              v-bind="componentField"
+              type="text"
+              :placeholder="t('auth.resetTokenPlaceholder')"
+              autocomplete="off"
+              :disabled="isLoading"
+              translate="no"
+              class="h-11 sm:h-9"
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </FormField>
+
+      <FormField v-slot="{ componentField, value }" name="newPassword">
+        <FormItem>
+          <FormLabel>{{ t('auth.newPassword') }}</FormLabel>
+          <FormControl>
+            <PasswordField
+              v-bind="componentField"
+              :placeholder="t('auth.newPasswordPlaceholder')"
+              autocomplete="new-password"
+              :disabled="isLoading"
+              :show-label="t('auth.showPassword')"
+              :hide-label="t('auth.hidePassword')"
+              class="h-11 sm:h-9 [&_[data-slot=input-group-control]]:h-full"
+            />
+          </FormControl>
+          <PasswordStrength :password="String(value ?? '')" />
+          <FormMessage />
+        </FormItem>
+      </FormField>
+
+      <FormField v-slot="{ componentField }" name="confirmPassword">
+        <FormItem>
+          <FormLabel>{{ t('auth.confirmPassword') }}</FormLabel>
+          <FormControl>
+            <PasswordField
+              v-bind="componentField"
+              :placeholder="t('auth.confirmPasswordPlaceholder')"
+              autocomplete="new-password"
+              :disabled="isLoading"
+              :show-label="t('auth.showPassword')"
+              :hide-label="t('auth.hidePassword')"
+              class="h-11 sm:h-9 [&_[data-slot=input-group-control]]:h-full"
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </FormField>
+
+      <Alert v-if="hasSubmissionError" variant="destructive" aria-live="assertive">
+        <CircleAlert aria-hidden="true" />
+        <AlertTitle>{{ t('auth.resetRequestFailed') }}</AlertTitle>
+        <AlertDescription>{{ t('errors.serverError') }}</AlertDescription>
+      </Alert>
+
+      <Button type="submit" size="lg" class="h-11 w-full sm:h-9" :disabled="isLoading">
+        <Loader2 v-if="isLoading" class="size-4 animate-spin" aria-hidden="true" />
+        <span v-if="isLoading" role="status" aria-live="polite">
+          {{ t('auth.resetPasswording') }}
+        </span>
+        <span v-else>{{ t('auth.resetPasswordButton') }}</span>
+      </Button>
+
+      <div class="flex flex-col gap-3 pt-1">
+        <Separator />
+        <div class="flex justify-center">
+          <RouterLink
+            :to="{ name: 'login' }"
+            class="rounded-sm text-xs font-medium text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {{ t('auth.forgotPasswordBackLink') }}
+          </RouterLink>
+        </div>
+      </div>
+    </form>
+  </section>
 </template>

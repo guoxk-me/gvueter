@@ -2,6 +2,7 @@
 import { Building2, Loader2, RotateCw } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 
 defineProps<{
   isStarting?: boolean
@@ -18,23 +19,19 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div v-if="status !== 'disabled'" class="space-y-4">
+  <div v-if="status === 'ready' || status === 'error'" class="space-y-4">
     <div class="flex items-center gap-3" aria-hidden="true">
-      <span class="h-px flex-1 bg-border" />
+      <Separator class="flex-1" />
       <span class="text-xs uppercase tracking-wide text-muted-foreground">{{ t('auth.or') }}</span>
-      <span class="h-px flex-1 bg-border" />
+      <Separator class="flex-1" />
     </div>
 
-    <Button v-if="status === 'loading'" type="button" variant="outline" class="w-full" disabled>
-      <Loader2 class="size-4 animate-spin" aria-hidden="true" />
-      {{ t('auth.ssoChecking') }}
-    </Button>
-
     <Button
-      v-else-if="status === 'error'"
+      v-if="status === 'error'"
       type="button"
       variant="outline"
-      class="w-full"
+      size="lg"
+      class="h-11 w-full sm:h-9"
       @click="emit('retry')"
     >
       <RotateCw class="size-4" aria-hidden="true" />
@@ -45,7 +42,8 @@ const { t } = useI18n()
       v-else
       type="button"
       variant="outline"
-      class="w-full"
+      size="lg"
+      class="h-11 w-full sm:h-9"
       :disabled="isStarting"
       @click="emit('start')"
     >

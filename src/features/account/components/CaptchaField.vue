@@ -38,11 +38,11 @@ const inputDescriptionIds = computed(() => {
       :placeholder="t('auth.captchaPlaceholder')"
       :disabled="disabled"
       :aria-describedby="inputDescriptionIds"
-      class="min-w-0 flex-1"
+      class="h-11 min-w-0 flex-1 sm:h-9"
     />
     <!-- AI modified: FormControl accessibility attributes are forwarded to the real input. -->
     <div
-      class="flex min-w-28 items-center justify-between gap-2 rounded-md border border-border bg-muted/45 px-3 font-mono text-sm font-semibold tabular-nums"
+      class="flex h-11 min-w-28 items-center justify-between gap-2 rounded-md border border-border bg-muted/45 px-3 font-mono text-sm font-semibold tabular-nums sm:h-9"
     >
       <!-- AI modified: verification expressions must not be rewritten by automatic translation. -->
       <span :id="challengeDescriptionId" role="status" aria-live="polite" aria-atomic="true">

@@ -14,6 +14,7 @@ import PasswordChangeForm from '@/features/account/components/PasswordChangeForm
 import ProfileForm from '@/features/account/components/ProfileForm.vue'
 import { getPasswordStrength } from '@/features/account/password-strength'
 import { i18n, setLocale } from '@/i18n'
+import AuthLayout from '@/layouts/AuthLayout.vue'
 import { ApiError } from '@/lib/http'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage.vue'
 import LoginPage from '@/pages/auth/LoginPage.vue'
@@ -107,6 +108,29 @@ describe('authentication account UI', () => {
     setLocale('en-US')
   })
 
+  it('renders one shared Quiet Layers shell around authentication routes', async () => {
+    const pinia = createPinia()
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/login', component: { template: '<div data-auth-route>Route</div>' } }],
+    })
+    await router.push('/login')
+    await router.isReady()
+
+    const wrapper = mount(
+      {
+        components: { AuthLayout, TooltipProvider },
+        template: '<TooltipProvider><AuthLayout /></TooltipProvider>',
+      },
+      { global: { plugins: [pinia, i18n, router] } },
+    )
+
+    expect(wrapper.get('aside').attributes('aria-label')).toBe('Product capabilities')
+    expect(wrapper.text()).toContain('Build reliable admin products faster')
+    expect(wrapper.get('[data-auth-route]').text()).toBe('Route')
+    expect(wrapper.findAll('main')).toHaveLength(1)
+  })
+
   it('keeps the captcha model controlled and emits refresh', async () => {
     const wrapper = mount(CaptchaField, {
       attrs: { 'aria-describedby': 'captcha-help' },
@@ -171,6 +195,11 @@ describe('authentication account UI', () => {
     // AI modified: authentication navigation uses the shared separator primitive.
     expect(wrapper.find('[data-slot="separator"]').exists()).toBe(true)
 
+    const passwordVisibilityButton = wrapper.get('button[aria-label="Show password"]')
+    await passwordVisibilityButton.trigger('click')
+    expect(wrapper.get('input[autocomplete="current-password"]').attributes('type')).toBe('text')
+    await wrapper.get('button[aria-label="Hide password"]').trigger('click')
+
     await wrapper.get('input[type="email"]').setValue('admin@example.com')
     await wrapper.get('input[type="password"]').setValue('admin123')
     wrapper.get<HTMLFormElement>('form').element.requestSubmit()
@@ -195,6 +224,26 @@ describe('authentication account UI', () => {
       provider: 'password',
     })
     expect(router.currentRoute.value.path).toBe('/dashboard')
+  })
+
+  it('keeps the login geometry and live pending state while authentication is in flight', async () => {
+    const { auth, render } = await mountLoginPage()
+    vi.spyOn(auth, 'getCaptcha').mockResolvedValue(firstCaptcha)
+    vi.spyOn(auth, 'login').mockImplementation(() => new Promise(() => undefined))
+    const wrapper = render()
+    await flushPromises()
+
+    await wrapper.get('input[type="email"]').setValue('admin@example.com')
+    await wrapper.get('input[type="password"]').setValue('admin123')
+    await wrapper.get('input[inputmode="numeric"]').setValue('5')
+    wrapper.get<HTMLFormElement>('form').element.requestSubmit()
+
+    await vi.waitFor(() => expect(wrapper.get('form').attributes('aria-busy')).toBe('true'))
+    expect(wrapper.get<HTMLButtonElement>('button[type="submit"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('button[type="submit"]').text()).toContain('Signing in')
+    expect(wrapper.get<HTMLInputElement>('input[type="email"]').element.value).toBe(
+      'admin@example.com',
+    )
   })
 
   it('starts SSO through the backend with the same safe post-authentication target', async () => {
@@ -288,6 +337,7 @@ describe('authentication account UI', () => {
     )
     expect(wrapper.text()).not.toContain('first-secret')
     expect(wrapper.text()).not.toContain('second-secret')
+    expect(wrapper.find('.bg-card').exists()).toBe(false)
     await vi.waitFor(() => expect(document.activeElement).toBe(wrapper.get('h1').element))
   })
 
@@ -475,6 +525,7 @@ describe('authentication account UI', () => {
 
     await vi.waitFor(() => expect(document.activeElement).toBe(wrapper.get('h2').element))
     expect(wrapper.get('a').attributes('href')).toBe('/login')
+    expect(wrapper.find('.bg-card').exists()).toBe(false)
   })
 
   it('keeps grouped reset-password controls accessible before focusing success feedback', async () => {
@@ -486,6 +537,7 @@ describe('authentication account UI', () => {
       history: createMemoryHistory(),
       routes: [
         { path: '/login', name: 'login', component: { template: '<div />' } },
+        { path: '/forgot-password', name: 'forgot-password', component: ForgotPasswordPage },
         { path: '/reset-password', name: 'reset-password', component: ResetPasswordPage },
       ],
     })
@@ -524,5 +576,40 @@ describe('authentication account UI', () => {
 
     await vi.waitFor(() => expect(document.activeElement).toBe(wrapper.get('h2').element))
     expect(wrapper.get('a').attributes('href')).toBe('/login')
+    expect(wrapper.find('.bg-card').exists()).toBe(false)
+  })
+
+  it('turns an invalid reset token into a focused recoverable page state', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const auth = useAuthStore(pinia)
+    vi.spyOn(auth, 'resetPassword').mockRejectedValue(
+      new ApiError('INVALID_RESET_TOKEN', 'Reset link expired', 400),
+    )
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/login', name: 'login', component: { template: '<div />' } },
+        { path: '/forgot-password', name: 'forgot-password', component: { template: '<div />' } },
+        { path: '/reset-password', name: 'reset-password', component: ResetPasswordPage },
+      ],
+    })
+    await router.push('/reset-password')
+    await router.isReady()
+    const wrapper = mount(ResetPasswordPage, {
+      attachTo: document.body,
+      global: { plugins: [pinia, i18n, router] },
+    })
+
+    await wrapper.get('input[name="token"]').setValue('expired-token')
+    await wrapper.get('input[name="newPassword"]').setValue('NewPassword1')
+    await wrapper.get('input[name="confirmPassword"]').setValue('NewPassword1')
+    wrapper.get<HTMLFormElement>('form').element.requestSubmit()
+
+    await vi.waitFor(() => expect(wrapper.find('[role="alert"] h2').exists()).toBe(true))
+    expect(wrapper.get('[role="alert"]').text()).toContain('Reset link unavailable')
+    expect(wrapper.get('[href="/forgot-password"]').text()).toBe('Request a new link')
+    expect(wrapper.get('[href="/login"]').text()).toBe('Back to login')
+    await vi.waitFor(() => expect(document.activeElement).toBe(wrapper.get('h2').element))
   })
 })

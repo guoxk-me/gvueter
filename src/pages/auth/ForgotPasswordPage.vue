@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { Loader2, MailCheck } from '@lucide/vue'
+import { CircleAlert, Loader2, MailCheck } from '@lucide/vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import { computed, nextTick, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, shallowRef, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { z } from 'zod'
 import { focusFirstInvalidControlAfterValidation } from '@/components/admin/form-focus'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -15,9 +16,10 @@ import { useAuthStore } from '@/stores/auth'
 const { t } = useI18n()
 const authStore = useAuthStore()
 
-const isLoading = ref(false)
-const isSuccess = ref(false)
-const sentEmail = ref('')
+const isLoading = shallowRef(false)
+const isSuccess = shallowRef(false)
+const hasSubmissionError = shallowRef(false)
+const sentEmail = shallowRef('')
 const formElement = useTemplateRef<HTMLFormElement>('formElement')
 const successHeading = useTemplateRef<HTMLElement>('successHeading')
 
@@ -40,7 +42,7 @@ const formSchema = computed(() =>
   ),
 )
 
-const { handleSubmit, setFieldError } = useForm({ validationSchema: formSchema })
+const { handleSubmit } = useForm({ validationSchema: formSchema })
 
 const onSubmit = handleSubmit(
   async (values) => {
@@ -48,6 +50,7 @@ const onSubmit = handleSubmit(
       return
 
     // AI modified: the pending guard prevents repeated reset-email mutations.
+    hasSubmissionError.value = false
     isLoading.value = true
     try {
       await authStore.forgotPassword(values.email)
@@ -57,8 +60,8 @@ const onSubmit = handleSubmit(
       successHeading.value?.focus()
     }
     catch {
-      setFieldError('email', t('errors.serverError'))
-      await focusFirstInvalidControlAfterValidation(formElement.value)
+      // AI modified: transport failures remain form-level so they cannot imply whether an account exists.
+      hasSubmissionError.value = true
     }
     finally {
       isLoading.value = false
@@ -69,94 +72,99 @@ const onSubmit = handleSubmit(
 </script>
 
 <template>
-  <div class="space-y-6">
-    <div class="text-center">
-      <div
-        aria-hidden="true"
-        class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+  <section class="space-y-6" aria-labelledby="forgot-password-heading">
+    <div>
+      <p class="mb-2 text-xs font-semibold tracking-[0.14em] text-primary uppercase">
+        {{ t('auth.accountRecovery') }}
+      </p>
+      <h1
+        id="forgot-password-heading"
+        class="text-[1.75rem] leading-tight font-semibold tracking-[-0.025em] text-foreground"
       >
-        <svg
-          class="size-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-          />
-        </svg>
-      </div>
-      <h1 class="text-2xl font-semibold tracking-tight text-foreground">
         {{ t('auth.forgotPasswordTitle') }}
       </h1>
-      <p class="mt-1 text-sm text-muted-foreground">
+      <p class="mt-2 text-sm leading-6 text-muted-foreground">
         {{ t('auth.forgotPasswordSubtitle') }}
       </p>
     </div>
 
-    <div class="rounded-xl border border-border bg-card p-8 shadow-sm">
-      <div v-if="isSuccess" class="flex flex-col items-center gap-4 py-2 text-center">
+    <!-- AI modified: recovery states share the borderless 420px authentication recipe. -->
+    <div v-if="isSuccess" class="space-y-6" role="status" aria-live="polite">
+      <div class="flex items-start gap-4">
         <div
-          class="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary"
+          class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+          aria-hidden="true"
         >
-          <MailCheck class="size-7" aria-hidden="true" />
+          <MailCheck class="size-5" />
         </div>
-        <div>
-          <h2 ref="successHeading" tabindex="-1" class="font-semibold text-foreground outline-none">
+        <div class="min-w-0 pt-0.5">
+          <h2
+            ref="successHeading"
+            tabindex="-1"
+            class="text-base font-semibold text-foreground outline-none"
+          >
             {{ t('auth.forgotPasswordSuccessTitle') }}
           </h2>
-          <p class="mt-1 text-sm text-muted-foreground">
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
             {{ t('auth.forgotPasswordSuccessDesc', { email: maskedEmail }) }}
           </p>
         </div>
-        <Button as-child class="w-full">
-          <RouterLink :to="{ name: 'login' }">
-            {{ t('auth.forgotPasswordBackToLogin') }}
-          </RouterLink>
-        </Button>
       </div>
-
-      <form
-        v-else
-        ref="formElement"
-        class="space-y-4"
-        novalidate
-        :aria-label="t('auth.forgotPasswordFormLabel')"
-        @submit.prevent="onSubmit"
-      >
-        <FormField v-slot="{ componentField }" name="email">
-          <FormItem>
-            <FormLabel>{{ t('auth.email') }}</FormLabel>
-            <FormControl>
-              <Input
-                v-bind="componentField"
-                type="email"
-                :placeholder="t('auth.emailPlaceholder')"
-                autocomplete="email"
-                :disabled="isLoading"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-
-        <Button type="submit" class="w-full" :disabled="isLoading">
-          <Loader2 v-if="isLoading" class="mr-2 size-4 animate-spin" aria-hidden="true" />
-          <span v-if="isLoading">{{ t('auth.forgotPasswordSending') }}</span>
-          <span v-else>{{ t('auth.forgotPasswordSendButton') }}</span>
-        </Button>
-      </form>
+      <Button as-child size="lg" class="h-11 w-full sm:h-9">
+        <RouterLink :to="{ name: 'login' }">
+          {{ t('auth.forgotPasswordBackToLogin') }}
+        </RouterLink>
+      </Button>
     </div>
 
+    <form
+      v-else
+      ref="formElement"
+      class="space-y-4"
+      novalidate
+      :aria-label="t('auth.forgotPasswordFormLabel')"
+      :aria-busy="isLoading"
+      @submit.prevent="onSubmit"
+    >
+      <FormField v-slot="{ componentField }" name="email">
+        <FormItem>
+          <FormLabel>{{ t('auth.email') }}</FormLabel>
+          <FormControl>
+            <Input
+              v-bind="componentField"
+              type="email"
+              :placeholder="t('auth.emailPlaceholder')"
+              autocomplete="email"
+              :disabled="isLoading"
+              class="h-11 sm:h-9"
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </FormField>
+
+      <Alert v-if="hasSubmissionError" variant="destructive" aria-live="assertive">
+        <CircleAlert aria-hidden="true" />
+        <AlertTitle>{{ t('auth.recoveryRequestFailed') }}</AlertTitle>
+        <AlertDescription>{{ t('errors.serverError') }}</AlertDescription>
+      </Alert>
+
+      <Button type="submit" size="lg" class="h-11 w-full sm:h-9" :disabled="isLoading">
+        <Loader2 v-if="isLoading" class="size-4 animate-spin" aria-hidden="true" />
+        <span v-if="isLoading" role="status" aria-live="polite">
+          {{ t('auth.forgotPasswordSending') }}
+        </span>
+        <span v-else>{{ t('auth.forgotPasswordSendButton') }}</span>
+      </Button>
+    </form>
+
     <p v-if="!isSuccess" class="text-center text-sm text-muted-foreground">
-      <RouterLink :to="{ name: 'login' }" class="hover:text-foreground hover:underline">
+      <RouterLink
+        :to="{ name: 'login' }"
+        class="rounded-sm font-medium outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+      >
         {{ t('auth.forgotPasswordBackLink') }}
       </RouterLink>
     </p>
-  </div>
+  </section>
 </template>

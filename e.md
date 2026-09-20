@@ -99,11 +99,15 @@ V1 提供三种正式布局：侧边栏布局、顶部导航布局、混合布�
 认证流程包括登录、退出、忘记密码、重置密码和可选注册；同时预留 SSO 接入边界。
 
 - 登录页保持聚焦，不复用后台 Shell。
+- 首批运行实现已落地独立 Quiet Layers Auth Shell：桌面 `56/44` 双栏、`420px` 登录核心、移动端精简品牌区及现代中性 Dark；登录密码已统一为共享 PasswordField，Pending 保留输入并通过 `aria-busy` / `aria-live` 表达。
+- 第二批运行实现已完成 Recovery Flow：忘记密码、重置密码、重置成功、Token 失效和 SSO Callback 统一为无 Card 的 `420px` 认证配方；失效 Token 保留当前上下文并提供重新申请与返回登录，网络/服务失败不伪装成账号字段错误。共享 PasswordField 的移动显隐操作区提升至 `44px`，Login 与 Reset 同步生效。
 - 注册入口默认隐藏；开启后提供独立页面。
 - 登录失败应区分账号、密码、验证码、网络和服务端异常，并给出可恢复动作。
 - 登录成功后加载用户、授权快照和动态导航，再进入目标页面。
 - 支持 `sessionStorage` 与 `localStorage` 两种 Access Token 持久化策略，由项目配置决定；Refresh Token 不暴露给 JavaScript，推荐由后端通过 Secure、HttpOnly Cookie 管理和轮换。
 - 退出、会话失效、账号或租户变化时，清理权限、动态路由、Tabs、受保护 Query Cache 和实时连接。
+- 当前 API 仍以邮箱和始终验证码作为已实现契约，前端固定锁定计数也尚未迁移到服务端权威风险响应；本批不把原型中的用户名登录、自适应验证码或 `retryAfter` 误记为已实现。
+- Executed（2026-09-20）：认证相关 45 项单元测试、Type Check、ESLint、生产构建及 Chromium Axe `2/2` 通过；浏览器已检查 1440×900 Light、390×844 Dark、Token 失效和 SSO 失败，移动端无水平溢出，密码组与显隐按钮均为 `44px`。可选注册页和认证 API 风险契约仍属于后续工作。
 
 ## 06 Dashboard
 

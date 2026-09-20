@@ -47,12 +47,18 @@ const inputAttrs = useAttrs()
       :autocomplete="autocomplete"
       :disabled="disabled"
     />
-    <InputGroupAddon align="inline-end">
+    <!-- AI modified: the visibility action fills the control height to preserve a 44px mobile target. -->
+    <InputGroupAddon
+      align="inline-end"
+      class="h-full py-0 pr-0 has-[>button]:mr-0"
+    >
       <InputGroupButton
         type="button"
         size="icon-xs"
         :aria-label="isVisible ? hideLabel : showLabel"
+        :aria-pressed="isVisible"
         :disabled="disabled"
+        class="h-11 w-11 rounded-l-none rounded-r-[calc(var(--radius)-1px)] sm:h-9 sm:w-9"
         @click="isVisible = !isVisible"
       >
         <EyeOff v-if="isVisible" data-icon="inline-start" aria-hidden="true" />

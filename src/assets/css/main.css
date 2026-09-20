@@ -279,20 +279,20 @@
   --breakpoint-lg: 64rem;
 }
 
-/* AI modified: on-surface semantic text uses contrast-safe tokens while solid fills keep their hue. */
-@utility text-primary {
+/* AI modified: unlayered text utilities override Tailwind's same-name color utilities at runtime. */
+.text-primary {
   color: var(--primary-text);
 }
 
-@utility text-success {
+.text-success {
   color: var(--success-text);
 }
 
-@utility text-warning {
+.text-warning {
   color: var(--warning-text);
 }
 
-@utility text-destructive {
+.text-destructive {
   color: var(--destructive-text);
 }
 

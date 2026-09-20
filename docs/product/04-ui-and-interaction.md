@@ -273,11 +273,19 @@ Field 统一管理 Label、必填标记、说明和错误；Control 负责自身
 
 移动端聚焦认证任务，缩减品牌展示但保留登录、恢复和语言/主题能力。Dark 同样使用现代中性表面，不另造一套控件风格。
 
+Implemented（首批运行实现）：[AuthLayout](../../src/layouts/AuthLayout.vue) 已采用桌面 `56/44` Quiet Layers 双栏与移动端精简 Shell，[LoginPage](../../src/pages/auth/LoginPage.vue) 复用唯一登录表单且不再套用厚重 Card。1440×900 实测左右宽约 `806/634px`，登录表单 `420px`；390×844 实测无水平溢出，账号、密码、验证码及主/SSO 操作在移动端均为 `44px`。Light/Dark 已完成浏览器视觉检查。
+
+Implemented（Recovery Flow）：[ForgotPasswordPage](../../src/pages/auth/ForgotPasswordPage.vue)、[ResetPasswordPage](../../src/pages/auth/ResetPasswordPage.vue) 与 [SsoCallbackPage](../../src/pages/auth/SsoCallbackPage.vue) 已复用同一 `420px` 无 Card 认证配方。找回结果保持中性；重置成功、Token 失效与 SSO 失败均为可聚焦的页内状态，不依赖临时 Toast 表达关键恢复路径。
+
 ### 7.2 密码控件统一
 
 登录、重置、确认密码、注册、Dark、移动和验证码状态共享密码输入原语：桌面 36px、移动 44px，6px 圆角、13px 掩码字体及统一左内边距，右侧只有 Eye Ghost IconButton。
 
 显示/隐藏只改变掩码，不提交表单或丢失输入。按钮名称随状态更新；校验、禁用和自动填充属性传到真实输入。密码控件不使用携带邮箱语义的完整字段作为替身。
+
+Implemented：[LoginForm](../../src/features/account/components/LoginForm.vue) 已改用共享 [PasswordField](../../src/components/admin/PasswordField.vue)，显示/隐藏按钮、自动填充、禁用与校验属性落到真实输入；Submitting 维持原输入内容和按钮几何，并暴露 `aria-busy` 与 `aria-live`。SSO 配置读取期间不渲染虚假入口，配置失败仍保留轻量重试。
+
+共享 PasswordField 现已同时用于 Login 与 Reset；390px 实测输入组和显隐按钮操作区均为 `44px`，桌面仍回落为 `36px`，避免移动端只有图标可见但命中区域过小。
 
 ### 7.3 登录状态矩阵
 
@@ -295,6 +303,10 @@ Login State Strip 用 3×2 对照，六态共享约 420px 核心几何。Captcha
 账号接受用户名或邮箱；V1 核心不承诺手机号登录，不提供“记住我”复选框。注册默认关闭，SSO 配置确定后才渲染入口。验证码、锁定和重置 Token 有效性以服务端为准。
 
 安全反馈不能帮助枚举账号：格式问题可定位字段，认证失败使用安全且可恢复的提示；找回密码发送结果保持中性。重置成功、链接失效、SSO Callback 和可选注册各有独立流程状态。
+
+认证运行迁移现已覆盖 Login、忘记密码、重置密码、Token 失效/成功与 SSO Callback，但不修改 OpenAPI 认证 DTO：用户名或邮箱、自适应 Captcha、后端 `retryAfter` / Request ID 仍是后续契约迁移，现有邮箱、始终验证码及前端 Demo 锁定不能视为目标状态已完成。可选注册页仍待项目配置能力落地。
+
+Executed（2026-09-20）：认证相关 45 项单元测试、Type Check、ESLint 与生产构建通过；Chromium Axe 在 Login、Forgot Password、Reset Password、SSO Callback 及代表性后台页面的两组用例 `2/2` 通过。浏览器已检查 1440×900 Light、390×844 Dark、Token 失效和 SSO 失败，无水平溢出。
 
 ## 8. Dashboard 与权限状态
 

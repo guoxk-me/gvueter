@@ -221,6 +221,12 @@ Overlay 按 `Anchored → Modal → Business Flow` 的任务影响逐级选择�
 
 四组画板已经与 `03D`、`04B.2` 和 `04B.5` 完成可见对照 QA：无文字溢出、画板重叠、旧 Token、硬编码 Fill、缺失引用或未完成 Placeholder；移动端关键操作区保持至少 `44px`。
 
+Implemented（运行代码首批）：`AuthLayout`、`LoginPage`、`LoginForm`、`CaptchaField` 与 `SsoLoginButton` 已对齐 `05A/05B/05D` 的结构基线。桌面采用真实 `56/44` 分栏与 `420px` Form Safe Area；移动端移除大幅品牌语境但保留品牌、语言和主题入口；Light/Dark 使用同一语义表面。Login 已统一共享 PasswordField，忘记密码进入密码 Label Row，Pending、表单级错误和 SSO 可用性保持原表单几何。运行验证覆盖 1440×900 与 390×844，未发现水平溢出。
+
+Implemented / Executed（运行代码第二批，2026-09-20）：`ForgotPasswordPage`、`ResetPasswordPage` 与 `SsoCallbackPage` 已对齐 `05C/05D`，移除旧 Card 和重复密码控件。找回成功保持中性，重置成功与 Token 失效成为可聚焦的持久状态；失效状态提供重新申请与返回登录，SSO 交换/失败沿用相同认证几何。共享 PasswordField 的移动显隐操作区为 `44px`。认证相关 45 项单测、Type Check、ESLint、生产构建及 Chromium Axe `2/2` 通过；已检查 1440×900 Light、390×844 Dark、Token 失效与 SSO 失败。可选注册页仍待配置能力落地。
+
+Inspected / Deferred：当前后端与 Mock 仍要求 email DTO 和始终 Captcha，页面还保留 Demo 前端失败计数。用户名或邮箱、自适应 Captcha、服务端 `retryAfter` 和 Request ID 必须随认证契约迁移，不能由本轮视觉实现自行伪造。
+
 <!-- AI modified: 记录 Dashboard 阶段的产品契约、首张高保真画板与后续状态范围。 -->
 
 第六阶段 Dashboard 已完成默认桌面 Candidate：

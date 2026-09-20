@@ -98,16 +98,15 @@ const paletteDefinitions: readonly ThemePaletteDefinition[] = [
   },
 ]
 
-const LIGHT_ACCENT_SURFACE = 'oklch(0.967 0.001 286.375)'
-const DARK_ACCENT_SURFACE = 'oklch(0.274 0.006 286.033)'
-const LIGHT_PAGE_SURFACE = 'oklch(1 0 0)'
-const DARK_PAGE_SURFACE = 'oklch(0.145 0 0)'
+// AI modified: runtime text contrast must use the actual Quiet Layers page surfaces.
+const LIGHT_PAGE_SURFACE = 'oklch(0.978 0.008 293)'
+const DARK_PAGE_SURFACE = 'oklch(0.18 0.009 65)'
 
 function themeColorVars(primary: string, isDark: boolean): ThemeColorVars {
   const foreground = getReadableForeground(primary)
-  const accentSurface = isDark ? DARK_ACCENT_SURFACE : LIGHT_ACCENT_SURFACE
   const pageSurface = isDark ? DARK_PAGE_SURFACE : LIGHT_PAGE_SURFACE
-  const accentForeground = getReadableOnSurfaceColor(primary, accentSurface, 4.5)
+  // AI modified: a conservative page-surface threshold accounts for the brand tint behind active text.
+  const accentForeground = getReadableOnSurfaceColor(primary, pageSurface, 5)
 
   return {
     primary,

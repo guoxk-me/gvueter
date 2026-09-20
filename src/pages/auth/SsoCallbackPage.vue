@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CircleAlert, Loader2 } from '@lucide/vue'
-import { nextTick, onMounted, ref, useTemplateRef } from 'vue'
+import { nextTick, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -15,8 +15,8 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
-const callbackStatus = ref<'exchanging' | 'failed'>('exchanging')
-const failureMessageKey = ref('auth.ssoGenericFailure')
+const callbackStatus = shallowRef<'exchanging' | 'failed'>('exchanging')
+const failureMessageKey = shallowRef('auth.ssoGenericFailure')
 const failureHeading = useTemplateRef<HTMLElement>('failureHeading')
 
 function getSsoCallbackOutcome(fragment: string): SsoCallbackOutcome {
@@ -109,49 +109,65 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+  <section class="space-y-6" aria-labelledby="sso-callback-heading">
+    <p class="text-xs font-semibold tracking-[0.14em] text-primary uppercase">
+      {{ t('auth.organizationAccess') }}
+    </p>
+
+    <!-- AI modified: SSO completion keeps the same borderless recovery geometry as password flows. -->
     <div
       v-if="callbackStatus === 'exchanging'"
       role="status"
       aria-live="polite"
-      class="flex flex-col items-center gap-4 py-4"
+      aria-busy="true"
+      class="flex items-start gap-4"
     >
-      <div class="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Loader2 class="size-6 animate-spin" aria-hidden="true" />
+      <div
+        class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+        aria-hidden="true"
+      >
+        <Loader2 class="size-5 animate-spin" />
       </div>
-      <div>
-        <h1 class="text-xl font-semibold text-foreground">
+      <div class="min-w-0 pt-0.5">
+        <h1
+          id="sso-callback-heading"
+          class="text-[1.75rem] leading-tight font-semibold tracking-[-0.025em] text-foreground"
+        >
           {{ t('auth.ssoCallbackTitle') }}
         </h1>
-        <p class="mt-2 text-sm text-muted-foreground">
+        <p class="mt-2 text-sm leading-6 text-muted-foreground">
           {{ t('auth.ssoExchanging') }}
         </p>
       </div>
     </div>
 
-    <div v-else role="alert" class="flex flex-col items-center gap-4 py-4">
-      <div
-        class="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive"
-      >
-        <CircleAlert class="size-6" aria-hidden="true" />
-      </div>
-      <div>
-        <h1
-          ref="failureHeading"
-          tabindex="-1"
-          class="text-xl font-semibold text-foreground outline-none"
+    <div v-else role="alert" class="space-y-6">
+      <div class="flex items-start gap-4">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive"
+          aria-hidden="true"
         >
-          {{ t('auth.ssoFailedTitle') }}
-        </h1>
-        <p class="mt-2 text-sm text-muted-foreground">
-          {{ t(failureMessageKey) }}
-        </p>
+          <CircleAlert class="size-5" />
+        </div>
+        <div class="min-w-0 pt-0.5">
+          <h1
+            id="sso-callback-heading"
+            ref="failureHeading"
+            tabindex="-1"
+            class="text-[1.75rem] leading-tight font-semibold tracking-[-0.025em] text-foreground outline-none"
+          >
+            {{ t('auth.ssoFailedTitle') }}
+          </h1>
+          <p class="mt-2 text-sm leading-6 text-muted-foreground">
+            {{ t(failureMessageKey) }}
+          </p>
+        </div>
       </div>
-      <Button as-child class="w-full">
+      <Button as-child size="lg" class="h-11 w-full sm:h-9">
         <RouterLink :to="{ name: 'login' }">
           {{ t('auth.ssoBackToLogin') }}
         </RouterLink>
       </Button>
     </div>
-  </div>
+  </section>
 </template>

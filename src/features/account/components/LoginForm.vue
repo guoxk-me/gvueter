@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import type { LoginCredentials, LoginFormFailure } from '@/features/account/types'
 import type { CaptchaChallenge } from '@/types/auth'
-import { Loader2, RefreshCw } from '@lucide/vue'
+import { CircleAlert, Loader2, LockKeyhole, RefreshCw } from '@lucide/vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { z } from 'zod'
 import { focusFirstInvalidControlAfterValidation } from '@/components/admin/form-focus'
+import PasswordField from '@/components/admin/PasswordField.vue'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -109,6 +111,7 @@ const submitCredentials = handleSubmit(
     class="space-y-4"
     novalidate
     :aria-label="t('auth.loginFormLabel')"
+    :aria-busy="isSubmitting"
     @submit.prevent="submitCredentials"
   >
     <FormField v-slot="{ componentField }" name="email">
@@ -121,6 +124,7 @@ const submitCredentials = handleSubmit(
             :placeholder="t('auth.emailPlaceholder')"
             autocomplete="email"
             :disabled="isDisabled"
+            class="h-11 sm:h-9"
           />
         </FormControl>
         <FormMessage />
@@ -129,14 +133,24 @@ const submitCredentials = handleSubmit(
 
     <FormField v-slot="{ componentField }" name="password">
       <FormItem>
-        <FormLabel>{{ t('auth.password') }}</FormLabel>
+        <div class="flex items-center justify-between gap-4">
+          <FormLabel>{{ t('auth.password') }}</FormLabel>
+          <RouterLink
+            :to="{ name: 'forgot-password' }"
+            class="text-xs font-medium text-primary outline-none hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {{ t('auth.forgotPassword') }}
+          </RouterLink>
+        </div>
         <FormControl>
-          <Input
+          <PasswordField
             v-bind="componentField"
-            type="password"
             :placeholder="t('auth.passwordPlaceholder')"
             autocomplete="current-password"
             :disabled="isDisabled"
+            :show-label="t('auth.showPassword')"
+            :hide-label="t('auth.hidePassword')"
+            class="h-11 sm:h-9 [&_[data-slot=input-group-control]]:h-full"
           />
         </FormControl>
         <FormMessage />
@@ -195,12 +209,32 @@ const submitCredentials = handleSubmit(
       }}
     </p>
 
-    <Button type="submit" class="w-full" :disabled="isDisabled">
-      <Loader2 v-if="isSubmitting" class="mr-2 size-4 animate-spin" aria-hidden="true" />
+    <Alert v-if="isLocked" class="bg-warning-muted/45 text-foreground">
+      <LockKeyhole aria-hidden="true" class="text-warning" />
+      <AlertTitle>{{ t('auth.lockoutTitle') }}</AlertTitle>
+      <AlertDescription>
+        {{ t('auth.lockoutCountdown', { seconds: lockSecondsRemaining }) }}
+      </AlertDescription>
+    </Alert>
+
+    <Alert
+      v-else-if="submissionFailure && !submissionFailure.field"
+      variant="destructive"
+      aria-live="assertive"
+    >
+      <CircleAlert aria-hidden="true" />
+      <AlertTitle>{{ t('auth.loginRequestFailed') }}</AlertTitle>
+      <AlertDescription>{{ submissionFailure.message }}</AlertDescription>
+    </Alert>
+
+    <Button type="submit" size="lg" class="h-11 w-full sm:h-9" :disabled="isDisabled">
+      <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
       <span v-if="isLocked" role="status" aria-live="assertive">
         {{ t('auth.lockoutCountdown', { seconds: lockSecondsRemaining }) }}
       </span>
-      <span v-else-if="isSubmitting">{{ t('auth.loggingIn') }}</span>
+      <span v-else-if="isSubmitting" role="status" aria-live="polite">
+        {{ t('auth.loggingIn') }}
+      </span>
       <span v-else>{{ t('auth.loginButton') }}</span>
     </Button>
   </form>
