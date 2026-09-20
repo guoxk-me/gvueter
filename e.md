@@ -534,7 +534,7 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 <!-- AI modified: persist the local Phase 3 implementation outcome across future handoffs. -->
 
-- Executed（Phase 3 本地）：OpenAPI 生成漂移与 79 操作绑定计划已成为门禁，21 个认证/用户/角色/菜单操作绑定生成 DTO，58 个非核心操作有责任域、Issue 占位和目标阶段。Knip 以 350 项限时精确基线阻断新增问题；Feature 公共入口、层方向、Locale Key/占位符、全依赖许可证以及生产 Mock/Test/DevTools 源码和产物边界均已加入 `verify`。许可证当前 8 项进入限时 Review；Renovate 配置已落地但远端 App 未启用。本地 `release:check` 已通过：72 个 Vitest 文件、692 项测试、零已知生产漏洞，以及 Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 共 155 项 E2E 均无 Flaky；最终 `dist` 为无 Mock 生产构建。托管证据仍待后续提交，本轮不提交、不推送。
+- Executed（Phase 3 本地）：OpenAPI 生成漂移与 79 操作绑定计划已成为门禁，21 个认证/用户/角色/菜单操作绑定生成 DTO，58 个非核心操作有责任域、Issue 占位和目标阶段。Knip 以 350 项限时精确基线阻断新增问题；Feature 公共入口、层方向、Locale Key/占位符、全依赖许可证以及生产 Mock/Test/DevTools 源码和产物边界均已加入 `verify`。许可证当前 11 项进入限时 Review，包含 Linux/Windows CI 实际安装的平台构建二进制；Renovate 配置已落地但远端 App 未启用。本地 `release:check` 已通过：72 个 Vitest 文件、692 项测试、零已知生产漏洞，以及 Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 共 155 项 E2E 均无 Flaky；最终 `dist` 为无 Mock 生产构建。首次托管 Run `35493998577` 暴露并确认许可证清单的平台差异与 Windows `corepack.cmd` 执行兼容问题，正在修复并等待新版托管证据。
 
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。

@@ -31,9 +31,14 @@ if (policy.schemaVersion !== 1)
   throw new Error('Unsupported license policy schema version.')
 
 const inventoryRun = spawnSync(
-  process.platform === 'win32' ? 'corepack.cmd' : 'corepack',
+  'corepack',
   ['pnpm', 'licenses', 'list', '--json'],
-  { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+  {
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+    // AI modified: Windows needs its command shim resolved by the shell; direct .cmd spawning fails on Node 24.
+    shell: process.platform === 'win32',
+  },
 )
 if (inventoryRun.error || inventoryRun.status !== 0)
   throw new Error(inventoryRun.error?.message ?? inventoryRun.stderr)

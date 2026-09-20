@@ -46,6 +46,15 @@
       "expiresOn": "2026-12-31"
     },
     {
+      "packageName": "@img/sharp-libvips-linux-x64",
+      "license": "LGPL-3.0-or-later",
+      "versions": ["1.3.3"],
+      "owner": "template-maintainers",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "reason": "Linux CI build-tool binary reached through image tooling; it is not shipped in the browser artifact.",
+      "expiresOn": "2026-12-31"
+    },
+    {
       "packageName": "axe-core",
       "license": "MPL-2.0",
       "versions": ["4.13.0"],
@@ -88,6 +97,24 @@
       "owner": "template-maintainers",
       "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
       "reason": "Platform build-tool binary; it is not included in the browser artifact.",
+      "expiresOn": "2026-12-31"
+    },
+    {
+      "packageName": "lightningcss-linux-x64-gnu",
+      "license": "MPL-2.0",
+      "versions": ["1.32.0", "1.33.0"],
+      "owner": "template-maintainers",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "reason": "Linux CI build-tool binary; it is not included in the browser artifact.",
+      "expiresOn": "2026-12-31"
+    },
+    {
+      "packageName": "lightningcss-win32-x64-msvc",
+      "license": "MPL-2.0",
+      "versions": ["1.32.0", "1.33.0"],
+      "owner": "template-maintainers",
+      "issue": "PENDING_GITHUB_ISSUE_AUTHORIZATION",
+      "reason": "Windows CI build-tool binary; it is not included in the browser artifact.",
       "expiresOn": "2026-12-31"
     },
     {

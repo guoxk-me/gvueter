@@ -210,7 +210,7 @@ Inspected（Q1963 类型边界）：现有菜单输入 Zod Schema 显式将输�
 
 Implemented（本地分项证据）：`openapi-typescript` 已生成并提交完整 DTO，`api:check` 同时校验生成漂移及 79 个操作的绑定计划；认证、用户、角色和菜单共 21 个操作已绑定，另 58 个操作按责任域、Issue 占位与目标阶段登记。Knip 全面门禁采用 350 项精确存量基线，仅文件/导出/类型可限时保留，依赖、解析和循环问题立即阻断。真实跨 Feature 消费已迁至窄公共入口，源码门禁拦截跨 Feature 深层导入、共享层绕过入口及 Feature → Router/Layout/Page 倒置（导航注册表为唯一页面组合例外）。
 
-Locale 门禁已对 1,612 个中英文叶子 Key 校验集合及占位变量名称/类型，67 个静态未用候选仅报告、需人工排除动态注册后才能删除。许可证门禁覆盖 1,074 条直接/传递、生产/开发记录，允许项通过，8 项 Unknown/弱 Copyleft 进入有责任人和到期日的 Review；强 Copyleft 命中 Deny 即阻断。Renovate 仓库配置已按 Runtime、Vue、Build、Test、GitHub Actions 和 Docker 每周分组，Major 不分组且全部禁止自动合并；远端 App 尚未启用。生产源码和 Manifest/JS 产物门禁已扩展到 Mock、MSW、Vitest、Vue Test Utils 与 Vite Vue DevTools 客户端精确标记。
+Locale 门禁已对 1,612 个中英文叶子 Key 校验集合及占位变量名称/类型，67 个静态未用候选仅报告、需人工排除动态注册后才能删除。许可证门禁覆盖直接/传递、生产/开发记录，允许项通过，11 项 Unknown/弱 Copyleft（含 CI 平台专属构建二进制）进入有责任人和到期日的 Review；强 Copyleft 命中 Deny 即阻断。Renovate 仓库配置已按 Runtime、Vue、Build、Test、GitHub Actions 和 Docker 每周分组，Major 不分组且全部禁止自动合并；远端 App 尚未启用。生产源码和 Manifest/JS 产物门禁已扩展到 Mock、MSW、Vitest、Vue Test Utils 与 Vite Vue DevTools 客户端精确标记。
 
 Executed（本地 Release Gate）：`release:check` 退出码为 0；72 个 Vitest 文件、692 项测试和覆盖率阈值通过，生产审计为零已知漏洞，PWA、Legacy、Mock 与最终生产构建的产物门禁均通过。Playwright 共 155 项，Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 全部直接通过，无失败、跳过或 Flaky，最终 `dist` 已恢复为无 Mock、PWA-off 的生产产物。浏览器用例以 document commit 加真实 UI/API 状态作为异步启动就绪证据，不再使用 `networkidle` 或仅 URL 到达替代应用可用性。托管 CI 与 Renovate App 启用仍待后续授权。
 
