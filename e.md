@@ -587,3 +587,11 @@ src/
 - Light/Dark、中英文、舒适/Compact 及主要响应式宽度均可正常使用。
 - API 可以由 MSW 切换至任意符合 OpenAPI 契约的后端。
 - 类型检查、Lint、测试、构建、安全审计和契约检查全部通过。
+
+## 当前实施优先级
+
+<!-- AI modified: persist the decision to implement the confirmed prototype before performance work. -->
+
+- Confirmed（2026-09-20）：暂不进入工程优化 Phase 4 性能与测试专项。现有仓库已经具备较多业务页面与工程能力，但 03–10 的新版 Pencil Candidate 尚未完整迁移到运行代码，也未完成逐页视觉、交互和浏览器验收。
+- 下一阶段优先执行“原型落地与设计收敛”，顺序为 Layout / Design System、Login、Dashboard、Router / Menu、Permission、Table / Form、Theme。静态 Candidate、已有相似实现和工程门禁通过均不能替代运行验收；代表性页面稳定后再恢复性能预算、视觉回归和性能基线工作。
+- Implemented / Inspected（2026-09-20，第一批）：Layout / Design System 已完成三正式布局与旧配置迁移、240/72px Shell、Header Breadcrumb、搜索优先工具区、移动导航、Quiet Layers、暖 Stone/Charcoal Dark、8px 基础圆角和 150–200ms 动效。正式 Appearance 面板仅保留 Light/Dark/System、七品牌、三布局与安全显示选项；混合 Preset、全局尺寸、重复语言与任意颜色入口已移除，旧 Store 字段暂留兼容。已检查 Sidebar 390/1024/1280、Top/Mixed 1280 和 Light/Dark；完整 Theme 状态、全布局/语言/宽屏矩阵及后续 Login 等阶段仍待实现。

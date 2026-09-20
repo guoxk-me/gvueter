@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { computed } from 'vue'
 import { RouterView } from 'vue-router'
 import { PERFORMANCE_BUDGET } from '@/lib/performance-contract'
 import { useAppearanceStore } from '@/stores/appearance'
@@ -11,9 +10,7 @@ const appearance = useAppearanceStore()
 const tabsStore = useTabsStore()
 const { keepAliveInclude } = storeToRefs(tabsStore)
 
-const transitionName = computed(() =>
-  appearance.pageTransition === 'fade-slide' ? 'admin-route-slide' : 'admin-route-fade',
-)
+const transitionName = 'admin-route-fade'
 
 function getRouteViewKey(route: RouteLocationNormalizedLoaded): string {
   const currentActiveTab = tabsStore.activeTab
@@ -64,9 +61,7 @@ function restoreEnteringRouteAccessibility(element: Element): void {
 
 <style scoped>
 .admin-route-fade-enter-active,
-.admin-route-fade-leave-active,
-.admin-route-slide-enter-active,
-.admin-route-slide-leave-active {
+.admin-route-fade-leave-active {
   transition:
     opacity 160ms ease,
     transform 160ms ease;
@@ -75,15 +70,5 @@ function restoreEnteringRouteAccessibility(element: Element): void {
 .admin-route-fade-enter-from,
 .admin-route-fade-leave-to {
   opacity: 0;
-}
-
-.admin-route-slide-enter-from {
-  opacity: 0;
-  transform: translateX(0.5rem);
-}
-
-.admin-route-slide-leave-to {
-  opacity: 0;
-  transform: translateX(-0.35rem);
 }
 </style>

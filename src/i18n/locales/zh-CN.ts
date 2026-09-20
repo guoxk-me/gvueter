@@ -1,6 +1,6 @@
 export default {
   common: {
-    appTitle: '管理后台',
+    appTitle: 'Gvueter',
     confirm: '确认',
     cancel: '取消',
     save: '保存',
@@ -36,6 +36,8 @@ export default {
     backToHome: '返回首页',
     lightMode: '切换到亮色模式',
     darkMode: '切换到暗色模式',
+    enterFullscreen: '进入全屏',
+    exitFullscreen: '退出全屏',
     switchLanguage: '切换语言',
     switchToEn: '切换为英文',
     switchToZh: '切换为中文',

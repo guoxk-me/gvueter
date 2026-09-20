@@ -72,7 +72,7 @@ describe('useAppearanceStore', () => {
     appearance.setThemeMode('dark')
     appearance.setLocale('en-US')
     appearance.setComponentSize('lg')
-    appearance.setLayout('header-hybrid-sidebar-first')
+    appearance.setLayout('mixed')
     appearance.setSidebarDefault('collapsed')
     appearance.setStickyHeader(false)
     appearance.setWatermarkVisible(true)
@@ -93,7 +93,8 @@ describe('useAppearanceStore', () => {
       'appearance',
       JSON.stringify({
         themeColor: 'blue',
-        layout: 'mixed',
+        layout: 'sidebar-hybrid-header-first',
+        pageTransition: 'fade-slide',
         stickyHeader: false,
         componentSize: 'huge',
         successColor: 'url(javascript:alert(1))',
@@ -103,7 +104,8 @@ describe('useAppearanceStore', () => {
     const appearance = installAppearancePinia()
 
     expect(appearance.themeColor).toBe('blue')
-    expect(appearance.layout).toBe('mixed')
+    expect(appearance.layout).toBe('sidebar')
+    expect(appearance.pageTransition).toBe('fade')
     expect(appearance.isHeaderSticky).toBe(false)
     expect(appearance.componentSize).toBe('default')
     expect(appearance.successColor).toBe(DEFAULT_APP_SETTINGS.successColor)
@@ -138,7 +140,7 @@ describe('useAppearanceStore', () => {
     expect(appearance.settings).toMatchObject({
       themeMode: 'dark',
       componentSize: 'md',
-      layout: 'header-hybrid-header-first',
+      layout: 'mixed',
       themeColor: 'cyan',
       sidebarDefault: 'collapsed',
       isWatermarkVisible: true,
@@ -153,7 +155,7 @@ describe('useAppearanceStore', () => {
     expect(persistedSettings).toMatchObject({
       themeMode: 'dark',
       componentSize: 'md',
-      layout: 'header-hybrid-header-first',
+      layout: 'mixed',
       isWatermarkVisible: true,
     })
 
@@ -170,7 +172,7 @@ describe('appearance document projection', () => {
     appearance.setThemeMode('dark')
     appearance.setLocale('en-US')
     appearance.setComponentSize('lg')
-    appearance.setLayout('sidebar-hybrid-header-first')
+    appearance.setLayout('sidebar')
     appearance.setSidebarDefault('collapsed')
     appearance.setWatermarkVisible(true)
     appearance.setThemeColor('blue')
@@ -193,7 +195,7 @@ describe('appearance document projection', () => {
       theme: 'dark',
       themeMode: 'dark',
       componentSize: 'lg',
-      layout: 'sidebar-hybrid-header-first',
+      layout: 'sidebar',
       sidebar: 'collapsed',
       watermark: 'true',
     })
@@ -296,6 +298,11 @@ describe('appearancePanel layout contract', () => {
     }
 
     expect(document.body.textContent).toContain('Breadcrumb Icons')
+    // AI modified: the formal panel keeps only approved, stable end-user controls.
+    expect(document.body.textContent).not.toContain('Presets')
+    expect(document.body.textContent).not.toContain('Component Size')
+    expect(document.body.textContent).not.toContain('Custom Color')
+    expect(document.body.textContent).not.toContain('Success')
     // AI modified: controls with no observable effect are removed with their parent setting.
     appearance.setBreadcrumbVisible(false)
     await nextTick()

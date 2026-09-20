@@ -64,12 +64,12 @@ For asynchronous bootstrap, navigation waits for document commit and then for th
 
 ## Acceptance matrices
 
-- Shell: six layouts × `zh-CN`/`en-US` × 390/768/1024/1280/1440.
+- Shell: three formal layouts × `zh-CN`/`en-US` × 390/768/1024/1280/1440, with 1920/2560 wide-screen samples before release.
 - Sidebar: applicable layouts × expanded/collapsed × one/two/three/four menu levels.
 - Top navigation: `zh-CN`/`en-US` × 1024/1280/1440, including full → More and mobile navigation degradation.
 - Content expansion: representative pages and component modules at 100% and synthetic 150% copy.
 - Motion: normal and `prefers-reduced-motion` across route, Sheet, Sidebar, and View Transition.
-- Appearance: light/dark × standard/compact, plus observable targets for every applicable setting.
+- Appearance: light/dark/system × approved brand presets, plus observable targets for every applicable setting; DataTable density is verified locally rather than as a global UI mode.
 - Boundary smoke: 320px and 1920px complement, but do not replace, the five-width core matrix.
 
 ## Deterministic visual policy

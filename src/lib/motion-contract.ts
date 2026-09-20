@@ -2,10 +2,10 @@ import type { Transition } from 'motion-v'
 
 // AI modified: one motion contract keeps Shell feedback consistent and inside the interaction budget.
 export const ADMIN_MOTION_DURATION_MS = {
-  fast: 120,
-  standard: 180,
-  emphasized: 240,
-  overlay: 280,
+  fast: 150,
+  standard: 150,
+  emphasized: 180,
+  overlay: 200,
 } as const
 
 const standardEase: [number, number, number, number] = [0.2, 0, 0, 1]

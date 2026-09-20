@@ -62,9 +62,6 @@ type LayoutMode
   = | 'sidebar'
     | 'top'
     | 'mixed'
-    | 'sidebar-hybrid-header-first'
-    | 'header-hybrid-sidebar-first'
-    | 'header-hybrid-header-first'
 
 type ComponentSize = 'default' | 'sm' | 'md' | 'lg'
 type DataScope = 'self' | 'department' | 'departmentTree' | 'custom' | 'all'
@@ -153,9 +150,10 @@ The access token is scoped to browser `sessionStorage` so it does not survive a 
 
 ## Shell and responsive contract
 
-All six layouts are resolved through `getAdminLayoutDefinition()`. A definition owns `brandPlacement`, `collapseTarget`, `childPresentation`, grid areas, and the single `1024px` desktop breakpoint. Desktop navigation is hidden below that breakpoint and the mobile navigation trigger is hidden at and above it, so the two entry points never overlap.
+The three formal layouts are resolved through `getAdminLayoutDefinition()`. A definition owns `brandPlacement`, `collapseTarget`, `childPresentation`, grid areas, and the single `1024px` desktop breakpoint. Retired experimental layout identifiers migrate to the nearest formal layout when persisted settings are read. Desktop navigation is hidden below that breakpoint and the mobile navigation trigger is hidden at and above it, so the two entry points never overlap.
 
-- A navigation/content boundary is drawn by exactly one visible sidebar. Breadcrumb and tabs share one context surface with one bottom border.
+- A navigation/content boundary is drawn by exactly one visible sidebar. Breadcrumb lives in the Header; Tabs own the separate page-context row and its bottom border.
+- Expanded sidebar, compact rail, mixed secondary navigation, and flyout widths are `240px`, `72px`, `240px`, and `280px` respectively.
 - `sidebarDefault` is the persisted startup preference; the current expanded/collapsed state belongs to the active Shell and is not written back by a manual toggle.
 - Mixed layout keeps its primary rail and collapses the secondary sidebar to zero width, rather than producing two adjacent rails.
 - Compact branches open a focus-managed flyout. Deep inline branches cap indentation and draw a hierarchy rail only at the first child level.

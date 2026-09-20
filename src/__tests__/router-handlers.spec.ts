@@ -195,13 +195,13 @@ describe('router document title', () => {
     setupDocumentTitle(testRouter)
     await testRouter.push('/login')
 
-    expect(document.title).toBe('登录 - 管理后台')
+    expect(document.title).toBe('登录 - Gvueter')
 
     setActivePinia(createPinia())
     const appearance = useAppearanceStore()
     startAppLocaleSync(appearance)
     appearance.setLocale('en-US')
-    expect(document.title).toBe('Login - Admin Panel')
+    expect(document.title).toBe('Login - Gvueter')
   })
 })
 

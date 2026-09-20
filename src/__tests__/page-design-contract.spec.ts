@@ -36,11 +36,11 @@ describe('admin page design contract', () => {
     const source = await readWorkspaceFile('src/assets/css/main.css')
 
     expect(source).toContain(`--admin-shell-header-height: ${ADMIN_SHELL_METRICS.headerHeight};`)
-    expect(source).toContain(
-      `--admin-context-breadcrumb-height: ${ADMIN_SHELL_METRICS.breadcrumbHeight};`,
-    )
     expect(source).toContain(`--admin-context-tabs-height: ${ADMIN_SHELL_METRICS.tabsHeight};`)
     expect(source).toContain(`--admin-touch-target: ${ADMIN_SHELL_METRICS.touchTarget};`)
+    expect(source).toContain(
+      `--admin-navigation-flyout-width: ${ADMIN_SHELL_METRICS.navigationFlyoutWidth};`,
+    )
     expect(source).toContain(`--breakpoint-lg: ${ADMIN_SHELL_METRICS.desktopBreakpoint};`)
     expect(source).toContain('@media (pointer: coarse)')
     expect(source).toContain('[data-admin-navigation-target]')

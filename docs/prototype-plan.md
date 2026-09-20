@@ -6,6 +6,14 @@
 
 将现有 Design System 规格板重构为可指导前端实现和视觉验收的产品原型。V2 同时重审信息架构、Layout 和视觉方向，但继续遵守已确认的产品边界。
 
+## 当前实施优先级
+
+<!-- AI modified: record that the next delivery phase is prototype-to-code convergence, not performance baselining. -->
+
+03–10 的主要画板已经形成 Candidate，但静态原型完成不等于 Vue 页面、运行交互或浏览器验收完成。当前暂停工程优化 Phase 4 性能基线，优先按 `Layout / Design System → Login → Dashboard → Router / Menu → Permission → Table / Form → Theme` 将已确认方案迁入运行代码。每一批以真实页面消费、Light/Dark、中文/英文、响应式、键盘/焦点和关键状态验收作为 Candidate 晋级依据；性能门禁在代表性页面稳定后恢复。
+
+Implemented / Inspected（2026-09-20）：第一批 Layout / Design System 已迁入运行代码，包含三种正式 Layout、240/72px 导航、Header Breadcrumb、工具区顺序、移动导航、Quiet Layers、暖色 Dark、基础圆角/动效和受控 Appearance 入口。真实浏览器已检查 Sidebar 390/1024/1280、Top/Mixed 1280 及 Light/Dark；完整三布局 × 中英文 × 全宽度矩阵及 Login 之后各阶段仍未完成，因此总体状态保持“原型到代码迁移中”。
+
 ## 事实来源
 
 - 产品规则以 `e.md` 为准。

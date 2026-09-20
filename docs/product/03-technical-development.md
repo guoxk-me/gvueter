@@ -439,9 +439,9 @@ Store 分离 `selectedMode`、`resolvedMode`、`brandId`；DOM 同时维护 `.da
 
 项目 Palette 注册在类型、构建与 CI 阶段校验正文 `4.5:1`、大文字/图形/控件 `3:1`、焦点和状态对比度；生产接收到无效注册时拒绝应用并回退 Violet。组件不得通过硬编码颜色绕过语义层，Dark 阴影只保留 Overlay 与拖拽层用途。
 
-Inspected：工程使用 `--background`、`--primary` 等 CSS 变量和 Appearance Store，默认 system / zh-CN / violet / sidebar；现有设置还允许任意 custom 与语义颜色，尚未收敛到受控预设目标。
+Implemented：工程继续兼容 shadcn-vue 的 CSS 变量，并新增 Background / Surface / Raised / Overlay 语义映射；默认 system / zh-CN / violet / sidebar。正式 Appearance 面板只暴露七种受控品牌，不再暴露任意 custom 或语义颜色入口；Store 中旧字段与方法暂留作持久化兼容，不能视为正式产品能力。
 
-Inspected：当前 Shell 定义六种布局，展开 16rem、Rail 4.25rem、上下文栏 14rem，Breadcrumb 在独立 Context Bar。它们与最新三布局、240 / 72px、Header Breadcrumb 原型不一致。
+Implemented：Shell 已收敛为三种正式布局，展开 Sidebar 240px、Rail 72px、Mixed 二级导航 240px、Flyout 280px；Breadcrumb 已进入 Header，Tabs 独占 Context Bar。读取持久化配置时会把三种退役实验布局映射到 Sidebar 或 Mixed。
 
 开发必须遵守：
 
@@ -771,7 +771,7 @@ Implemented / Executed：本地容器已复现旧 CI 将 readiness 回显误判�
 | --- | --- | --- | --- |
 | GAP-01 | 单一 DataTable + 高级插件；静态 Table 轻量 | DataTable / ProTable 并存，均直接引入 TanStack | 收敛公共 API，保留行为测试后迁移内部实现 |
 | GAP-02 | 业务 CRUD 统一 Drawer | 多个业务 `*FormDialog.vue` 仍使用 Dialog | 逐模块迁移，保留确认 Dialog，验证脏状态和焦点 |
-| GAP-03 | 三正式布局，240 / 72px，Header Breadcrumb | 六布局，256 / 68px，独立 Context Bar | 以最新原型为准同步 Shell 和测试矩阵 |
+| GAP-03 | 三正式布局，240 / 72px，Header Breadcrumb | 已实现三布局、240 / 72 / 240 / 280px、Header Breadcrumb 与旧值迁移；Sidebar 已检查 390 / 1024 / 1280，Top / Mixed 已检查 1280 | 补全中英文、键盘、三布局和 1440 / 1920 / 2560 浏览器矩阵 |
 | GAP-04 | SSE + eventsource-client | WebSocket / 内存 transport，现有 WS 环境名 | 定义 SSE 契约、恢复和生命周期后迁移 |
 | GAP-05 | 生成 DTO；Knip 门禁 | `dayjs` 已移除；仍未声明 openapi-typescript / Knip | 按依赖和契约迁移流程落地 DTO 生成与无用代码门禁 |
 | GAP-06 | 可选注册、独立 500、示例整体关闭 | 未发现注册 / 独立 500 路由及统一关闭开关 | 补配置、路由、恢复和关闭后核心不受影响验证 |
@@ -779,7 +779,7 @@ Implemented / Executed：本地容器已复现旧 CI 将 readiness 回显误判�
 | GAP-08 | session / local 两种 Access Token 策略 | 仅 session，主动清除 local 凭证，无自动续期 | 单独评审认证边界，不能只更换存储 API |
 | GAP-09 | Dashboard 各模块独立状态与权限装配 | 当前概览 composable 主要使用单一 `/dashboard/overview` Query | 对照 06B 原型拆清权限、加载与恢复边界 |
 | GAP-10 | PWA 默认关闭且无产物 / 注册 | 旧基线：非 Mock 生产默认注册 PWA；本地已修复 | 本地构建及 Worker 验证通过；托管验收待同一提交 CI |
-| GAP-11 | 本地字体、受控品牌色、三层 gv-* Token 与统一控件基线 | 本地 Inter 已实施；custom 色仍开放，变量及部分尺寸不同于原型 | 继续完成品牌与 Token 映射，不机械替换颜色字符串 |
+| GAP-11 | 本地字体、受控品牌色、三层 gv-* Token 与统一控件基线 | 正式面板已收口七品牌并移除 custom/全局尺寸入口；Quiet Layers、暖暗色、圆角与动效基线已落地，兼容 Store 仍保留旧字段 | 继续完成版本化身份存储、项目 Palette 校验、跨标签同步与完整组件主题矩阵 |
 | GAP-12 | 新菜单身份、自身与有效启用状态 | 当前 DTO 未完整表达 routeKey、enabled 等目标；全套节点级独立开关属于 MENU-10 待评审 | 先约定兼容 DTO、白名单编译与旧数据迁移，不提前把草案字段写入接口 |
 | GAP-13 | 用户名或邮箱登录，风控以服务端权威为准 | 当前邮箱校验与前端固定失败次数 / 锁定时间 | 同步标识 DTO 与风险响应，不把 Demo 常量作为生产政策 |
 | GAP-14 | 多角色 RBAC、角色生命周期、授权树、可授予投影与版本化原子保存 | 用户单一 `role`；固定 `RoleDefinition` 与无版本更新输入；常驻卡片/矩阵 | 先设计兼容 DTO、角色/目录/快照版本及后端保留事务，再迁移 DataTable 与 Large Drawer；验证同资源/操作合成不越界 |

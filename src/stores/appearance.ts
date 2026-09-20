@@ -12,14 +12,11 @@ export const LAYOUT_MODES = [
   'sidebar',
   'top',
   'mixed',
-  'sidebar-hybrid-header-first',
-  'header-hybrid-sidebar-first',
-  'header-hybrid-header-first',
 ] as const
 export const CONTENT_WIDTHS = ['fluid', 'boxed'] as const
 export const SIDEBAR_DEFAULTS = ['expanded', 'collapsed'] as const
 export const TAB_STYLES = ['card', 'chrome', 'minimal'] as const
-export const PAGE_TRANSITIONS = ['fade-slide', 'fade', 'none'] as const
+export const PAGE_TRANSITIONS = ['fade', 'none'] as const
 
 export type ThemeMode = (typeof THEME_MODES)[number]
 export type ResolvedTheme = Exclude<ThemeMode, 'system'>
@@ -31,6 +28,12 @@ export type SidebarDefault = (typeof SIDEBAR_DEFAULTS)[number]
 export type TabStyle = (typeof TAB_STYLES)[number]
 export type PageTransition = (typeof PAGE_TRANSITIONS)[number]
 export type SemanticColor = 'success' | 'warning' | 'destructive'
+
+const LEGACY_LAYOUT_FALLBACKS = {
+  'sidebar-hybrid-header-first': 'sidebar',
+  'header-hybrid-sidebar-first': 'mixed',
+  'header-hybrid-header-first': 'mixed',
+} as const satisfies Record<string, LayoutMode>
 
 export interface AppSettings {
   themeMode: ThemeMode
@@ -85,9 +88,9 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   isBreadcrumbVisible: true,
   hasBreadcrumbIcon: false,
   isTabsVisible: true,
-  tabStyle: 'card',
-  isFooterVisible: true,
-  pageTransition: 'fade-slide',
+  tabStyle: 'minimal',
+  isFooterVisible: false,
+  pageTransition: 'fade',
 }
 
 export const APP_SETTINGS_PRESETS: readonly AppSettingsPreset[] = [
@@ -139,7 +142,7 @@ export const APP_SETTINGS_PRESETS: readonly AppSettingsPreset[] = [
       successColor: '#22c55e',
       warningColor: '#f59e0b',
       destructiveColor: '#f43f5e',
-      layout: 'header-hybrid-header-first',
+      layout: 'mixed',
       sidebarDefault: 'collapsed',
       isWatermarkVisible: true,
       tabStyle: 'minimal',
@@ -177,6 +180,17 @@ function isLayoutMode(value: unknown): value is LayoutMode {
   return typeof value === 'string' && LAYOUT_MODES.includes(value as LayoutMode)
 }
 
+function readLayoutMode(storedLayout: unknown): LayoutMode {
+  if (isLayoutMode(storedLayout))
+    return storedLayout
+  if (typeof storedLayout !== 'string')
+    return DEFAULT_APP_SETTINGS.layout
+
+  // AI modified: preserve existing users by mapping retired experimental layouts to a formal V1 layout.
+  return LEGACY_LAYOUT_FALLBACKS[storedLayout as keyof typeof LEGACY_LAYOUT_FALLBACKS]
+    ?? DEFAULT_APP_SETTINGS.layout
+}
+
 function isContentWidth(value: unknown): value is ContentWidth {
   return typeof value === 'string' && CONTENT_WIDTHS.includes(value as ContentWidth)
 }
@@ -191,6 +205,14 @@ function isTabStyle(value: unknown): value is TabStyle {
 
 function isPageTransition(value: unknown): value is PageTransition {
   return typeof value === 'string' && PAGE_TRANSITIONS.includes(value as PageTransition)
+}
+
+function readPageTransition(storedTransition: unknown): PageTransition {
+  if (isPageTransition(storedTransition))
+    return storedTransition
+
+  // AI modified: the retired directional transition migrates to the calmer approved fade.
+  return storedTransition === 'fade-slide' ? 'fade' : DEFAULT_APP_SETTINGS.pageTransition
 }
 
 function readBoolean(value: unknown, fallback: boolean): boolean {
@@ -233,7 +255,7 @@ export function readPersistedAppSettings(serializedSettings: string | null): App
       destructiveColor: isHexColor(storedValue.destructiveColor)
         ? storedValue.destructiveColor
         : DEFAULT_APP_SETTINGS.destructiveColor,
-      layout: isLayoutMode(storedValue.layout) ? storedValue.layout : DEFAULT_APP_SETTINGS.layout,
+      layout: readLayoutMode(storedValue.layout),
       contentWidth: isContentWidth(storedValue.contentWidth)
         ? storedValue.contentWidth
         : DEFAULT_APP_SETTINGS.contentWidth,
@@ -264,9 +286,7 @@ export function readPersistedAppSettings(serializedSettings: string | null): App
         storedValue.isFooterVisible,
         DEFAULT_APP_SETTINGS.isFooterVisible,
       ),
-      pageTransition: isPageTransition(storedValue.pageTransition)
-        ? storedValue.pageTransition
-        : DEFAULT_APP_SETTINGS.pageTransition,
+      pageTransition: readPageTransition(storedValue.pageTransition),
     }
   }
   catch {

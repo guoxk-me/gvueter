@@ -323,7 +323,7 @@ describe('adminRouteOutlet cached route identity', () => {
       })
     }
     tabsStore.activateTab('/records?view=first')
-    useAppearanceStore(pinia).setPageTransition('fade-slide')
+    useAppearanceStore(pinia).setPageTransition('fade')
 
     const wrapper = mount(AdminRouteOutlet, {
       attachTo: document.body,

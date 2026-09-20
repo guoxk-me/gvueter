@@ -15,10 +15,10 @@ import { PERFORMANCE_BUDGET } from '@/lib/performance-contract'
 describe('admin motion contract', () => {
   it('keeps shared timings responsive and inside the layout budget', () => {
     expect(ADMIN_MOTION_DURATION_MS).toEqual({
-      fast: 120,
-      standard: 180,
-      emphasized: 240,
-      overlay: 280,
+      fast: 150,
+      standard: 150,
+      emphasized: 180,
+      overlay: 200,
     })
     expect(ADMIN_MOTION_DURATION_MS.emphasized).toBeLessThanOrEqual(
       PERFORMANCE_BUDGET.layoutTransitionMilliseconds,
@@ -32,10 +32,10 @@ describe('admin motion contract', () => {
     const mainCss = await readFile(resolve(process.cwd(), 'src/assets/css/main.css'), 'utf8')
 
     // AI modified: source-level tokens prevent overlays and route effects from drifting from Motion.
-    expect(mainCss).toContain('--motion-duration-fast: 120ms')
-    expect(mainCss).toContain('--motion-duration-standard: 180ms')
-    expect(mainCss).toContain('--motion-duration-emphasized: 240ms')
-    expect(mainCss).toContain('--motion-duration-overlay: 280ms')
+    expect(mainCss).toContain('--motion-duration-fast: 150ms')
+    expect(mainCss).toContain('--motion-duration-standard: 150ms')
+    expect(mainCss).toContain('--motion-duration-emphasized: 180ms')
+    expect(mainCss).toContain('--motion-duration-overlay: 200ms')
   })
 
   it('loads the motion feature bundle through the async admin boundary', async () => {
@@ -62,7 +62,7 @@ describe('admin motion contract', () => {
     })
     const wrapper = mount(MotionTransitionHost)
 
-    expect(wrapper.get('output').attributes('data-duration')).toBe('0.24')
+    expect(wrapper.get('output').attributes('data-duration')).toBe('0.18')
 
     shouldReduceMotion.value = true
     await nextTick()

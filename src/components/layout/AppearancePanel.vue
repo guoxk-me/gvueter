@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import type { ThemeColorId } from '@/lib/theme-presets'
 import type {
-  AppLocale,
-  ComponentSize,
   LayoutMode,
   PageTransition,
-  SemanticColor,
   TabStyle,
   ThemeMode,
 } from '@/stores/appearance'
 import { Monitor, Moon, RotateCcw, Sun } from '@lucide/vue'
-import { computed, useId, watch } from 'vue'
+import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getAdminLayoutDefinition } from '@/components/layout/layout-contract'
 import { Button } from '@/components/ui/button'
@@ -23,13 +20,9 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
-import { setLocale } from '@/i18n'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import {
-  APP_SETTINGS_PRESETS,
-  COMPONENT_SIZES,
   PAGE_TRANSITIONS,
-  SUPPORTED_APP_LOCALES,
   TAB_STYLES,
   useAppearanceStore,
 } from '@/stores/appearance'
@@ -37,7 +30,7 @@ import {
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 
-const { locale: activeLocale, t } = useI18n()
+const { t } = useI18n()
 const appearance = useAppearanceStore()
 const appearancePanelId = useId()
 
@@ -63,18 +56,6 @@ const themeModes: readonly { id: ThemeMode, icon: typeof Sun, labelKey: string }
   { id: 'system', icon: Monitor, labelKey: 'settings.themeSystem' },
 ]
 
-const localeOptions: readonly { id: AppLocale, labelKey: string }[] = [
-  { id: 'zh-CN', labelKey: 'common.languageChinese' },
-  { id: 'en-US', labelKey: 'common.languageEnglish' },
-]
-
-const componentSizeLabelKeys: Record<ComponentSize, string> = {
-  default: 'appearance.sizeDefault',
-  sm: 'appearance.sizeSmall',
-  md: 'appearance.sizeMedium',
-  lg: 'appearance.sizeLarge',
-}
-
 const colorLabelKeys: Record<ThemeColorId, string> = {
   violet: 'appearance.colorViolet',
   blue: 'appearance.colorBlue',
@@ -85,16 +66,6 @@ const colorLabelKeys: Record<ThemeColorId, string> = {
   slate: 'appearance.colorSlate',
   custom: 'appearance.colorCustom',
 }
-
-const semanticColorFields: readonly {
-  id: SemanticColor
-  valueKey: 'successColor' | 'warningColor' | 'destructiveColor'
-  labelKey: string
-}[] = [
-  { id: 'success', valueKey: 'successColor', labelKey: 'appearance.successColor' },
-  { id: 'warning', valueKey: 'warningColor', labelKey: 'appearance.warningColor' },
-  { id: 'destructive', valueKey: 'destructiveColor', labelKey: 'appearance.destructiveColor' },
-]
 
 const layouts: readonly { id: LayoutMode, labelKey: string, descriptionKey: string }[] = [
   {
@@ -112,21 +83,6 @@ const layouts: readonly { id: LayoutMode, labelKey: string, descriptionKey: stri
     labelKey: 'appearance.layoutMixed',
     descriptionKey: 'appearance.layoutMixedDesc',
   },
-  {
-    id: 'sidebar-hybrid-header-first',
-    labelKey: 'appearance.layoutSidebarHybridHeaderFirst',
-    descriptionKey: 'appearance.layoutSidebarHybridHeaderFirstDesc',
-  },
-  {
-    id: 'header-hybrid-sidebar-first',
-    labelKey: 'appearance.layoutHeaderHybridSidebarFirst',
-    descriptionKey: 'appearance.layoutHeaderHybridSidebarFirstDesc',
-  },
-  {
-    id: 'header-hybrid-header-first',
-    labelKey: 'appearance.layoutHeaderHybridHeaderFirst',
-    descriptionKey: 'appearance.layoutHeaderHybridHeaderFirstDesc',
-  },
 ]
 
 const tabStyleLabelKeys: Record<TabStyle, string> = {
@@ -136,46 +92,14 @@ const tabStyleLabelKeys: Record<TabStyle, string> = {
 }
 
 const transitionLabelKeys: Record<PageTransition, string> = {
-  'fade-slide': 'appearance.transitionFadeSlide',
-  'fade': 'appearance.transitionFade',
-  'none': 'appearance.transitionNone',
+  fade: 'appearance.transitionFade',
+  none: 'appearance.transitionNone',
 }
 
 function selectThemeMode(themeMode: ThemeMode): void {
   // AI modified: the settings store projects theme tokens directly; a second view transition closed the active sheet.
   appearance.setThemeMode(themeMode)
 }
-
-function selectLocale(locale: AppLocale): void {
-  appearance.setLocale(locale)
-  setLocale(locale)
-}
-
-function updateCustomColor(event: Event): void {
-  appearance.setCustomColor((event.target as HTMLInputElement).value)
-}
-
-function updateSemanticColor(semanticColor: SemanticColor, event: Event): void {
-  appearance.setSemanticColor(semanticColor, (event.target as HTMLInputElement).value)
-}
-
-function isAppLocale(locale: string): locale is AppLocale {
-  return SUPPORTED_APP_LOCALES.includes(locale as AppLocale)
-}
-
-watch(
-  () => appearance.locale,
-  (locale) => {
-    if (activeLocale.value !== locale)
-      setLocale(locale)
-  },
-  { immediate: true },
-)
-
-watch(activeLocale, (locale) => {
-  if (isAppLocale(locale) && appearance.locale !== locale)
-    appearance.setLocale(locale)
-})
 </script>
 
 <template>
@@ -203,32 +127,7 @@ watch(activeLocale, (locale) => {
       </SheetHeader>
 
       <div class="adaptive-settings flex min-w-0 flex-col gap-6 px-6 py-5">
-        <!-- AI modified: settings adapt their column count for long translations and only transition explicit paint properties. -->
-        <section>
-          <h3 class="mb-1 text-sm font-semibold">
-            {{ t('appearance.presets.title') }}
-          </h3>
-          <p class="mb-3 text-xs text-muted-foreground">
-            {{ t('appearance.presets.description') }}
-          </p>
-          <div class="settings-option-grid settings-option-grid--wide">
-            <button
-              v-for="preset in APP_SETTINGS_PRESETS"
-              :key="preset.id"
-              type="button"
-              class="rounded-lg border border-border p-3 text-left transition-colors hover:border-primary/50 hover:bg-accent/50"
-              @click="appearance.applyPreset(preset.id)"
-            >
-              <span class="block text-xs font-medium">{{ t(preset.labelKey) }}</span>
-              <span class="mt-1 block text-[11px] leading-4 text-muted-foreground">
-                {{ t(preset.descriptionKey) }}
-              </span>
-            </button>
-          </div>
-        </section>
-
-        <Separator />
-
+        <!-- AI modified: production settings expose only stable user-facing theme controls. -->
         <section>
           <h3 :id="settingLabelId('theme-mode')" class="mb-1 text-sm font-semibold">
             {{ t('appearance.themeMode') }}
@@ -258,61 +157,6 @@ watch(activeLocale, (locale) => {
               <component :is="mode.icon" class="size-4" aria-hidden="true" />
               <span class="text-xs font-medium">{{ t(mode.labelKey) }}</span>
             </button>
-          </div>
-        </section>
-
-        <section class="grid gap-5">
-          <div>
-            <p :id="settingLabelId('language')" class="mb-2 block text-xs font-medium">
-              {{ t('settings.language') }}
-            </p>
-            <div
-              class="settings-option-grid settings-option-grid--wide"
-              role="group"
-              :aria-labelledby="settingLabelId('language')"
-            >
-              <button
-                v-for="locale in localeOptions"
-                :key="locale.id"
-                type="button"
-                class="rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-[color,background-color,border-color,box-shadow,transform]"
-                :class="
-                  appearance.locale === locale.id
-                    ? 'border-primary bg-primary-muted text-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/50'
-                "
-                :aria-pressed="appearance.locale === locale.id"
-                @click="selectLocale(locale.id)"
-              >
-                {{ t(locale.labelKey) }}
-              </button>
-            </div>
-          </div>
-          <div>
-            <p :id="settingLabelId('component-size')" class="mb-2 block text-xs font-medium">
-              {{ t('appearance.componentSize') }}
-            </p>
-            <div
-              class="settings-option-grid settings-option-grid--compact"
-              role="group"
-              :aria-labelledby="settingLabelId('component-size')"
-            >
-              <button
-                v-for="size in COMPONENT_SIZES"
-                :key="size"
-                type="button"
-                class="rounded-md border-2 px-1 py-1.5 text-xs font-medium transition-[color,background-color,border-color,box-shadow,transform]"
-                :class="
-                  appearance.componentSize === size
-                    ? 'border-primary bg-primary-muted text-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/50'
-                "
-                :aria-pressed="appearance.componentSize === size"
-                @click="appearance.setComponentSize(size)"
-              >
-                {{ t(componentSizeLabelKeys[size]) }}
-              </button>
-            </div>
           </div>
         </section>
 
@@ -354,50 +198,6 @@ watch(activeLocale, (locale) => {
                 {{ t(colorLabelKeys[preset.id]) }}
               </span>
             </button>
-
-            <label
-              class="flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-[color,background-color,border-color,box-shadow,transform]"
-              :class="
-                appearance.themeColor === 'custom'
-                  ? 'border-primary bg-primary-muted'
-                  : 'border-border hover:border-primary/50'
-              "
-            >
-              <span
-                class="size-6 rounded-full ring-2 ring-transparent ring-offset-1 ring-offset-background"
-                :style="{ background: appearance.customColor }"
-              />
-              <span class="text-xs leading-none text-muted-foreground">
-                {{ t('appearance.colorCustom') }}
-              </span>
-              <input
-                type="color"
-                class="sr-only"
-                :aria-label="t('appearance.customColor')"
-                :aria-current="appearance.themeColor === 'custom' ? 'true' : undefined"
-                :value="appearance.customColor"
-                @input="updateCustomColor"
-              >
-            </label>
-          </div>
-
-          <div class="settings-option-grid settings-option-grid--balanced mt-4">
-            <label
-              v-for="semanticColor in semanticColorFields"
-              :key="semanticColor.id"
-              class="flex cursor-pointer items-center gap-2 rounded-lg border border-border p-2"
-            >
-              <input
-                type="color"
-                class="size-7 cursor-pointer rounded border-0 bg-transparent p-0"
-                :aria-label="t(semanticColor.labelKey)"
-                :value="appearance[semanticColor.valueKey]"
-                @input="updateSemanticColor(semanticColor.id, $event)"
-              >
-              <span class="min-w-0 break-words text-xs font-medium">
-                {{ t(semanticColor.labelKey) }}
-              </span>
-            </label>
           </div>
         </section>
 

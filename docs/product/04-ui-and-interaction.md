@@ -2,7 +2,7 @@
 
 <!-- AI modified: 汇总已确认的原型与交互规范，并显式区分设计目标、已有实现和待验收差异。 -->
 
-> 更新日期：2026-09-05<br>
+> 更新日期：2026-09-20<br>
 > 文档定位：V1 视觉、页面交互、组件组合和设计验收基线<br>
 > 状态说明：已确认规则是交付目标；Inspected 表示已查阅仓库来源；静态画板不代表交互已经实现或通过测试。
 
@@ -21,7 +21,7 @@
 - [页面设计契约](../page-design-contract.md)、[UI 原语盘点](../ui-primitives.md)、[页面状态与 URL 契约](../page-state-and-url-contract.md)：已有实现的组合约束和工程事实；与新版产品决策冲突时作为迁移依据，不能反向覆盖新版原型。
 - `src/`：实现现状。某个组件已经存在，不等于它已经符合本规范。
 
-本轮只补充文档，不修改代码或画板。历史文档中的测试和截图记录属于当时的证据，不能转述为本轮重新执行过的视觉或浏览器测试。
+Layout / Design System 第一批运行实现已于 2026-09-20 落地；本文分别记录已实现内容和仍待迁移范围。历史文档中的测试和截图记录属于当时的证据，不能转述为本轮重新执行过的视觉或浏览器测试。
 
 文中明确标为“本次细化建议 / 待评审”的交互是补充方案，不因出现在 UI 规范中自动成为已确认业务规则；确认前不计入正式验收门槛。
 
@@ -121,6 +121,8 @@ Theme 代表页面必须复用相同内容、数据和滚动位置。10E 上方�
 七品牌展示顺序固定为 Violet、Blue、Cyan、Green、Orange、Rose、Slate；品牌 ID 稳定，名称跟随 Locale。Slate 保留为低彩度选项，但功能状态色不随品牌变化。Dark 中的品牌色仅用于交互、Focus、Chart-1 与小面积选中反馈，页面级对照固定为 Violet Light、Violet Dark、Blue Light、Orange Dark 的 `2×2` 矩阵。
 
 Prototyped：`10A`–`10E` 五张 Candidate 已在 `gvuter.pen` 完成，并新增 ThemeModeSelector、BrandOption、LayoutOption、ThemeStatus 共享组件。所有主题图标、图表和状态图形使用语义 Token 驱动的矢量节点；`basic.pen` 仅作参考。预览见 `docs/assets/prototype/theme-10/`。该状态不等同于 Vue 运行代码已经实现。
+
+Implemented / Inspected（2026-09-20，第一批）：运行 Shell 已收敛为 Sidebar、Top、Mixed 三种正式布局，旧布局偏好在读取时迁移；Sidebar / Rail / Mixed 次栏 / Flyout 使用 240 / 72 / 240 / 280px，Breadcrumb 进入 Header，搜索位于工具区首位。Quiet Layers、8px 基础圆角、暖 Stone/Charcoal Dark 和 150–200ms 动效已进入运行 Token；Appearance 面板只显示 Light/Dark/System、七种品牌、三布局与安全显示选项，不再显示混合 Preset、全局组件尺寸、语言或任意颜色。浏览器已检查 Sidebar 的 390/1024/1280、Top/Mixed 的 1280 以及 Light/Dark；这不代表 Theme 全部存储、同步、Palette 注册或所有 03–10 页面已经完成。
 
 <!-- AI modified: 同步 Q1573–Q1692 确认并已绘制的 Theme 入口、品牌矩阵、状态响应式与验收结果。 -->
 
@@ -584,14 +586,14 @@ shadcn-vue/Reka UI 提供基础行为，Gvueter 统一 Token、变体、组合�
 | --- | --- | --- | --- |
 | GAP-01：表格双入口 | 业务增强统一 DataTable，轻量 Table 独立 | `components/data-table` 和 `components/pro-table` 并存，高级虚拟化等仍在 ProTable | 迁移调用、兼容出口和插件后验证功能不回退 |
 | GAP-02：业务浮层 | CRUD 统一 BusinessDrawer，480/640px、Role 约760px Large、<768 全宽 | 存在 User/Menu/Department 等 FormDialog；admin Drawer 采用 Tailwind 的 sm/md/lg/xl 宽度，非确认尺寸体系 | 对齐新增、编辑、详情和 Dirty Guard；保留危险确认 Dialog |
-| GAP-03：布局和导航尺寸 | 三种正式布局、240/72、Mixed 上下文 240、Flyout 280 | `layout-contract.ts` 定义六种布局；主栏 16rem、Rail 4.25rem、次栏 14rem；Flyout `w-64` | 按目标逐项迁移，不把旧数值当新版基线 |
-| GAP-03：Header | Breadcrumb 在 Header，搜索第一，统一工具顺序 | Breadcrumb 仍由独立 Context Bar 承载；Header 当前顺序为搜索、语言、外观、通知、头像 | 三布局和窄屏统一核对，不仅修改一张示例 |
-| GAP-03：移动导航 | `min(320px, 100vw - 48px)` | 当前 Sheet 使用 `min(88vw, 20rem)` | 在 390、768 和临界断点核对遮罩与导航可达性 |
-| GAP-03 / 07：目录行为 | 当前祖先自动展开、用户+Layout 会话存储、Hover/Focus/点击 Flyout | `AdminNavigationNode` 用本地 `shallowRef` 保存展开/浮层；叶子与祖先仍共享激活背景类 | 逐项补运行态测试，不能仅凭存在 Popover 判定完成 |
+| GAP-03：布局和导航尺寸 | 三种正式布局、240/72、Mixed 上下文 240、Flyout 280 | Implemented：三布局和 240/72/240/280px 已统一，旧布局标识读取时迁移 | 补全三布局中英文、键盘和 1440/1920/2560 验收 |
+| GAP-03：Header | Breadcrumb 在 Header，搜索第一，统一工具顺序 | Implemented：Breadcrumb 已进入 Header；工具顺序为搜索、全屏、外观、语言、通知、头像 | 继续复核 Top/Mixed、长英文和 200% 缩放 |
+| GAP-03：移动导航 | `min(320px, 100vw - 48px)` | Implemented：Sheet 使用 `min(20rem, 100vw - 3rem)`；390px 已浏览器检查 | 补 360、768、动态视口、键盘和焦点返回验收 |
+| GAP-03 / 07：目录行为 | 当前祖先自动展开、用户+Layout 会话存储、Hover/Focus/点击 Flyout | Implemented：叶子选中使用软表面和强调线，祖先只强调文字；展开/Flyout 仍由组件本地状态管理 | 后续补用户+Layout 会话隔离和完整鼠标/键盘恢复测试 |
 | GAP-07：缓存与会话 | Tabs 默认 sessionStorage；KeepAlive 默认上限10 | `stores/tabs.ts` 使用按用户隔离的 localStorage；`performance-budget.json` 上限20 | 保留现有身份隔离，补默认策略迁移与恢复/淘汰测试 |
-| GAP-11：字体与密度 | 本地 Inter、桌面常规控件 36、表格舒适44/Compact36 | Google Fonts 外链已移除并使用本地 Inter；基础控件36，`md`覆盖40；表格基础40、`sm`34、`md`44 | 继续统一默认配置与 Token 映射，并完成离线和中英文复验 |
-| GAP-11：受控品牌 | 七种受控预设，不允许任意颜色 | `appearance.ts` 保留 `setCustomColor` 和自定义语义颜色入口 | 明确配置迁移，验收允许的主题集合与对比度 |
-| GAP-11：动效 | 控件150、Overlay200，Sidebar180/150 | CSS 定义 fast120、standard180、emphasized240、overlay280ms | 统一 CSS 与 Motion 消费方并复验 Reduced Motion |
+| GAP-11：字体与密度 | 本地 Inter、桌面常规控件 36、表格舒适44/Compact36 | 本地 Inter 已实施；正式面板已移除全局组件尺寸，基础半径/表面 Token 已对齐，表格局部密度仍按组件验证 | 继续统一控件/表格尺寸矩阵并完成中英文复验 |
+| GAP-11：受控品牌 | 七种受控预设，不允许任意颜色 | 正式面板只显示七品牌；兼容 Store 仍保留 custom 和语义颜色字段/API，但不构成产品入口 | 增加版本化迁移、项目 Palette 注册和对比度门禁后再清理兼容字段 |
+| GAP-11：动效 | 控件150、Overlay200，Sidebar180/150 | CSS 与 Motion 契约已统一为 150/150/180/200ms；页面只暴露 Fade/Off，旧 Fade+Slide 迁移为 Fade | 继续复验 Reduced Motion、Overlay 与路由焦点连续性 |
 | GAP-11：插图交付 | 六类主题化 SVG，异步注册表和页面统一使用 | 原型已有矢量母版记录；不将其等同于 `src` 中工程组件已交付 | 实现注册表、体积、颜色覆盖和无障碍输出门禁 |
 | GAP-14：角色授权工作区 | SearchForm + DataTable、三 Tab 授权 Drawer、User 多角色分配 | RolesWorkspace 仍使用角色卡片和常驻权限矩阵，用户类型仍为单角色 | 按 08 目标迁移页面和契约，验证锁定/隐藏保留与原子保存 |
 

@@ -26,7 +26,13 @@
 - API 现状查阅 [OpenAPI](../openapi.yaml)、[API 契约](../api-contracts.md)及对应运行时 Schema；产品新规则与现有 DTO 冲突时，记录迁移项，不能把目标字段当作现有 API。
 - 历史路线图、截图和测试通过记录用于追溯，不作为本轮运行结果。尤其不能沿用旧 Vite+、Oxfmt 或六布局方案覆盖最新确认。
 
-### 1.2 本套文档的状态词
+### 1.2 当前交付重点
+
+<!-- AI modified: separate the finished engineering baseline from the still-pending prototype implementation. -->
+
+工程 Phase 0–3 已建立较完整的安全、CI、运行配置、契约和源码边界，但这不代表新版产品原型已经完整实现。当前暂停 Phase 4 性能基线，优先完成 03–10 Candidate 与运行代码的收敛；顺序为 Layout / Design System、Login、Dashboard、Router / Menu、Permission、Table / Form、Theme。Layout / Design System 第一批 Shell、基础 Token 和正式外观入口已于 2026-09-20 实现并完成代表视口检查，其余页面与完整矩阵仍按该顺序推进。完成标准不是“已有相似页面”，而是共享组件、页面视觉、交互状态、响应式和浏览器行为均按确认方案通过验收。
+
+### 1.3 本套文档的状态词
 
 | 状态 | 含义 | 不代表什么 |
 | --- | --- | --- |
@@ -246,7 +252,7 @@ Gvueter 是可克隆、可直接二次开发的生产级 Vue Admin 基础模板�
 | --- | --- | --- | --- |
 | GAP-01 | 单一 DataTable 增强入口，保留轻量 Table | 同时存在 [DataTable](../../src/components/data-table/DataTable.vue) 与 [ProTable](../../src/components/pro-table/ProTable.vue) | 收敛公开 API、消费方和迁移兼容，不只重命名 |
 | GAP-02 | 业务新增/编辑/详情统一 Drawer | [用户编辑](../../src/features/users/components/UserFormDialog.vue)等仍使用 FormDialog | 实际替换容器、校验、关闭保护和焦点契约 |
-| GAP-03 | 三种正式布局、240/72px、Breadcrumb 位于 Header | [布局契约](../../src/components/layout/layout-contract.ts)仍有六布局及旧尺寸，Breadcrumb 仍在 Context Bar | 统一布局状态与 Header 结构，保留必要配置迁移 |
+| GAP-03 | 三种正式布局、240/72px、Breadcrumb 位于 Header | Implemented：Shell 已收敛为 Sidebar / Top / Mixed，旧布局偏好安全迁移；240/72/240/280px 几何、Header Breadcrumb、搜索优先与移动导航宽度已落地。Inspected：Sidebar 已检查 390/1024/1280，Top 与 Mixed 已检查 1280 | 继续完成三布局 × 中英文 × 全宽度矩阵、键盘/焦点与 1920/2560 验收 |
 | GAP-04 | 已确认实时通信采用 SSE 接入方向 | [通知传输](../../src/features/notifications/notification-transport.ts)使用 WebSocket，配置沿用 WS URL | 明确 SSE 事件与恢复契约后迁移适配器 |
 | GAP-05 | 引入 DTO 生成与 Knip 等门禁 | `dayjs` 已移除；[package.json](../../package.json)仍未声明 openapi-typescript、Knip、eventsource-client | 按依赖使用、生成物和 CI 逐项落地；现有契约检查不等于类型生成 |
 | GAP-06 | 可选注册、独立 500 页、示例中心整体可关闭 | [认证路由](../../src/router/routes/auth.ts)无注册；[后台路由](../../src/router/routes/admin.ts)无独立 500，示例专项路由仍注册 | 补充功能开关与完整页面/契约，不能只隐藏入口 |
@@ -254,7 +260,7 @@ Gvueter 是可克隆、可直接二次开发的生产级 Vue Admin 基础模板�
 | GAP-08 | Access Token 支持 session/local 两种策略，Refresh Token 后端 HttpOnly 管理 | [认证 Store](../../src/stores/auth.ts)仅接受 sessionStorage，未提供完整续期 API | 对齐存储开关、过期/续期/撤销契约及跨请求隔离 |
 | GAP-09 | Dashboard 模块 Registry、权限过滤和模块独立 Query | [概览查询](../../src/features/dashboard/composables/useDashboardOverview.ts)仍为整体概览请求 | 先统一模块与接口边界，再完成加载/空/失败投影 |
 | GAP-10 | PWA 保留但默认关闭 | [Vite 配置](../../vite.config.ts)与[应用入口](../../src/App.vue)在非 Mock 生产路径启用 PWA | 增加明确启用条件并验收未启用时无 Worker 产物/注册 |
-| GAP-11 | 本地字体、受控品牌与统一尺寸 Token | 本地 Inter 已实施；[样式](../../src/assets/css/main.css)及[外观状态](../../src/stores/appearance.ts)仍有自定义主题/尺寸策略差异 | 建立原型 Token 到实现的映射并验证所有主题 |
+| GAP-11 | 本地字体、受控品牌与统一尺寸 Token | Implemented：本地 Inter、Quiet Layers 表面、暖 Stone/Charcoal Dark、8px 基础圆角、150–200ms 动效及七品牌正式入口已落地；正式 Appearance 面板不再暴露混合 Preset、全局尺寸、语言或任意颜色。兼容 Store 仍保留旧字段/API | 后续完成版本化按用户存储、跨标签同步、项目 Palette 注册/对比度门禁、完整 Theme 状态与组件矩阵 |
 | GAP-12 | 目录/页面语义、稳定 routeKey、自身与有效启用状态明确 | [菜单类型](../../src/features/menus/types.ts)与[导航 DTO](../../src/features/navigation/types.ts)尚未完整表达新契约 | 不将原型字段直接拼入旧请求；需兼容性设计和后端对齐 |
 | GAP-13 | 用户名或邮箱登录，风险规则以服务端为准 | [登录页](../../src/pages/auth/LoginPage.vue)仍有固定失败阈值，现有表单按邮箱校验 | 对齐账号标识和风险响应，Mock 阈值不能成为通用生产政策 |
 | GAP-14 | 多角色 RBAC、角色生命周期、可授予目录和版本化原子授权 | [用户类型](../../src/features/users/types.ts) 是单角色；[角色类型](../../src/features/roles/types.ts) 是固定枚举与无版本输入；[工作区](../../src/features/roles/components/RolesWorkspace.vue) 仍为卡片/矩阵 | 迁移 DTO、后端权限保留事务与资源/操作范围合成，再对齐 DataTable、Large Drawer 和用户多选角色 |

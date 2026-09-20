@@ -1,6 +1,6 @@
 # 11 工程优化实施清单
 
-> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，运行层安全修复的新版托管 CI 矩阵已通过。Phase 3 已完成本地与托管验收；Phase 4–6 与 Renovate App 等远端仓库设置仍为计划。
+> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，运行层安全修复的新版托管 CI 矩阵已通过。Phase 3 已完成本地与托管验收。Phase 4 性能与测试暂缓，当前优先把已确认的 Pencil Candidate 落到运行代码并完成视觉、交互和浏览器验收；Phase 4–6 与 Renovate App 等远端仓库设置仍为计划。
 
 ## 1. 目标与边界
 
@@ -228,7 +228,11 @@ Acceptance：生成物无漂移，依赖和模块边界检查通过，生产产�
 
 ### Phase 4 — 性能与测试
 
-Status：Planned
+Status：Planned（暂缓）
+
+<!-- AI modified: defer performance baselining until the confirmed prototype direction is implemented. -->
+
+进入条件：03–10 的核心视觉与页面 Candidate 已完成代表性运行实现，至少收口 Layout、Design System、Login、Dashboard、Router/Menu、Permission、Table/Form 与 Theme 的主要差异。当前先执行“原型落地与设计收敛”，避免用仍在变化的页面建立性能和视觉回归基线。
 
 - 为认证、权限、路由、API 设置 90/85/90/90 的关键模块覆盖率目标，全局基线不回退。
 - 建立首屏 JS 总量、CSS、字体、请求数预算，并以当前真实构建加约 5% 波动作为初始门禁。

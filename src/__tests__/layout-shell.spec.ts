@@ -12,11 +12,11 @@ import { LAYOUT_MODES } from '@/stores/appearance'
 import { getActiveTabIdAfterClose } from '@/stores/tab-navigation'
 
 describe('configurable admin layout contract', () => {
-  it('gives all six persisted modes a distinct grid arrangement', () => {
+  it('gives the three formal layouts a distinct grid arrangement', () => {
     const definitions = LAYOUT_MODES.map(layoutMode => getAdminLayoutDefinition(layoutMode))
 
     expect(definitions.map(definition => definition.mode)).toEqual(LAYOUT_MODES)
-    expect(new Set(definitions.map(definition => definition.gridTemplateAreas)).size).toBe(6)
+    expect(new Set(definitions.map(definition => definition.gridTemplateAreas)).size).toBe(3)
     expect(definitions.every(definition => definition.gridTemplateColumns.length > 0)).toBe(true)
     expect(definitions.every(definition => definition.gridTemplateRows.length > 0)).toBe(true)
     expect(
@@ -36,9 +36,11 @@ describe('configurable admin layout contract', () => {
     expect(ADMIN_SHELL_METRICS).toMatchObject({
       desktopBreakpointPx: 1024,
       headerHeight: '3.5rem',
-      breadcrumbHeight: '2rem',
       tabsHeight: '2.5rem',
       touchTarget: '2.75rem',
+      sidebarWidth: '15rem',
+      railWidth: '4.5rem',
+      navigationFlyoutWidth: '17.5rem',
     })
   })
 
@@ -52,7 +54,7 @@ describe('configurable admin layout contract', () => {
     expect(mixedLayout.collapseTarget).toBe('secondary')
     expect(mixedLayout.childPresentation).toBe('secondary')
     expect(getAdminNavigationWidths('mixed', true)).toEqual({
-      primary: '4.25rem',
+      primary: '4.5rem',
       secondary: '0rem',
     })
   })
@@ -69,29 +71,20 @@ describe('configurable admin layout contract', () => {
       collapseTarget: 'primary',
       childPresentation: 'inline',
     })
-    expect(getAdminNavigationWidths('header-hybrid-header-first', true)).toEqual({
+    expect(getAdminNavigationWidths('top', true)).toEqual({
       primary: '0rem',
-      secondary: '4.25rem',
+      secondary: '0rem',
     })
   })
 
   it.each([
-    ['sidebar', { primary: '16rem', secondary: '0rem' }, { primary: '4.25rem', secondary: '0rem' }],
-    [
-      'sidebar-hybrid-header-first',
-      { primary: '16rem', secondary: '0rem' },
-      { primary: '4.25rem', secondary: '0rem' },
-    ],
+    ['sidebar', { primary: '15rem', secondary: '0rem' }, { primary: '4.5rem', secondary: '0rem' }],
     [
       'mixed',
-      { primary: '4.25rem', secondary: '14rem' },
-      { primary: '4.25rem', secondary: '0rem' },
+      { primary: '4.5rem', secondary: '15rem' },
+      { primary: '4.5rem', secondary: '0rem' },
     ],
-    [
-      'header-hybrid-header-first',
-      { primary: '0rem', secondary: '14rem' },
-      { primary: '0rem', secondary: '4.25rem' },
-    ],
+    ['top', { primary: '0rem', secondary: '0rem' }, { primary: '0rem', secondary: '0rem' }],
   ] as const)(
     'defines measurable expanded and collapsed widths for %s',
     (layoutMode, expandedWidths, collapsedWidths) => {
@@ -101,11 +94,9 @@ describe('configurable admin layout contract', () => {
     },
   )
 
-  it('renders breadcrumb and tabs inside one context surface with one owned border', () => {
+  it('keeps tabs on one context surface after breadcrumb moves into the header', () => {
     const wrapper = shallowMount(AdminContextBar, {
       props: {
-        hasBreadcrumbIcon: true,
-        isBreadcrumbVisible: true,
         isTabsVisible: true,
       },
       // AI modified: the real context bar resolves its accessible name through the app i18n plugin.
@@ -114,11 +105,7 @@ describe('configurable admin layout contract', () => {
 
     expect(wrapper.attributes('data-layout-region')).toBe('context-bar')
     expect(wrapper.classes()).toContain('border-b')
-    expect(wrapper.findAll('app-breadcrumb-stub')).toHaveLength(1)
     expect(wrapper.findAll('admin-tabs-stub')).toHaveLength(1)
-    expect(wrapper.get('[data-context-row="breadcrumb"]').classes()).toContain(
-      'h-[var(--admin-context-breadcrumb-height)]',
-    )
   })
 })
 

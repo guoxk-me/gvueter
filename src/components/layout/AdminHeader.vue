@@ -25,17 +25,24 @@ import {
 } from '@/features/notifications'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
+import AdminBrand from './AdminBrand.vue'
 import AdminTopNavigation from './AdminTopNavigation.vue'
+import AppBreadcrumb from './AppBreadcrumb.vue'
+import ApplicationFullscreenButton from './ApplicationFullscreenButton.vue'
 
 const props = withDefaults(
   defineProps<{
     isMobileNavigationOpen: boolean
     showBrand?: boolean
     navigationNodes?: NavigationMenuNode[]
+    isBreadcrumbVisible?: boolean
+    hasBreadcrumbIcon?: boolean
   }>(),
   {
     showBrand: true,
     navigationNodes: () => [],
+    isBreadcrumbVisible: true,
+    hasBreadcrumbIcon: false,
   },
 )
 
@@ -95,7 +102,7 @@ watch(
 
 <template>
   <header
-    class="flex h-[var(--admin-shell-header-height)] min-w-0 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur md:px-4"
+    class="flex h-[var(--admin-shell-header-height)] min-w-0 shrink-0 items-center gap-2 border-b border-border/80 bg-surface/95 px-3 backdrop-blur md:px-4"
     data-layout-region="header"
   >
     <Button
@@ -111,33 +118,30 @@ watch(
       <Menu class="size-4" aria-hidden="true" />
     </Button>
 
-    <!-- AI modified: browser translation must preserve the Shell brand as one stable name. -->
-    <RouterLink
-      to="/dashboard"
-      class="flex shrink-0 items-center gap-2 font-semibold text-foreground"
-      :class="props.showBrand ? '' : 'lg:hidden'"
-      translate="no"
-    >
-      <span
-        class="flex size-8 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground shadow-sm"
-      >
-        A
-      </span>
-      <span class="hidden sm:inline">{{ t('common.appTitle') }}</span>
-    </RouterLink>
+    <AdminBrand :show-label="true" :class="props.showBrand ? '' : 'lg:hidden'" />
 
-    <div
-      v-if="props.navigationNodes.length"
-      class="ml-2 hidden min-w-0 flex-1 overflow-hidden lg:block"
-    >
-      <AdminTopNavigation
-        :nodes="props.navigationNodes"
-        :restoration-reserve="isTopNavigationOverflowing ? searchExpansionReserve : 0"
-        @node-selected="emit('navigationNodeSelected', $event)"
-        @overflow-change="isTopNavigationOverflowing = $event"
-      />
+    <div class="flex min-w-0 flex-1 items-center gap-3 overflow-hidden lg:pl-1">
+      <!-- AI modified: Breadcrumb now owns the left side of the global Header in every formal layout. -->
+      <div
+        v-if="props.isBreadcrumbVisible"
+        class="min-w-0 shrink overflow-hidden"
+        data-header-breadcrumb
+      >
+        <AppBreadcrumb :has-icon="props.hasBreadcrumbIcon" />
+      </div>
+
+      <div
+        v-if="props.navigationNodes.length"
+        class="hidden min-w-0 flex-1 overflow-hidden border-l border-border/70 pl-3 lg:block"
+      >
+        <AdminTopNavigation
+          :nodes="props.navigationNodes"
+          :restoration-reserve="isTopNavigationOverflowing ? searchExpansionReserve : 0"
+          @node-selected="emit('navigationNodeSelected', $event)"
+          @overflow-change="isTopNavigationOverflowing = $event"
+        />
+      </div>
     </div>
-    <div v-else class="flex-1" />
 
     <!-- AI modified: actions reserve their own width instead of visually covering overflowing navigation. -->
     <div class="ml-auto flex shrink-0 items-center gap-1 pl-2">
@@ -145,7 +149,7 @@ watch(
         :compact="isTopNavigationOverflowing"
         @width-reserve-change="searchExpansionReserve = $event"
       />
-      <LanguageToggleButton />
+      <ApplicationFullscreenButton />
       <Button
         type="button"
         variant="ghost"
@@ -156,6 +160,7 @@ watch(
       >
         <Palette class="size-4" aria-hidden="true" />
       </Button>
+      <LanguageToggleButton />
       <Button as-child variant="ghost" size="icon-sm" class="relative">
         <!-- AI modified: the persisted unread count is reachable from every authenticated layout. -->
         <RouterLink

@@ -6,7 +6,7 @@ This contract keeps route pages visually consistent without making route compone
 
 ## Standard page anatomy
 
-1. `PageHeader` owns the page title, optional eyebrow/description, and page-level actions. Breadcrumb and tabs never move into `PageHeader`; they belong to the Shell context bar.
+1. `PageHeader` owns the page title, optional eyebrow/description, and page-level actions. Breadcrumb stays in the global Header and Tabs stay in the Shell page-context row; neither belongs inside a route page.
 2. `SearchForm` or a feature filter bar owns submitted query state. Fields render in one column by default, two from `sm`, and four only when the container has enough width.
 3. Cards, state boundaries, charts, trees, and tables form the content region. Sibling regions use a `1.5rem` vertical gap (`space-y-6`); an internal card generally uses `1rem` padding/gaps.
 4. Table pagination belongs to the same bordered table surface and is separated by that surface's single top border. The table container, not the document, owns horizontal overflow.
@@ -20,12 +20,11 @@ The values below are CSS variables in `main.css` and their TypeScript counterpar
 | Region                       | Token                                                | Baseline          |
 | ---------------------------- | ---------------------------------------------------- | ----------------- |
 | Header and sidebar brand row | `--admin-shell-header-height`                        | `3.5rem`          |
-| Breadcrumb context row       | `--admin-context-breadcrumb-height`                  | `2rem`            |
 | Tabs context row             | `--admin-context-tabs-height`                        | `2.5rem`          |
 | Route padding                | `--admin-page-padding` / `--admin-page-padding-wide` | `1rem` / `1.5rem` |
 | Coarse-pointer target        | `--admin-touch-target`                               | `2.75rem`         |
 
-Breadcrumb and Tabs are optional rows in one context bar. Hiding either row never changes the other row's height. The context bar draws its bottom border; its children draw none. A visible sidebar closest to content owns the vertical separator, so adjacent rails never draw a double line. Cards own their full border, while the surrounding page stays borderless.
+Breadcrumb is an optional region inside the fixed-height Header, while Tabs are an optional context row below it. Hiding either never changes the other region's height. The Tabs context row draws its own bottom border. A visible sidebar closest to content owns the vertical separator, so adjacent rails never draw a double line. Cards own their full border, while the surrounding page stays borderless.
 
 Background, foreground, muted, card, border, ring, semantic colors, chart colors, radius, density, and control sizing come from `src/assets/css/main.css`. Feature code must consume those semantic tokens instead of adding page-specific color or shadow scales.
 

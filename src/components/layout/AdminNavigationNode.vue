@@ -60,11 +60,16 @@ const containerClass = computed(() => [
   props.variant === 'horizontal' ? 'shrink-0' : 'w-full',
 ])
 const destinationClass = computed(() => [
-  'group flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 text-sm font-medium outline-none transition-colors',
+  'group relative flex w-full items-center gap-2 rounded-md px-2.5 text-sm font-medium outline-none transition-colors',
   'focus-visible:ring-2 focus-visible:ring-ring/60',
-  isBranchActive.value
-    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+  props.variant === 'vertical' && props.depth > 0 ? 'min-h-9.5' : 'min-h-10',
+  isDestinationActive.value
+    ? props.variant === 'horizontal'
+      ? 'text-primary shadow-[inset_0_-2px_0_var(--primary)]'
+      : 'bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_2px_0_0_var(--sidebar-primary)]'
+    : isBranchActive.value
+      ? 'text-sidebar-accent-foreground'
+      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
   props.variant === 'horizontal' ? 'whitespace-nowrap' : '',
   isCompact.value ? 'justify-center px-2' : '',
 ])
@@ -178,7 +183,7 @@ watch(
       <PopoverContent
         side="right"
         align="start"
-        class="max-h-(--reka-popover-content-available-height) w-64 overflow-y-auto p-1.5"
+        class="max-h-(--reka-popover-content-available-height) w-[var(--admin-navigation-flyout-width)] overflow-y-auto p-1.5"
       >
         <p class="px-2 pb-1.5 pt-1 text-xs font-semibold text-muted-foreground">
           {{ t(node.titleKey) }}

@@ -2,6 +2,7 @@
 import type { VariantType } from 'motion-v'
 import type { CSSProperties } from 'vue'
 import type { NavigationMenuNode } from '@/features/navigation'
+import { useMediaQuery } from '@vueuse/core'
 import { AnimatePresence, m } from 'motion-v'
 import { computed, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -20,6 +21,7 @@ import { useAdminMotionTransition } from '@/composables/use-admin-motion-transit
 import { ADMIN_MOTION_TRANSITIONS, ADMIN_MOTION_VARIANTS } from '@/lib/motion-contract'
 import { useAppearanceStore } from '@/stores/appearance'
 import { useMenuStore } from '@/stores/menu'
+import AdminBrand from './AdminBrand.vue'
 import AdminContextBar from './AdminContextBar.vue'
 import AdminFooter from './AdminFooter.vue'
 import AdminHeader from './AdminHeader.vue'
@@ -45,11 +47,13 @@ const isMobileNavigationOpen = shallowRef(false)
 const isSidebarCollapsed = shallowRef(false)
 const isSidebarMotionEnabled = shallowRef(false)
 const selectedRootMenuId = shallowRef<string>()
+const isNarrowDesktop = useMediaQuery('(min-width: 1024px) and (max-width: 1279px)')
 
 const layoutDefinition = computed(() => getAdminLayoutDefinition(appearance.layout))
 const hasCollapsibleSidebar = computed(() => layoutDefinition.value.collapseTarget !== 'none')
 const isEffectiveSidebarCollapsed = computed(
-  () => hasCollapsibleSidebar.value && isSidebarCollapsed.value,
+  // AI modified: the 1024–1279 workspace uses the confirmed 72px rail to protect content width.
+  () => hasCollapsibleSidebar.value && (isNarrowDesktop.value || isSidebarCollapsed.value),
 )
 const activeRootMenu = computed(() =>
   menuStore.visibleMenus.find(menuNode => branchContainsPath(menuNode, route.path)),
@@ -81,11 +85,15 @@ const secondaryOwnsMainBoundary = computed(
 )
 const showsPrimaryCollapseControl = computed(
   () =>
-    layoutDefinition.value.collapseTarget === 'primary'
-    || (appearance.layout === 'mixed' && layoutDefinition.value.collapseTarget === 'secondary'),
+    !isNarrowDesktop.value
+    && (layoutDefinition.value.collapseTarget === 'primary'
+      || (appearance.layout === 'mixed' && layoutDefinition.value.collapseTarget === 'secondary')),
 )
 const showsSecondaryCollapseControl = computed(
-  () => layoutDefinition.value.collapseTarget === 'secondary' && appearance.layout !== 'mixed',
+  () =>
+    !isNarrowDesktop.value
+    && layoutDefinition.value.collapseTarget === 'secondary'
+    && appearance.layout !== 'mixed',
 )
 const contentClass = computed(() =>
   appearance.contentWidth === 'boxed' ? 'mx-auto w-full max-w-screen-xl' : 'w-full',
@@ -173,7 +181,7 @@ watch(
 <template>
   <!-- AI modified: current Shell state is observable independently from the persisted startup preference. -->
   <m.div
-    class="admin-layout relative grid h-svh min-h-svh overflow-hidden bg-muted/20 text-foreground"
+    class="admin-layout relative grid h-svh min-h-svh overflow-hidden bg-background text-foreground"
     :data-layout="appearance.layout"
     :data-sidebar-state="isEffectiveSidebarCollapsed ? 'collapsed' : 'expanded'"
     :style="layoutStyle"
@@ -195,6 +203,8 @@ watch(
       :is-mobile-navigation-open="isMobileNavigationOpen"
       :show-brand="hasDesktopHeaderBrand"
       :navigation-nodes="hasHeaderNavigation ? menuStore.visibleMenus : []"
+      :is-breadcrumb-visible="appearance.isBreadcrumbVisible"
+      :has-breadcrumb-icon="appearance.hasBreadcrumbIcon"
       @open-appearance="isAppearanceOpen = true"
       @toggle-mobile-navigation="isMobileNavigationOpen = !isMobileNavigationOpen"
       @navigation-node-selected="selectPrimaryNode"
@@ -206,33 +216,11 @@ watch(
       :class="primaryOwnsMainBoundary ? 'border-r border-sidebar-border' : ''"
       data-layout-region="primary-navigation"
     >
-      <!-- AI modified: the stable brand retains its full name after the visual label exits. -->
-      <RouterLink
+      <AdminBrand
         v-if="!hasDesktopHeaderBrand"
-        to="/dashboard"
-        class="hidden h-[var(--admin-shell-header-height)] shrink-0 items-center gap-2 overflow-hidden px-3 font-semibold lg:flex"
-        :aria-label="t('common.appTitle')"
-        translate="no"
-      >
-        <span
-          class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sm text-sidebar-primary-foreground"
-        >
-          A
-        </span>
-        <AnimatePresence :initial="false" mode="popLayout">
-          <m.span
-            v-if="layoutDefinition.primaryNavigation !== 'rail' && !isEffectiveSidebarCollapsed"
-            key="sidebar-brand-label"
-            class="truncate"
-            :initial="ADMIN_MOTION_VARIANTS.sidebarTitle.initial"
-            :animate="ADMIN_MOTION_VARIANTS.sidebarTitle.visible"
-            :exit="ADMIN_MOTION_VARIANTS.sidebarTitle.exit"
-            :transition="sidebarTitleTransition"
-          >
-            {{ t('common.appTitle') }}
-          </m.span>
-        </AnimatePresence>
-      </RouterLink>
+        class="hidden h-[var(--admin-shell-header-height)] px-3 lg:flex"
+        :show-label="layoutDefinition.primaryNavigation !== 'rail' && !isEffectiveSidebarCollapsed"
+      />
 
       <!-- AI modified: edge controls share the 56px brand/header center line and one Tooltip contract. -->
       <Tooltip v-if="showsPrimaryCollapseControl">
@@ -267,7 +255,7 @@ watch(
 
     <aside
       v-if="layoutDefinition.secondaryNavigation === 'sidebar'"
-      class="admin-layout__secondary relative hidden min-h-0 flex-col overflow-visible bg-background lg:flex"
+      class="admin-layout__secondary relative hidden min-h-0 flex-col overflow-visible bg-surface lg:flex"
       :class="secondaryOwnsMainBoundary ? 'border-r border-border' : ''"
       data-layout-region="secondary-navigation"
     >
@@ -316,7 +304,7 @@ watch(
 
     <div
       v-if="layoutDefinition.secondaryNavigation === 'horizontal'"
-      class="admin-layout__secondary hidden min-w-0 items-center overflow-visible border-b border-border bg-background px-3 py-1.5 lg:flex"
+      class="admin-layout__secondary hidden min-w-0 items-center overflow-visible border-b border-border bg-surface px-3 py-1.5 lg:flex"
       data-layout-region="secondary-navigation"
     >
       <AdminNavigation
@@ -329,8 +317,6 @@ watch(
 
     <div class="admin-layout__body relative z-0 flex min-h-0 min-w-0 flex-col overflow-hidden">
       <AdminContextBar
-        :is-breadcrumb-visible="appearance.isBreadcrumbVisible"
-        :has-breadcrumb-icon="appearance.hasBreadcrumbIcon"
         :is-tabs-visible="appearance.isTabsVisible"
       />
 
@@ -350,7 +336,11 @@ watch(
   </m.div>
 
   <Sheet v-model:open="isMobileNavigationOpen">
-    <SheetContent id="admin-mobile-navigation" side="left" class="w-[min(88vw,20rem)] p-0">
+    <SheetContent
+      id="admin-mobile-navigation"
+      side="left"
+      class="w-[min(20rem,calc(100vw-3rem))] max-w-none p-0"
+    >
       <SheetHeader class="border-b border-border">
         <SheetTitle>{{ t('nav.navigation') }}</SheetTitle>
         <SheetDescription>{{ t('appearance.layoutDesc') }}</SheetDescription>

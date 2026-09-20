@@ -1,6 +1,6 @@
 export default {
   common: {
-    appTitle: 'Admin Panel',
+    appTitle: 'Gvueter',
     confirm: 'Confirm',
     cancel: 'Cancel',
     save: 'Save',
@@ -36,6 +36,8 @@ export default {
     backToHome: 'Back to home',
     lightMode: 'Switch to light mode',
     darkMode: 'Switch to dark mode',
+    enterFullscreen: 'Enter fullscreen',
+    exitFullscreen: 'Exit fullscreen',
     switchLanguage: 'Switch language',
     switchToEn: 'Switch to English',
     switchToZh: 'Switch to Chinese',
