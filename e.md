@@ -534,7 +534,7 @@ Dark 使用 Comfortable User List、正常 Edit Drawer，以及 Compact Inline E
 
 <!-- AI modified: persist the local Phase 3 implementation outcome across future handoffs. -->
 
-- Implemented（Phase 3 托管收口）：OpenAPI 生成漂移与 79 操作绑定计划已成为门禁，21 个认证/用户/角色/菜单操作绑定生成 DTO，58 个非核心操作有责任域、Issue 占位和目标阶段。Knip 以 350 项限时精确基线阻断新增问题；Feature 公共入口、层方向、Locale Key/占位符、全依赖许可证以及生产 Mock/Test/DevTools 源码和产物边界均已加入 `verify`。许可证当前 12 项进入限时 Review，包含 Linux/Windows CI 实际安装的平台构建二进制；Renovate 配置已落地但远端 App 未启用。本地 `release:check` 已通过：72 个 Vitest 文件、692 项测试、零已知生产漏洞，以及 Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 共 155 项 E2E 均无 Flaky；最终 `dist` 为无 Mock 生产构建。首次托管 Run `35493998577` 暴露许可证平台差异与 Windows `corepack.cmd` 兼容问题，第二次 Run `35494228330` 补出 Windows Sharp 组合许可证；第三次 Run [`35494576946`](https://github.com/guoxk-me/gvueter/actions/runs/35494576946) 的 Linux/Windows 已通过，三浏览器任务仅因 WebKit 五页面 Axe 用例首轮超过全局 30 秒、重试成功而被 Flaky 门禁阻断。该多页面用例已采用独立 60 秒上限且保持全局 30 秒，本地 WebKit 连续三轮通过，等待新版完整托管矩阵验收。
+- Executed（Phase 3）：OpenAPI 生成漂移与 79 操作绑定计划已成为门禁，21 个认证/用户/角色/菜单操作绑定生成 DTO，58 个非核心操作有责任域、Issue 占位和目标阶段。Knip 以 350 项限时精确基线阻断新增问题；Feature 公共入口、层方向、Locale Key/占位符、全依赖许可证以及生产 Mock/Test/DevTools 源码和产物边界均已加入 `verify`。许可证当前 12 项进入限时 Review，包含 Linux/Windows CI 实际安装的平台构建二进制；Renovate 配置已落地但远端 App 未启用。本地 `release:check` 已通过 72 个 Vitest 文件、692 项测试、零已知生产漏洞和三浏览器 155 项无 Flaky E2E。WebKit 五页面 Axe 用例使用独立 60 秒上限且保持全局 30 秒，本地连续三轮通过。Commit `38d109292fe0d8bd7b1c0374d60d83573d6631c3` 的 [CI Run 35495755069](https://github.com/guoxk-me/gvueter/actions/runs/35495755069) 完整成功：Linux/Windows `verify` 通过，三浏览器 E2E `155/155` 无 Flaky，AMD64/ARM64 镜像构建、SPDX SBOM、镜像契约和漏洞扫描通过，AMD64 非 root 健康 Smoke 通过。Phase 3 完成本地与托管验收；远端 Renovate App 仍待单独授权。
 
 - OpenAPI 是前后端传输契约的事实来源，使用 `openapi-typescript` 生成 TypeScript DTO 类型。
 - 生成结果提交仓库，CI 检查是否与 OpenAPI 同步；Zod 继续负责运行时校验。

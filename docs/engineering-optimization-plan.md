@@ -1,6 +1,6 @@
 # 11 工程优化实施清单
 
-> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，运行层安全修复的新版托管 CI 矩阵已通过。Phase 3 已完成本地实现与完整 Release Gate；Linux/Windows 托管门禁已通过，WebKit 多页面 Axe 用例的托管超时修复待新版完整矩阵验收。Phase 4–6 与远端仓库设置仍为计划。
+> 状态：In progress。Phase 0 已执行；Phase 1 和 Phase 2 已在本地实现，运行层安全修复的新版托管 CI 矩阵已通过。Phase 3 已完成本地与托管验收；Phase 4–6 与 Renovate App 等远端仓库设置仍为计划。
 
 ## 1. 目标与边界
 
@@ -170,7 +170,7 @@ Acceptance：同一不可变产物可通过公开运行配置跨环境晋级；�
 
 ### Phase 3 — 契约、依赖与源码边界
 
-Status：Planned
+Status：Executed
 
 <!-- AI modified: record the Phase 3 interview kickoff without treating the plan as implemented. -->
 
@@ -213,6 +213,10 @@ Implemented（本地分项证据）：`openapi-typescript` 已生成并提交完
 Locale 门禁已对 1,612 个中英文叶子 Key 校验集合及占位变量名称/类型，67 个静态未用候选仅报告、需人工排除动态注册后才能删除。许可证门禁覆盖直接/传递、生产/开发记录，允许项通过，12 项 Unknown/弱 Copyleft（含 CI 平台专属构建二进制）进入有责任人和到期日的 Review；强 Copyleft 命中 Deny 即阻断。Renovate 仓库配置已按 Runtime、Vue、Build、Test、GitHub Actions 和 Docker 每周分组，Major 不分组且全部禁止自动合并；远端 App 尚未启用。生产源码和 Manifest/JS 产物门禁已扩展到 Mock、MSW、Vitest、Vue Test Utils 与 Vite Vue DevTools 客户端精确标记。
 
 Executed（本地 Release Gate）：`release:check` 退出码为 0；72 个 Vitest 文件、692 项测试和覆盖率阈值通过，生产审计为零已知漏洞，PWA、Legacy、Mock 与最终生产构建的产物门禁均通过。Playwright 共 155 项，Chromium `69/69`、Firefox `42/42`、WebKit `44/44` 全部直接通过，无失败、跳过或 Flaky，最终 `dist` 已恢复为无 Mock、PWA-off 的生产产物。浏览器用例以 document commit 加真实 UI/API 状态作为异步启动就绪证据，不再使用 `networkidle` 或仅 URL 到达替代应用可用性。托管 Run [`35494576946`](https://github.com/guoxk-me/gvueter/actions/runs/35494576946) 的 Linux 与 Windows `verify` 已通过；三浏览器任务仅因 WebKit 的五页面 Axe 用例首轮超过全局 30 秒、重试通过而被 Flaky 门禁拒绝。该用例现使用独立 60 秒上限，全局交互超时保持 30 秒，本地 WebKit 连续三轮通过；新版完整托管矩阵仍待验收。Renovate App 启用仍属远端待办。
+
+Executed（托管验收）：Commit `38d109292fe0d8bd7b1c0374d60d83573d6631c3` 的 [CI Run 35495755069](https://github.com/guoxk-me/gvueter/actions/runs/35495755069) 完整成功。Linux `verify` 用时 2 分 55 秒，Windows 干净克隆 `verify` 用时 3 分 35 秒；三浏览器 E2E `155/155` 无失败或 Flaky，用时 13 分 48 秒。AMD64 与 ARM64 镜像均完成构建、SPDX SBOM、不可变镜像契约和漏洞扫描，AMD64 另通过非 root 运行与健康探测 Smoke。Phase 3 标记为 Executed；Renovate App 启用仍属单独的远端授权事项。
+
+<!-- AI modified: record the successful same-commit hosted matrix that closes Phase 3. -->
 
 - 增加 `api:generate` 与 `api:check`，提交 OpenAPI 生成 DTO，Zod 保留在不可信边界。
 - 引入 Knip：依赖问题立即阻断；文件与导出建立存量基线并阻断新增问题。
