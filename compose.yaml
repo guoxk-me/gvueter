@@ -1,40 +1,20 @@
 services:
-  admin:
+  frontend:
     build:
       context: .
       args:
         VCS_REF: ${VCS_REF:-local}
         VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
-        VITE_ENABLE_MOCKS: 'false'
         VITE_ENABLE_PWA: ${VITE_ENABLE_PWA:-false}
     environment:
-      API_UPSTREAM: ${API_UPSTREAM:?Set API_UPSTREAM to a container-network HTTP(S) origin}
-      BACKEND_READY_PATH: ${BACKEND_READY_PATH:-/health/ready}
+      APP_BASE_PATH: ${VITE_BASE_PATH:-/}
+      API_UPSTREAM: ${API_UPSTREAM:-}
+      BACKEND_READY_PATH: ${BACKEND_READY_PATH:-/api/health/ready}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-/api}
       CSP_CONNECT_SRC_EXTRA: ${CSP_CONNECT_SRC_EXTRA:-}
       CSP_FRAME_SRC_EXTRA: ${CSP_FRAME_SRC_EXTRA:-}
-      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-/api}
-      PUBLIC_EXTERNAL_NAVIGATION_ORIGINS: ${PUBLIC_EXTERNAL_NAVIGATION_ORIGINS:-}
-      PUBLIC_IFRAME_ORIGINS: ${PUBLIC_IFRAME_ORIGINS:-}
-      PUBLIC_NOTIFICATION_ALLOWED_ORIGINS: ${PUBLIC_NOTIFICATION_ALLOWED_ORIGINS:-}
-      PUBLIC_NOTIFICATION_URL: ${PUBLIC_NOTIFICATION_URL:-}
     ports:
       - '${GVUETER_PORT:-8080}:8080'
-    read_only: true
-    tmpfs:
-      - /tmp:mode=1777
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-
-  smoke-backend:
-    profiles: [smoke]
-    image: node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436
-    command:
-      - node
-      - -e
-      - >-
-        require('node:http').createServer((request,response)=>{response.setHeader('Content-Type','application/json');response.end(JSON.stringify({url:request.url,requestId:request.headers['x-request-id']??null}))}).listen(8080,'0.0.0.0')
     read_only: true
     tmpfs:
       - /tmp:mode=1777

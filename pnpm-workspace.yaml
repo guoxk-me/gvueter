@@ -81,6 +81,8 @@ catalog:
   # AI modified: carousel UI depends on Embla through a workspace catalog pin.
   embla-carousel-vue: ^8.6.0
   eslint: ^10.10.0
+  # AI modified: authenticated Dashboard SSE uses a fetch-based client so Bearer tokens never enter URLs.
+  eventsource-client: 1.2.0
   husky: ^9.1.7
   jiti: ^2.7.0
   jsdom: ^30.0.1

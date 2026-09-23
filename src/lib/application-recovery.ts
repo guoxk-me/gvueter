@@ -115,13 +115,13 @@ export function showBootstrapRecovery(
   const copy = isChinese
     ? {
         title: '应用启动失败',
-        description: '管理后台暂时无法启动。请刷新应用；未保存的更改可能会丢失。',
+        description: '应用暂时无法启动。请刷新应用；未保存的更改可能会丢失。',
         action: '刷新应用',
       }
     : {
         title: 'Application failed to start',
         description:
-          'The admin application could not start. Reload the application; unsaved changes may be lost.',
+          'The application could not start. Reload the application; unsaved changes may be lost.',
         action: 'Reload application',
       }
 

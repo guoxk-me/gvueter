@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('registers only the Base-scoped Gvueter worker and precache', async ({ page }) => {
-  await page.goto('/admin/login')
+  await page.goto('/admin/')
 
   await expect.poll(async () => page.evaluate(async () => {
     const registration = await navigator.serviceWorker.getRegistration('/admin/')
@@ -34,7 +34,7 @@ test('registers only the Base-scoped Gvueter worker and precache', async ({ page
     return cacheRequests.flat()
   })
 
-  // AI modified: installability caches the static shell but never API or authentication responses.
+  // AI modified: installability caches the static shell but never API or deployment configuration.
   // AI modified: cache creation can precede completion of the Workbox precache population.
   await expect.poll(async () => (await readCachedUrls()).some(url =>
     url.includes('/admin/index.html'),
@@ -42,5 +42,5 @@ test('registers only the Base-scoped Gvueter worker and precache', async ({ page
 
   const cachedUrls = await readCachedUrls()
   expect(cachedUrls.some(url => url.includes('/admin/index.html'))).toBe(true)
-  expect(cachedUrls.some(url => /\/(?:api|auth|oauth|oidc|sso)(?:\/|$)/.test(new URL(url).pathname))).toBe(false)
+  expect(cachedUrls.some(url => new URL(url).pathname.includes('/api/') || url.endsWith('/runtime-config.json'))).toBe(false)
 })

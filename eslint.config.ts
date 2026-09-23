@@ -3,8 +3,6 @@ import antfu from '@antfu/eslint-config'
 // AI modified: ESLint now owns both repository formatting and semantic checks.
 export default antfu(
   {
-    // AI modified: the committed OpenAPI DTO is generator-owned, not manually formatted.
-    ignores: ['public/mockServiceWorker.js', 'src/auto-imports.d.ts', 'src/types/openapi-generated.ts'],
     stylistic: {
       indent: 2,
       quotes: 'single',

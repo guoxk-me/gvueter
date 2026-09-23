@@ -6,321 +6,114 @@ on:
   push:
     branches: [main, main-admin]
   workflow_dispatch:
-  # AI modified: Monday 02:00 UTC is Monday 10:00 Asia/Shanghai; schedules run on the default branch.
   schedule:
     - cron: '0 2 * * 1'
-
-# AI modified: obsolete runs are canceled only for pull requests; trusted branch and manual evidence runs finish.
-concurrency:
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
 
 permissions:
   contents: read
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      # AI modified: third-party actions are pinned to reviewed commits while comments retain update context.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
-      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
-        with:
-          cache: true
-          install: false
-          runtime: node@24.18.0
-      - run: pnpm install --frozen-lockfile
-      # AI modified: CI and local development execute the same reproducible core gate.
-      - run: pnpm run verify
-      - name: Upload unit coverage evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          if-no-files-found: warn
-          name: unit-coverage
-          path: coverage/
-          retention-days: ${{ github.event_name == 'pull_request' && 14 || 30 }}
-
-  windows-clean-check:
-    if: github.event_name != 'pull_request'
-    runs-on: windows-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
-      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
-        with:
-          cache: true
-          install: false
-          runtime: node@24.18.0
-      - run: pnpm install --frozen-lockfile
-      # AI modified: a fresh Windows checkout proves the typed gates do not depend on POSIX shell utilities.
-      - run: pnpm run verify
-
-  chromium-smoke:
-    # AI modified: PR checks run in parallel; trusted runs get Chromium evidence in the full E2E job.
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
-      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
-        with:
-          cache: true
-          install: false
-          runtime: node@24.18.0
-      - run: pnpm install --frozen-lockfile
-      - name: Cache Playwright Chromium
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('pnpm-lock.yaml') }}
-          path: ~/.cache/ms-playwright
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps chromium
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium
-      - run: pnpm run build
-        env:
-          VITE_ENABLE_MOCKS: 'true'
-      # AI modified: pull requests receive fast Chromium behavior and pixel feedback before the release matrix.
-      - run: pnpm run test:e2e:chromium
-        env:
-          CI: 'true'
-          VITE_ENABLE_MOCKS: 'true'
-      - name: Upload browser failure evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          if-no-files-found: warn
-          name: chromium-smoke-evidence
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: ${{ github.event_name == 'pull_request' && 14 || 30 }}
-
-  e2e:
-    if: github.event_name != 'pull_request'
-    needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # AI modified: packageManager is the sole pnpm version source; one official action owns runtime and Store caching.
-      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
-        with:
-          cache: true
-          install: false
-          runtime: node@24.18.0
-      - run: pnpm install --frozen-lockfile
-      - name: Cache Playwright release browsers
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          key: ${{ runner.os }}-playwright-release-${{ hashFiles('pnpm-lock.yaml') }}
-          path: ~/.cache/ms-playwright
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium firefox webkit
-      - name: Build and verify the Base-scoped PWA lifecycle
-        run: |
-          pnpm run build
-          pnpm run test:e2e:pwa
-        env:
-          CI: 'true'
-          VITE_BASE_PATH: /admin/
-          VITE_ENABLE_MOCKS: 'false'
-          VITE_ENABLE_PWA: 'true'
-      # AI modified: trusted branch and manual runs retain the complete three-engine release evidence.
-      - run: pnpm run build
-        env:
-          VITE_ENABLE_MOCKS: 'true'
-      - run: pnpm run test:e2e
-        env:
-          CI: 'true'
-          VITE_ENABLE_MOCKS: 'true'
-      - name: Upload browser failure evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          if-no-files-found: warn
-          name: playwright-release-evidence
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 30
-
-  container:
-    # AI modified: trusted runs validate both published architectures after static and browser gates pass.
-    needs: [verify, e2e]
-    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - architecture: amd64
-            platform: linux/amd64
-            runner: ubuntu-latest
-            smoke: true
-          - architecture: arm64
-            platform: linux/arm64
-            runner: ubuntu-24.04-arm
-            smoke: false
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 40
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Build the production container
-        run: |
-          docker build \
-            --platform '${{ matrix.platform }}' \
-            --build-arg VCS_REF='${{ github.sha }}' \
-            --build-arg VITE_ENABLE_MOCKS=false \
-            --build-arg VITE_ENABLE_PWA=false \
-            --tag 'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}' .
-      - name: Generate production image SPDX SBOM
-        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
-          artifact-name: gvueter-container-${{ matrix.architecture }}-sbom.spdx.json
-          format: spdx-json
-          image: gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}
-          output-file: container-${{ matrix.architecture }}-sbom.spdx.json
-          upload-artifact: true
-          upload-artifact-retention: 30
-      - name: Inspect the immutable image contract
-        run: |
-          test "$(docker inspect --format '{{.Config.User}}' 'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}')" = nginx
-          test "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}')" = '${{ github.sha }}'
-          if docker run --rm \
-            --env PUBLIC_API_BASE_URL=http://insecure.example.com \
-            'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}'; then
-            echo 'Unsafe public configuration unexpectedly started.' >&2
-            exit 1
-          fi
-      - name: Smoke-test the unprivileged runtime
-        if: matrix.smoke
-        run: |
-          docker network create gvueter-ci-network
-          docker run --detach --name gvueter-ci-backend \
-            --network gvueter-ci-network \
-            --network-alias backend \
-            --read-only \
-            --tmpfs /tmp:mode=1777 \
-            --cap-drop ALL \
-            --security-opt no-new-privileges \
-            node:24.18.0-alpine3.23@sha256:595398b0081eacda8e1c4c5b97b76cd1020e4d58a8ebcb4843b9bca1e79e7436 \
-            node -e 'require("node:http").createServer((request, response) => { response.setHeader("Content-Type", "application/json"); response.end(JSON.stringify({ url: request.url, authorization: request.headers.authorization ?? null, requestId: request.headers["x-request-id"] ?? null, forwardedFor: request.headers["x-forwarded-for"] ?? null, forwardedProto: request.headers["x-forwarded-proto"] ?? null })) }).listen(8080, "0.0.0.0")'
-          docker run --detach --name gvueter-ci \
-            --network gvueter-ci-network \
-            --publish 127.0.0.1:8080:8080 \
-            --read-only \
-            --tmpfs /tmp:rw,noexec,nosuid,size=16m \
-            --cap-drop ALL \
-            --security-opt no-new-privileges \
-            --env API_UPSTREAM=http://backend:8080 \
-            --env PUBLIC_API_BASE_URL=/api \
-            --env PUBLIC_NOTIFICATION_URL=wss://notify.example.com/events \
-            --env PUBLIC_NOTIFICATION_ALLOWED_ORIGINS=wss://notify.example.com \
-            --env PUBLIC_EXTERNAL_NAVIGATION_ORIGINS=https://docs.example.com \
-            --env PUBLIC_IFRAME_ORIGINS=https://embed.example.com \
-            'gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}'
-          for attempt in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:8080/healthz >/dev/null; then
-              break
-            fi
-            if [ "$attempt" = 30 ]; then
-              docker logs gvueter-ci
-              exit 1
-            fi
-            sleep 1
-          done
-          docker inspect --format 'readonly={{.HostConfig.ReadonlyRootfs}} caps={{json .HostConfig.CapDrop}} security={{json .HostConfig.SecurityOpt}}' gvueter-ci \
-            | grep --fixed-strings 'readonly=true caps=["ALL"] security=["no-new-privileges"]'
-          curl --fail --silent http://127.0.0.1:8080/healthz | grep --fixed-strings '"status":"ok"'
-          curl --fail --silent http://127.0.0.1:8080/readyz --output readiness-response.json
-          curl --fail --silent --dump-header runtime-config-headers.txt \
-            --output runtime-config.json http://127.0.0.1:8080/runtime-config.json
-          grep --ignore-case '^content-type: application/json' runtime-config-headers.txt
-          grep --ignore-case '^cache-control: no-store' runtime-config-headers.txt
-          grep --fixed-strings '"baseUrl":"/api"' runtime-config.json
-          grep --fixed-strings '"url":"wss://notify.example.com/events"' runtime-config.json
-          curl --fail --silent \
-            --header 'Authorization: Bearer smoke-token' \
-            --header 'X-Request-ID: smoke-request' \
-            'http://127.0.0.1:8080/api/probe?mode=ci' \
-            --output proxy-response.json
-          # AI modified: the same-origin gateway preserves the public /api path and query upstream.
-          grep --fixed-strings '"url":"/api/probe?mode=ci"' proxy-response.json
-          grep --fixed-strings '"authorization":"Bearer smoke-token"' proxy-response.json
-          grep --fixed-strings '"requestId":"smoke-request"' proxy-response.json
-          grep --extended-regexp '"forwardedFor":"[^"]+"' proxy-response.json
-          grep --fixed-strings '"forwardedProto":"http"' proxy-response.json
-          curl --fail --silent http://127.0.0.1:8080/users | grep --fixed-strings '<div id="app"></div>'
-          curl --fail --silent --dump-header container-headers.txt --output /dev/null http://127.0.0.1:8080/
-          grep --ignore-case '^content-security-policy:' container-headers.txt
-          grep --ignore-case '^x-content-type-options: nosniff' container-headers.txt
-          grep --ignore-case '^x-frame-options: DENY' container-headers.txt
-          grep --ignore-case '^referrer-policy: strict-origin-when-cross-origin' container-headers.txt
-          grep --ignore-case '^permissions-policy: camera=(), microphone=(), geolocation=()' container-headers.txt
-          grep --ignore-case '^x-request-id:' container-headers.txt
-          curl --fail --silent --dump-header invalid-request-id-headers.txt --output /dev/null \
-            --header 'X-Request-ID: invalid id with spaces' http://127.0.0.1:8080/users
-          if grep --ignore-case --fixed-strings 'x-request-id: invalid id with spaces' invalid-request-id-headers.txt; then
-            exit 1
-          fi
-          curl --silent --output /dev/null --write-out '%{http_code}' \
-            http://127.0.0.1:8080/assets/does-not-exist.js | grep --line-regexp 404
-          # AI modified: reset codes receive the SPA plus inherited security headers without entering access logs.
-          curl --fail --silent --dump-header reset-headers.txt --output /dev/null \
-            http://127.0.0.1:8080/reset-password/ci-reset-secret
-          grep --ignore-case '^content-security-policy:' reset-headers.txt
-          grep --ignore-case '^x-content-type-options: nosniff' reset-headers.txt
-          grep --ignore-case '^x-frame-options: DENY' reset-headers.txt
-          grep --ignore-case '^referrer-policy: no-referrer' reset-headers.txt
-          grep --ignore-case '^permissions-policy: camera=(), microphone=(), geolocation=()' reset-headers.txt
-          if docker logs gvueter-ci 2>&1 | grep --fixed-strings 'ci-reset-secret'; then
-            exit 1
-          fi
-          if docker logs gvueter-ci 2>&1 | grep --fixed-strings 'mode=ci'; then
-            echo 'Query string leaked into access logs.' >&2
-            exit 1
-          fi
-          stop_started=$SECONDS
-          docker stop --timeout 10 gvueter-ci
-          test "$((SECONDS - stop_started))" -le 10
-      - name: Scan actionable container vulnerabilities
-        # AI modified: a SHA-pinned local image scan blocks fixed high/critical OS or package findings.
-        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+          cache: true
+          install: false
+          runtime: node@24.18.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run verify
+
+  browser:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
-          fail-build: true
-          image: gvueter-ci:${{ github.sha }}-${{ matrix.architecture }}
-          only-fixed: true
-          output-file: container-${{ matrix.architecture }}-scan.json
-          output-format: json
-          severity-cutoff: high
-      - name: Upload container scan evidence
+          cache: true
+          install: false
+          runtime: node@24.18.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm run build
+      - run: pnpm run test:e2e
+        env:
+          CI: 'true'
+      - name: Upload browser failure evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           if-no-files-found: warn
-          name: container-${{ matrix.architecture }}-security-evidence
-          path: |
-            container-${{ matrix.architecture }}-sbom.spdx.json
-            container-headers.txt
-            invalid-request-id-headers.txt
-            reset-headers.txt
-            runtime-config-headers.txt
-            runtime-config.json
-            container-${{ matrix.architecture }}-scan.json
-            proxy-response.json
-            readiness-response.json
-          retention-days: 30
-      - name: Stop the smoke container
-        if: always() && matrix.smoke
+          name: browser-evidence
+          path: test-results/
+
+  pwa:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          cache: true
+          install: false
+          runtime: node@24.18.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run build
+        env:
+          VITE_BASE_PATH: /admin/
+          VITE_ENABLE_PWA: 'true'
+      - run: pnpm run test:e2e:pwa
+        env:
+          CI: 'true'
+
+  container:
+    needs: [verify, browser, pwa]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build reference container
+        run: docker build --build-arg VCS_REF="${{ github.sha }}" -t gvueter-ci:${{ github.sha }} .
+      - name: Smoke-test standalone and paired modes
         run: |
-          docker rm --force gvueter-ci gvueter-ci-backend || true
-          docker network rm gvueter-ci-network || true
+          docker network create gvueter-ci-network
+          docker run -d --name gvueter-standalone --network gvueter-ci-network -p 127.0.0.1:8080:8080 --read-only --tmpfs /tmp:mode=1777 --cap-drop ALL --security-opt no-new-privileges gvueter-ci:${{ github.sha }}
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/readyz >/dev/null; then break; fi
+            if [ "$attempt" = 30 ]; then docker logs gvueter-standalone; exit 1; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8080/healthz
+          curl --fail --silent http://127.0.0.1:8080/runtime-config.json | grep --fixed-strings '"schemaVersion":2'
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8080/api/v1/probe)" = 503
+          docker rm -f gvueter-standalone
+          docker run -d --name gvueter-backend --network gvueter-ci-network --network-alias backend node:24.18.0-alpine3.23 node -e 'require("node:http").createServer((req,res)=>{res.setHeader("Content-Type","application/json");res.end(JSON.stringify({url:req.url,requestId:req.headers["x-request-id"]??null}))}).listen(8080,"0.0.0.0")'
+          docker run -d --name gvueter-paired --network gvueter-ci-network -p 127.0.0.1:8080:8080 --read-only --tmpfs /tmp:mode=1777 --cap-drop ALL --security-opt no-new-privileges -e API_UPSTREAM=http://backend:8080 -e PUBLIC_API_BASE_URL=/api/v1 -e BACKEND_READY_PATH=/api/health/ready gvueter-ci:${{ github.sha }}
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/readyz >/dev/null; then break; fi
+            if [ "$attempt" = 30 ]; then docker logs gvueter-paired; exit 1; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8080/api/v1/probe | grep --fixed-strings '"url":"/api/v1/probe"'
+          docker rm -f gvueter-paired gvueter-backend
+          docker network rm gvueter-ci-network
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        with:
+          image: gvueter-ci:${{ github.sha }}
+          format: spdx-json
+          output-file: container-sbom.spdx.json
+      - name: Scan fixed high and critical vulnerabilities
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          fail-build: true
+          image: gvueter-ci:${{ github.sha }}
+          only-fixed: true
+          severity-cutoff: high

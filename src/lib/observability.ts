@@ -1,6 +1,7 @@
 import type { App, ComponentPublicInstance } from 'vue'
 
-export const FRONTEND_ERROR_EVENT = 'admin:frontend-error'
+// AI modified: monitoring adapters subscribe to a product-neutral event after admin removal.
+export const FRONTEND_ERROR_EVENT = 'gvueter:frontend-error'
 
 export type FrontendErrorSource
   = | 'vue'

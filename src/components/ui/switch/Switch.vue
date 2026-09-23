@@ -7,11 +7,16 @@ import {
   SwitchThumb,
   useForwardPropsEmits,
 } from 'reka-ui'
+import { useAttrs } from 'vue'
 import { cn } from '@/lib/utils'
+
+defineOptions({ inheritAttrs: false })
 
 const props = defineProps<SwitchRootProps & { class?: HTMLAttributes['class'] }>()
 
 const emits = defineEmits<SwitchRootEmits>()
+// AI modified: forward id and aria attributes to the interactive root for external labels.
+const attrs = useAttrs()
 
 const delegatedProps = reactiveOmit(props, 'class')
 
@@ -22,7 +27,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
   <SwitchRoot
     v-slot="slotProps"
     data-slot="switch"
-    v-bind="forwarded"
+    v-bind="{ ...attrs, ...forwarded }"
     :class="cn(
       'peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50',
       props.class,

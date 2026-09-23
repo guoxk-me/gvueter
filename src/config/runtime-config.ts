@@ -30,7 +30,6 @@ export interface LoadRuntimeConfigOptions {
   baseUrl?: string
   clock?: RuntimeConfigClock
   fetchRequest?: typeof fetch
-  legacyConfig?: RuntimeConfig
   maxBytes?: number
   timeoutMs?: number
 }
@@ -55,14 +54,6 @@ function getRuntimeConfigPath(baseUrl: string): string {
 function isJsonContentType(contentType: string | null): boolean {
   const mimeType = contentType?.split(';', 1)[0]?.trim().toLowerCase()
   return mimeType === 'application/json' || Boolean(mimeType?.endsWith('+json'))
-}
-
-function canUseLegacyConfig(error: RuntimeConfigError): boolean {
-  return [
-    'CONFIG_FETCH_TIMEOUT',
-    'CONFIG_FETCH_FAILED',
-    'CONFIG_HTTP_STATUS',
-  ].includes(error.code)
 }
 
 function getDefaultClock(): RuntimeConfigClock {
@@ -146,19 +137,8 @@ export async function loadRuntimeConfig(
     timeoutMs: options.timeoutMs ?? 5_000,
   }
 
-  try {
-    return await requestRuntimeConfig(requestOptions)
-  }
-  catch (failure: unknown) {
-    if (
-      options.legacyConfig
-      && failure instanceof RuntimeConfigError
-      && canUseLegacyConfig(failure)
-    ) {
-      return options.legacyConfig
-    }
-    throw failure
-  }
+  // AI modified: startup uses only the deployed schema and never falls back to retired business configuration.
+  return requestRuntimeConfig(requestOptions)
 }
 
 export function provideRuntimeConfig(app: App, runtimeConfig: RuntimeConfig): void {

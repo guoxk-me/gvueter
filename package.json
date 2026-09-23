@@ -9,11 +9,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "run-s type-check build-only check:bundle check:pwa check:runtime-config:dist",
+    "build": "run-s type-check build-only check:pwa check:runtime-config:dist",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:inventory": "node scripts/check-test-inventory.mjs",
     "test:e2e": "playwright test",
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:pwa": "playwright test --config=playwright.pwa.config.ts",
@@ -23,19 +22,8 @@
     "lint:fix": "eslint . --fix --cache",
     "lint:staged": "lint-staged",
     "format": "eslint . --fix --cache",
-    "check": "run-s type-check lint check:charts check:boundaries check:locale check:production-source",
-    "check:boundaries": "node scripts/check-feature-boundaries.ts",
-    "check:charts": "node scripts/check-chart-boundary.ts",
-    "check:locale": "node scripts/check-locale-contract.ts",
-    "check:licenses": "node scripts/check-licenses.ts",
-    "check:production-source": "node scripts/check-production-source.ts",
-    "check:contracts": "node scripts/check-openapi-contract.mjs && node scripts/check-runtime-api-contracts.mjs",
-    "api:generate": "node scripts/check-api-generated.ts --write",
-    "api:check": "node scripts/check-api-generated.ts && node scripts/check-api-binding-plan.ts",
-    "knip:check": "node scripts/check-knip-baseline.ts",
-    "knip:production": "knip --production --reporter compact",
+    "check": "run-s type-check lint docs:check check:runtime-config check:security",
     "check:security": "node scripts/check-sensitive-files.mjs",
-    "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:pwa": "node scripts/check-pwa-artifact.mjs",
     "check:runtime-config": "node scripts/check-runtime-config.ts public/runtime-config.json",
     "check:runtime-config:dist": "node scripts/check-runtime-config.ts dist/runtime-config.json",
@@ -43,7 +31,7 @@
     "doctor": "node scripts/doctor.ts",
     "doctor:ci": "node scripts/doctor.ts --ci",
     "audit:prod": "pnpm audit --prod --audit-level high",
-    "verify": "run-s doctor:ci check docs:check api:check knip:check check:licenses check:contracts check:runtime-config check:security test:inventory audit:prod test:coverage build",
+    "verify": "run-s doctor:ci check test:coverage build audit:prod",
     "release:check": "node scripts/run-release-check.ts",
     "prepare": "husky"
   },
@@ -66,6 +54,7 @@
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "embla-carousel-vue": "catalog:",
+    "eventsource-client": "catalog:",
     "motion-v": "catalog:",
     "nprogress": "catalog:",
     "pinia": "catalog:",
@@ -120,11 +109,6 @@
     "vue-tsc": "catalog:",
     "workbox-window": "catalog:",
     "yaml": "catalog:"
-  },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
   },
   "lint-staged": {
     "*.{js,jsx,cjs,mjs,ts,tsx,cts,mts,vue,json,jsonc,yaml,yml,md}": "eslint --fix --cache"

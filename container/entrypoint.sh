@@ -14,12 +14,8 @@ mkdir -p \
 
 public_api_base_url=${PUBLIC_API_BASE_URL:-/api}
 app_base_path=${APP_BASE_PATH:-/}
-public_notification_url=${PUBLIC_NOTIFICATION_URL:-}
-public_notification_allowed_origins=${PUBLIC_NOTIFICATION_ALLOWED_ORIGINS:-}
-public_external_navigation_origins=${PUBLIC_EXTERNAL_NAVIGATION_ORIGINS:-}
-public_iframe_origins=${PUBLIC_IFRAME_ORIGINS:-}
-api_upstream=${API_UPSTREAM:-http://backend:8080}
-backend_ready_path=${BACKEND_READY_PATH:-/health/ready}
+api_upstream=${API_UPSTREAM:-}
+backend_ready_path=${BACKEND_READY_PATH:-/api/health/ready}
 csp_connect_extra=${CSP_CONNECT_SRC_EXTRA:-}
 csp_frame_extra=${CSP_FRAME_SRC_EXTRA:-}
 nginx_resolver=${NGINX_RESOLVER:-$(awk '/^nameserver / { print $2; exit }' /etc/resolv.conf)}
@@ -28,19 +24,16 @@ if ! printf '%s' "$public_api_base_url" | grep -Eq '^/[^?#[[:space:]\\]*$|^https
   printf '%s\n' 'PUBLIC_API_BASE_URL must be a same-origin path or credential-free HTTPS URL.' >&2
   exit 64
 fi
+if [ "${public_api_base_url#//}" != "$public_api_base_url" ]; then
+  # AI modified: deployment validation follows the same-origin rule used by the browser schema.
+  printf '%s\n' 'PUBLIC_API_BASE_URL cannot start with //.' >&2
+  exit 64
+fi
 if ! printf '%s' "$app_base_path" | grep -Eq '^/([A-Za-z0-9_-]+/)*$'; then
   printf '%s\n' 'APP_BASE_PATH must be an absolute path ending with a slash.' >&2
   exit 64
 fi
-if printf '%s' "$public_api_base_url" | grep -Eq '^//'; then
-  printf '%s\n' 'PUBLIC_API_BASE_URL cannot be protocol-relative.' >&2
-  exit 64
-fi
-if [ -n "$public_notification_url" ] && ! printf '%s' "$public_notification_url" | grep -Eq '^wss://[^/@?#[[:space:]]+(:[0-9]+)?(/[^?#[[:space:]\\]*)?$'; then
-  printf '%s\n' 'PUBLIC_NOTIFICATION_URL must be empty or a credential-free WSS URL.' >&2
-  exit 64
-fi
-if ! printf '%s' "$api_upstream" | grep -Eq '^https?://[^/@?#[[:space:]]+(:[0-9]+)?$'; then
+if [ -n "$api_upstream" ] && ! printf '%s' "$api_upstream" | grep -Eq '^https?://[^/@?#[[:space:]]+(:[0-9]+)?$'; then
   printf '%s\n' 'API_UPSTREAM must be a credential-free HTTP(S) origin without a path.' >&2
   exit 64
 fi
@@ -50,68 +43,6 @@ if ! printf '%s' "$backend_ready_path" | grep -Eq '^/[^?#[[:space:]\\]*$' || pri
 fi
 if ! printf '%s' "$nginx_resolver" | grep -Eq '^[A-Fa-f0-9:.]+$'; then
   printf '%s\n' 'NGINX_RESOLVER must be an IP address.' >&2
-  exit 64
-fi
-
-https_origin_list() {
-  # AI modified: slurp mode preserves an intentional empty value as an empty origin list.
-  jq -Rsce '
-    def trim_space: gsub("^[[:space:]]+|[[:space:]]+$"; "");
-    if . == "" then []
-    else split(",") | map(trim_space)
-      | if length > 64 or any(.[]; test("^https://[^/@?#[[:space:]]+(?::[0-9]+)?$") | not)
-        then error("expected comma-separated exact HTTPS origins")
-        else unique
-        end
-    end
-  '
-}
-
-wss_origin_list() {
-  # AI modified: slurp mode preserves an intentional empty value as an empty origin list.
-  jq -Rsce '
-    def trim_space: gsub("^[[:space:]]+|[[:space:]]+$"; "");
-    if . == "" then []
-    else split(",") | map(trim_space)
-      | if length > 64 or any(.[]; test("^wss://[^/@?#[[:space:]]+(?::[0-9]+)?$") | not)
-        then error("expected comma-separated exact WSS origins")
-        else unique
-        end
-    end
-  '
-}
-
-notification_allowed_origins_json=$(printf '%s' "$public_notification_allowed_origins" | wss_origin_list) || exit 64
-external_navigation_origins_json=$(printf '%s' "$public_external_navigation_origins" | https_origin_list) || exit 64
-iframe_origins_json=$(printf '%s' "$public_iframe_origins" | https_origin_list) || exit 64
-
-if [ -n "$public_notification_url" ]; then
-  notification_url_json=$(jq -cn --arg value "$public_notification_url" '$value')
-else
-  notification_url_json=null
-fi
-
-jq -cn \
-  --arg api_base_url "$public_api_base_url" \
-  --argjson notification_url "$notification_url_json" \
-  --argjson notification_allowed_origins "$notification_allowed_origins_json" \
-  --argjson external_navigation_origins "$external_navigation_origins_json" \
-  --argjson iframe_origins "$iframe_origins_json" \
-  '{
-    schemaVersion: 1,
-    api: { baseUrl: $api_base_url },
-    notifications: {
-      url: $notification_url,
-      allowedOrigins: $notification_allowed_origins
-    },
-    navigation: {
-      externalOrigins: $external_navigation_origins,
-      iframeOrigins: $iframe_origins
-    }
-  }' > "$runtime_config_path"
-
-if [ "$(wc -c < "$runtime_config_path")" -gt 32768 ]; then
-  printf '%s\n' 'Generated Runtime Config exceeds 32 KiB.' >&2
   exit 64
 fi
 
@@ -134,24 +65,24 @@ validate_csp_sources() {
 validate_csp_sources connect "$csp_connect_extra"
 validate_csp_sources frame "$csp_frame_extra"
 
+# AI modified: frontend-only deployments generate the same closed runtime schema without a backend.
+jq -cn --arg api_base_url "$public_api_base_url" \
+  '{schemaVersion: 2, api: {baseUrl: $api_base_url}}' > "$runtime_config_path"
+
 csp_connect_src="'self'"
 case "$public_api_base_url" in
   https://*) csp_connect_src="$csp_connect_src $(printf '%s' "$public_api_base_url" | sed -E 's#^(https://[^/]+).*$#\1#')" ;;
 esac
-if [ -n "$public_notification_url" ]; then
-  csp_connect_src="$csp_connect_src $(printf '%s' "$public_notification_url" | sed -E 's#^(wss://[^/]+).*$#\1#')"
-fi
-notification_csp_sources=$(printf '%s' "$notification_allowed_origins_json" | jq -r 'join(" ")')
-iframe_csp_sources=$(printf '%s' "$iframe_origins_json" | jq -r 'join(" ")')
-CSP_CONNECT_SRC="$csp_connect_src $notification_csp_sources $csp_connect_extra"
-CSP_FRAME_SRC="'self' $iframe_csp_sources $csp_frame_extra"
+
 API_UPSTREAM=$api_upstream
 APP_BASE_PATH=$app_base_path
 BACKEND_READY_PATH=$backend_ready_path
+CSP_CONNECT_SRC="$csp_connect_src $csp_connect_extra"
+CSP_FRAME_SRC="'self' $csp_frame_extra"
 NGINX_RESOLVER=$nginx_resolver
 export API_UPSTREAM APP_BASE_PATH BACKEND_READY_PATH CSP_CONNECT_SRC CSP_FRAME_SRC NGINX_RESOLVER
 
-# AI modified: only approved placeholders are expanded; Nginx request variables remain intact.
+# AI modified: only deployment placeholders are expanded; Nginx request variables stay intact.
 envsubst '${API_UPSTREAM} ${APP_BASE_PATH} ${BACKEND_READY_PATH} ${CSP_CONNECT_SRC} ${CSP_FRAME_SRC} ${NGINX_RESOLVER}' \
   < /opt/gvueter/nginx.conf.template \
   > "$nginx_config_path"

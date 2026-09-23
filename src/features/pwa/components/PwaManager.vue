@@ -81,7 +81,7 @@ watch(offlineReady, (isReady) => {
     >
       <CardContent class="flex items-start gap-3 p-4">
         <div
-          class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary"
+          class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
         >
           <RefreshCw v-if="promptMode === 'update'" class="size-4" aria-hidden="true" />
           <Download v-else class="size-4" aria-hidden="true" />

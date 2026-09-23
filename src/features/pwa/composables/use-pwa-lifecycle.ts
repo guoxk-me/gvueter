@@ -53,7 +53,7 @@ export function usePwaLifecycle(): PwaLifecycle {
   const { needRefresh, offlineReady, updateServiceWorker } = useRegisterSW({
     immediate: true,
     onRegisteredSW: (_serviceWorkerUrl, registration) => {
-      // AI modified: Workbox resolves registrations by scope and can otherwise hand us MSW's root worker.
+      // AI modified: resolve the worker by scope so a stale registration cannot control updates.
       serviceWorkerRegistration.value
         = registration && isPwaWorkerRegistration(registration) ? registration : undefined
     },

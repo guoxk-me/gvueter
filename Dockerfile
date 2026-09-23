@@ -8,10 +8,8 @@ RUN CI=true pnpm install --frozen-lockfile --ignore-scripts
 
 COPY . .
 ARG VITE_BASE_PATH=/
-ARG VITE_ENABLE_MOCKS=false
 ARG VITE_ENABLE_PWA=false
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-ENV VITE_ENABLE_MOCKS=$VITE_ENABLE_MOCKS
 ENV VITE_ENABLE_PWA=$VITE_ENABLE_PWA
 RUN pnpm run build
 
@@ -27,18 +25,14 @@ ARG VCS_REF=unknown
 ARG VITE_BASE_PATH=/
 LABEL org.opencontainers.image.source="https://github.com/gvueter/gvueter" \
   org.opencontainers.image.revision=$VCS_REF \
-  org.opencontainers.image.title="Gvueter Admin"
+  org.opencontainers.image.title="Gvueter starter"
 
-ENV API_UPSTREAM="http://backend:8080" \
+ENV API_UPSTREAM="" \
   APP_BASE_PATH=$VITE_BASE_PATH \
-  BACKEND_READY_PATH="/health/ready" \
+  BACKEND_READY_PATH="/api/health/ready" \
   CSP_CONNECT_SRC_EXTRA="" \
   CSP_FRAME_SRC_EXTRA="" \
-  PUBLIC_API_BASE_URL="/api" \
-  PUBLIC_EXTERNAL_NAVIGATION_ORIGINS="" \
-  PUBLIC_IFRAME_ORIGINS="" \
-  PUBLIC_NOTIFICATION_ALLOWED_ORIGINS="" \
-  PUBLIC_NOTIFICATION_URL=""
+  PUBLIC_API_BASE_URL="/api"
 
 COPY nginx.conf /opt/gvueter/nginx.conf.template
 COPY container/entrypoint.sh /usr/local/bin/gvueter-entrypoint

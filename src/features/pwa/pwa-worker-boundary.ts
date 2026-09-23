@@ -1,11 +1,11 @@
 export const PWA_WORKER_FILENAME = 'pwa-sw.js'
-export const MOCK_WORKER_FILENAME = 'mockServiceWorker.js'
+const LEGACY_WORKER_FILENAME = 'mockServiceWorker.js'
 export const PWA_CACHE_ID = 'gvueter-pwa'
 export const PWA_RELOAD_GUARD_KEY = 'gvueter:pwa-worker-cleanup-reload'
 const PWA_CLEANUP_TIMEOUT_MS = 5_000
 const PWA_WORKER_FILENAMES = new Set([PWA_WORKER_FILENAME])
 
-export type ServiceWorkerMode = 'mock' | 'none' | 'pwa'
+export type ServiceWorkerMode = 'none' | 'pwa'
 
 interface WorkerBoundaryEnvironment {
   basePath?: string
@@ -162,8 +162,8 @@ async function reconcileOwnedWorkers(
   const conflictingWorkerFilenames = new Set<string>()
   if (mode !== 'pwa')
     conflictingWorkerFilenames.add(PWA_WORKER_FILENAME)
-  if (mode !== 'mock')
-    conflictingWorkerFilenames.add(MOCK_WORKER_FILENAME)
+  // AI modified: retire an old worker without retaining the removed Mock runtime.
+  conflictingWorkerFilenames.add(LEGACY_WORKER_FILENAME)
 
   let shouldReload = false
   const serviceWorker = environment.serviceWorker

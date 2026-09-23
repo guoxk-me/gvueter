@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { defineAsyncComponent, onErrorCaptured, shallowRef } from 'vue'
 import { RouterView } from 'vue-router'
-import ApplicationErrorBoundary from '@/components/admin/ApplicationErrorBoundary.vue'
-import NetworkStatus from '@/components/admin/NetworkStatus.vue'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { applicationFailure, setApplicationFailure } from '@/lib/application-recovery'
+import { reportVueError } from '@/lib/observability'
 
-const { t } = useI18n()
+const hasRenderFailure = shallowRef(false)
 const shouldEnablePwa = __GVUETER_PWA_ENABLED__
-// AI modified: PWA install/update UX is non-critical and loads after the application shell.
 const PwaManager = defineAsyncComponent(() => import('@/features/pwa/components/PwaManager.vue'))
+
+onErrorCaptured((failure, instance, lifecycleInfo) => {
+  // AI modified: the empty starter shows a recovery surface if a retained platform component fails.
+  hasRenderFailure.value = true
+  setApplicationFailure('vue-runtime')
+  reportVueError(failure, instance, lifecycleInfo)
+  return false
+})
 
 function reloadApplication(): void {
   window.location.reload()
@@ -18,20 +24,22 @@ function reloadApplication(): void {
 </script>
 
 <template>
-  <!-- AI modified: one root boundary replaces fatal render and chunk failures with a recoverable surface. -->
-  <ApplicationErrorBoundary :reload-application="reloadApplication">
-    <TooltipProvider :delay-duration="100">
-      <NetworkStatus />
-      <RouterView />
-      <!-- AI modified: production-only PWA prompts stay outside route lifecycles and never run beside MSW. -->
-      <PwaManager v-if="shouldEnablePwa" />
-      <!-- AI modified: the global toast live region and close action follow the active locale. -->
-      <Toaster
-        position="top-right"
-        rich-colors
-        :container-aria-label="t('notifications.title')"
-        :toast-options="{ closeButtonAriaLabel: t('common.close') }"
-      />
-    </TooltipProvider>
-  </ApplicationErrorBoundary>
+  <main
+    v-if="hasRenderFailure || applicationFailure"
+    class="flex min-h-svh flex-col items-center justify-center gap-4 px-6 text-center"
+    role="alert"
+    data-application-recovery="runtime"
+  >
+    <h1 class="text-xl font-semibold">
+      Application unavailable
+    </h1>
+    <button class="rounded-md border px-4 py-2" @click="reloadApplication">
+      Reload
+    </button>
+  </main>
+  <TooltipProvider v-else>
+    <RouterView />
+    <PwaManager v-if="shouldEnablePwa" />
+    <Toaster position="top-right" />
+  </TooltipProvider>
 </template>
